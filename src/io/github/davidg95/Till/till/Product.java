@@ -30,13 +30,28 @@ public class Product implements Serializable {
     }
 
     /**
-     * Constructor which takes in only a name. this can be used for open
+     * Constructor which takes in only a name and comments. This can be used for open
      * products.
      *
-     * @param name
+     * @param name the name of the product.
+     * @param comments the comments.
      */
-    public Product(String name) {
+    public Product(String name, String comments) {
         this.name = name;
+        this.comments = comments;
+    }
+    
+    /**
+     * Constructor which takes in only a name, comments and product code. This can be used for open
+     * products.
+     *
+     * @param name the name of the product.
+     * @param comments the comments.
+     * @param productCode the product code.
+     */
+    public Product(String name, String comments, String productCode) {
+        this(name, comments);
+        this.productCode = productCode;
     }
 
     /**
@@ -48,12 +63,11 @@ public class Product implements Serializable {
      * @param barcode the barcode of the product.
      * @param comments any comments about the product.
      */
-    public Product(String name, double price, int stock, String barcode, String comments) {
-        this(name);
+    public Product(String name, String comments, double price, int stock, String barcode) {
+        this(name, comments);
         this.price = price;
         this.stock = stock;
         this.barcode = barcode;
-        this.comments = comments;
     }
 
     /**
@@ -66,8 +80,8 @@ public class Product implements Serializable {
      * @param comments any comments about the product.
      * @param productCode the product code.
      */
-    public Product(String name, double price, int stock, String barcode, String comments, String productCode) {
-        this(name, price, stock, barcode, comments);
+    public Product(String name, String comments, double price, int stock, String barcode, String productCode) {
+        this(name, comments, price, stock, barcode);
         this.productCode = productCode;
     }
 
