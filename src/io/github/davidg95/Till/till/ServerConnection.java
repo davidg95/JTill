@@ -30,12 +30,14 @@ public class ServerConnection {
     private ObjectOutputStream obOut;
 
     private boolean isConnected;
+    private String site;
 
     /**
      * Blank constructor.
      */
-    public ServerConnection() {
+    public ServerConnection(String site) {
         isConnected = false;
+        this.site = site;
     }
 
     /**
@@ -54,6 +56,7 @@ public class ServerConnection {
         obIn = new ObjectInputStream(socket.getInputStream());
         obOut = new ObjectOutputStream(socket.getOutputStream());
         obOut.flush();
+        out.println(site);
         isConnected = true;
     }
 
