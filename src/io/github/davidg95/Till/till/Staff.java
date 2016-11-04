@@ -44,15 +44,32 @@ public class Staff {
         throw new LoginException("You are already logged in elsewhere");
     }
 
+    /**
+     * Method to log in to the system.
+     *
+     * @param password the staff members password, they will not log in if his
+     * does not match.
+     * @throws LoginException if the log in was not successful, this could be
+     * because the password was not recognised or because they are already
+     * logged in else where.
+     */
     public void login(String password) throws LoginException {
         if (!login) {
             if (this.password.equals(password)) {
                 login = true;
                 return;
             }
-            throw new LoginException("Bad password");
+            throw new LoginException("Your credentials were not recognised");
         }
         throw new LoginException("You are already logged in elsewhere");
+    }
+
+    public void logout() {
+        login = false;
+    }
+
+    public void tillLogout() {
+        tillLogin = false;
     }
 
     public String getName() {
