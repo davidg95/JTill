@@ -19,6 +19,10 @@ public class Sale implements Serializable{
     private double total;
     private Customer customer;
     
+    public Sale(){
+        products = new ArrayList<>();
+    }
+    
     public Sale(Customer c){
         products = new ArrayList<>();
         this.customer = c;

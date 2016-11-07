@@ -30,10 +30,12 @@ public class ServerConnection {
     private ObjectOutputStream obOut;
 
     private boolean isConnected;
-    private String site;
+    private final String site;
 
     /**
      * Blank constructor.
+     *
+     * @param site the name of this site to send to the server.
      */
     public ServerConnection(String site) {
         isConnected = false;
@@ -53,9 +55,9 @@ public class ServerConnection {
         socket.connect(new InetSocketAddress(IP, PORT), 2000);
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
-        obIn = new ObjectInputStream(socket.getInputStream());
         obOut = new ObjectOutputStream(socket.getOutputStream());
         obOut.flush();
+        obIn = new ObjectInputStream(socket.getInputStream());
         out.println(site);
         isConnected = true;
     }
@@ -292,6 +294,177 @@ public class ServerConnection {
     public void addSale(Sale s) throws IOException {
         out.println("ADDSALE");
         obOut.writeObject(s);
+    }
+
+    /**
+     * Method to add a new member of staff to the system.
+     *
+     * @param s the new member of staff to add.
+     * @throws IOException if there was a server communication error.
+     */
+    public void addNewStaff(Staff s) throws IOException {
+        out.println("ADDSTAFF");
+        obOut.writeObject(s);
+    }
+
+    /**
+     * Method to remove a member of staff from the system.
+     *
+     * @param id the id of the staff to remove.
+     * @throws IOException if there was a server communication error.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
+    public void removeStaff(String id) throws IOException, StaffNotFoundException {
+        out.println("REMOVESTAFF," + id);
+
+        String input = in.readLine();
+
+        if (input.equals("FAIL")) {
+            throw new StaffNotFoundException(id);
+        }
+    }
+
+    /**
+     * Method to get a member of staff.
+     *
+     * @param id the id of the member of staff to find.
+     * @return member of staff.
+     * @throws IOException if there was a server communication error.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
+    public Staff getStaff(String id) throws IOException, StaffNotFoundException {
+        try {
+            out.println("GETSTAFF," + id);
+
+            Object o = obIn.readObject();
+
+            if (o instanceof Staff) {
+                return (Staff) o;
+            } else if (o instanceof StaffNotFoundException) {
+                throw (StaffNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+        }
+        throw new StaffNotFoundException(id);
+    }
+
+    /**
+     * Method to get the total number of staff on the system.
+     *
+     * @return int value representing the total number of staff.
+     * @throws IOException if there was a server communication error.
+     */
+    public int getStaffCount() throws IOException {
+        out.println("GETSTAFFCOUNT");
+
+        String input = in.readLine();
+
+        return Integer.parseInt(input);
+    }
+
+    /**
+     * Method to get a List of all the staff on the system.
+     *
+     * @return List of type staff.
+     * @throws IOException if there was a server communication error.
+     */
+    public List<Staff> getAllStaff() throws IOException {
+        try {
+            out.println("GETALLSTAFF");
+
+            Object o = obIn.readObject();
+
+            return (List<Staff>) o;
+        } catch (ClassNotFoundException ex) {
+
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * Method to log a member of staff onto the system.
+     *
+     * @param username the username of the staff to login in.
+     * @param password the password of the staff to log in.
+     * @return the member of staff that has logged in.
+     * @throws IOException if there was a server communication error.
+     * @throws LoginException if there was an error logging in.
+     */
+    public Staff login(String username, String password) throws IOException, LoginException {
+        try {
+            out.println("LOGIN," + username + "," + password);
+
+            Object o = obIn.readObject();
+
+            if (o instanceof Staff) {
+                return (Staff) o;
+            } else if (o instanceof LoginException) {
+                throw (LoginException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+        }
+        throw new LoginException("Login Error");
+    }
+
+    /**
+     * Method to log a member of staff into a till system.
+     *
+     * @param id the id to log in.
+     * @return the member of staff that has logged in.
+     * @throws IOException if there was a server communication error.
+     * @throws LoginException if there was an error logging in.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
+    public Staff tillLogin(String id) throws IOException, LoginException, StaffNotFoundException {
+        try {
+            out.println("TILLLOGIN," + id);
+
+            Object o = obIn.readObject();
+
+            if (o instanceof Staff) {
+                return (Staff) o;
+            } else if (o instanceof LoginException) {
+                throw (LoginException) o;
+            } else if (o instanceof StaffNotFoundException) {
+                throw (StaffNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+        }
+        return null;
+    }
+
+    /**
+     * Method to log a member of staff out the system.
+     *
+     * @param id the id to log out.
+     * @throws IOException if there was a server communication error.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
+    public void logout(String id) throws IOException, StaffNotFoundException {
+        out.println("LOGOUT," + id);
+
+        String input = in.readLine();
+
+        if (input.equals("FAIL")) {
+            throw new StaffNotFoundException(id);
+        }
+    }
+
+    /**
+     * Method to log a member of staff out a till.
+     *
+     * @param id the id to log out.
+     * @throws IOException if there was a server communication error.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
+    public void tillLogout(String id) throws IOException, StaffNotFoundException {
+        out.println("TILLLOGOUT," + id);
+
+        String input = in.readLine();
+
+        if (input.equals("FAIL")) {
+            throw new StaffNotFoundException(id);
+        }
     }
 
     /**

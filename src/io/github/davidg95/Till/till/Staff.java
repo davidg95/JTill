@@ -5,11 +5,13 @@
  */
 package io.github.davidg95.Till.till;
 
+import java.io.Serializable;
+
 /**
  *
  * @author David
  */
-public class Staff {
+public class Staff implements Serializable {
 
     private String name;
     private String id;
@@ -36,6 +38,11 @@ public class Staff {
         this.id = id;
     }
 
+    /**
+     * Method to log in to a till.
+     *
+     * @throws LoginException if they are already logged in somewhere else.
+     */
     public void login() throws LoginException {
         if (!tillLogin) {
             tillLogin = true;
@@ -64,10 +71,16 @@ public class Staff {
         throw new LoginException("You are already logged in elsewhere");
     }
 
+    /**
+     * Method to log out of the system.
+     */
     public void logout() {
         login = false;
     }
 
+    /**
+     * Method to log out of a till.
+     */
     public void tillLogout() {
         tillLogin = false;
     }
