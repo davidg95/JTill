@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.Till.till;
 
+import io.github.davidg95.Till.till.Discount.Type;
 import io.github.davidg95.Till.till.Staff.Position;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -32,14 +33,17 @@ public class DBConnect {
     private ResultSet productSet;
     private ResultSet customerSet;
     private ResultSet staffSet;
+    private ResultSet discountSet;
 
     private final String all_products = "SELECT * FROM Products";
     private final String all_customers = "SELECT * FROM Customers";
     private final String all_staff = "SELECT * FROM Staff";
+    private final String all_discounts = "SELECT * FROM DISCOUNTS";
 
     private Statement products_stmt;
     private Statement customers_stmt;
     private Statement staff_stmt;
+    private Statement discounts_stmt;
 
     public DBConnect() {
 
@@ -60,16 +64,16 @@ public class DBConnect {
         this.password = password;
         connected = true;
     }
-    
-    public String getAddress(){
+
+    public String getAddress() {
         return address;
     }
-    
-    public String getUsername(){
+
+    public String getUsername() {
         return username;
     }
-    
-    public String getPassword(){
+
+    public String getPassword() {
         return password;
     }
 
@@ -83,9 +87,11 @@ public class DBConnect {
         products_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         customers_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         staff_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        discounts_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         productSet = products_stmt.executeQuery(all_products);
         customerSet = customers_stmt.executeQuery(all_customers);
         staffSet = staff_stmt.executeQuery(all_staff);
+        discountSet = discounts_stmt.executeQuery(all_discounts);
     }
 
     /**
@@ -97,6 +103,7 @@ public class DBConnect {
             productSet.close();
             customerSet.close();
             staffSet.close();
+            discountSet.close();
             con.close();
             connected = false;
         } catch (SQLException ex) {
@@ -174,6 +181,32 @@ public class DBConnect {
         }
 
         return staff;
+    }
+
+    public List<Discount> getAllDiscounts() throws SQLException {
+        List<Discount> discounts = new ArrayList<>();
+        while (discountSet.next()) {
+            String id = discountSet.getString(1);
+            String type = discountSet.getString(2);
+            double percentage = discountSet.getDouble(3);
+            List<String> barcodes = (List<String>) discountSet.getObject(4);
+
+            Type discountType;
+
+            if (type.equals(Type.BOGOF.toString())) {
+                discountType = Type.BOGOF;
+            } else if (type.equals(Type.MAX_AND_MATCH.toString())) {
+                discountType = Type.MAX_AND_MATCH;
+            } else {
+                discountType = Type.PERCENTAGE_OFF;
+            }
+
+            Discount d = new Discount(id, discountType, percentage, barcodes);
+
+            discounts.add(d);
+        }
+
+        return discounts;
     }
 
     public void addProduct(Product p) throws SQLException {
@@ -261,6 +294,30 @@ public class DBConnect {
         staff_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
         staffSet = staff_stmt.executeQuery(all_staff);
+    }
+
+    public void updateWholeDiscount(List<Discount> discounts) throws SQLException {
+        discountSet.beforeFirst();
+
+        while (discountSet.next()) {
+            discountSet.deleteRow();
+        }
+
+        for (Discount d : discounts) {
+            discountSet.moveToInsertRow();
+            discountSet.updateString(1, d.getId());
+            discountSet.updateString(2, d.getType().toString());
+            discountSet.updateDouble(3, d.getPercentage());
+            discountSet.updateObject(5, d.getBarcodes());
+            discountSet.insertRow();
+        }
+
+        discounts_stmt.close();
+        discountSet.close();
+
+        discounts_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+        discountSet = discounts_stmt.executeQuery(all_discounts);
     }
 
     @Override
