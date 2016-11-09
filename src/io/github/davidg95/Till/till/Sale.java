@@ -28,8 +28,15 @@ public class Sale implements Serializable{
         this.customer = c;
     }
     
-    public void addItem(Product p){
+    public int addItem(Product p){
         products.add(p);
+        int count = 0;
+        for(Product pr: products){
+            if(pr.equals(p)){
+                count++;
+            }
+        }
+        return count;
     }
     
     public void complete(){

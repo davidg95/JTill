@@ -296,7 +296,7 @@ public class DBConnect {
         staffSet = staff_stmt.executeQuery(all_staff);
     }
 
-    public void updateWholeDiscount(List<Discount> discounts) throws SQLException {
+    public void updateWholeDiscounts(List<Discount> discounts) throws SQLException {
         discountSet.beforeFirst();
 
         while (discountSet.next()) {
