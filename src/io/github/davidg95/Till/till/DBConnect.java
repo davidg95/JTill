@@ -13,7 +13,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Database connection class which handles communication with the database.
@@ -34,16 +39,21 @@ public class DBConnect {
     private ResultSet customerSet;
     private ResultSet staffSet;
     private ResultSet discountSet;
+    private ResultSet configSet;
 
     private final String all_products = "SELECT * FROM Products";
     private final String all_customers = "SELECT * FROM Customers";
     private final String all_staff = "SELECT * FROM Staff";
     private final String all_discounts = "SELECT * FROM DISCOUNTS";
+    private final String all_configs = "SELECT * FROM CONFIGS";
 
     private Statement products_stmt;
     private Statement customers_stmt;
     private Statement staff_stmt;
     private Statement discounts_stmt;
+    private Statement configs_stmt;
+
+    private Statement create_tables_stmt;
 
     public DBConnect() {
 
@@ -88,10 +98,18 @@ public class DBConnect {
         customers_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         staff_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         discounts_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        configs_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         productSet = products_stmt.executeQuery(all_products);
         customerSet = customers_stmt.executeQuery(all_customers);
         staffSet = staff_stmt.executeQuery(all_staff);
         discountSet = discounts_stmt.executeQuery(all_discounts);
+        configSet = configs_stmt.executeQuery(all_configs);
+    }
+
+    public void createTables() throws SQLException {
+        create_tables_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        String createTables = "CREATE TABLE PRODUCTS (ID VARCHAR 6) NOT NULL, (BARCODE VARCHAR 14), (NAME VARCHAR 50)NOT NULL, (PRICE DOUBLE), (STOCK INTEGER), (COMMENTS VARCHAR 200)";
+        create_tables_stmt.execute(createTables);
     }
 
     /**
@@ -104,6 +122,7 @@ public class DBConnect {
             customerSet.close();
             staffSet.close();
             discountSet.close();
+            configSet.close();
             con.close();
             connected = false;
         } catch (SQLException ex) {
@@ -207,6 +226,25 @@ public class DBConnect {
         }
 
         return discounts;
+    }
+
+    public HashMap<String, String> getAllConfigs() throws SQLException {
+        HashMap<String, String> configs = new HashMap<>();
+        
+        while (configSet.next()) {
+            String name = configSet.getString(1);
+            String value = configSet.getString(2);
+            configs.put(name, value);
+        }
+        
+        if(configs.isEmpty()){
+            configs.put("products", 0 + "");
+            configs.put("customers", 0 + "");
+            configs.put("staff", 0 + "");
+            configs.put("discounts", 0 + "");
+        }
+
+        return configs;
     }
 
     public void addProduct(Product p) throws SQLException {
@@ -318,6 +356,31 @@ public class DBConnect {
         discounts_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
         discountSet = discounts_stmt.executeQuery(all_discounts);
+    }
+
+    public void updateWholeConfigs(HashMap<String, String> configs) throws SQLException {
+        configSet.beforeFirst();
+
+        while (configSet.next()) {
+            configSet.deleteRow();
+        }
+
+        Iterator it = configs.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            configSet.moveToInsertRow();
+            configSet.updateString("NAME", "" + pair.getKey());
+            configSet.updateString("VALUE", "" + pair.getValue());
+            configSet.insertRow();
+        }
+
+        configs_stmt.close();
+        configSet.close();
+
+        configs_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+        configSet = configs_stmt.executeQuery(all_configs);
     }
 
     @Override
