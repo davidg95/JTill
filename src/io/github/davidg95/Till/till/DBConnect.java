@@ -14,11 +14,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Database connection class which handles communication with the database.
@@ -365,10 +362,7 @@ public class DBConnect {
             configSet.deleteRow();
         }
 
-        Iterator it = configs.entrySet().iterator();
-
-        while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
+        for (Map.Entry pair : configs.entrySet()) {
             configSet.moveToInsertRow();
             configSet.updateString("NAME", "" + pair.getKey());
             configSet.updateString("VALUE", "" + pair.getValue());
@@ -385,6 +379,6 @@ public class DBConnect {
 
     @Override
     public String toString() {
-        return this.address;
+        return "Connected to database " + this.address + "\nOn user " + this.username;
     }
 }
