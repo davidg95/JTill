@@ -37,18 +37,24 @@ public class DBConnect {
     private ResultSet staffSet;
     private ResultSet discountSet;
     private ResultSet configSet;
+    private ResultSet taxSet;
+    private ResultSet categorySet;
 
     private final String all_products = "SELECT * FROM Products";
     private final String all_customers = "SELECT * FROM Customers";
     private final String all_staff = "SELECT * FROM Staff";
     private final String all_discounts = "SELECT * FROM DISCOUNTS";
     private final String all_configs = "SELECT * FROM CONFIGS";
+    private final String all_tax = "SELECT * FROM TAX";
+    private final String all_categorys = "SELECT * FROM CATEGORYS";
 
     private Statement products_stmt;
     private Statement customers_stmt;
     private Statement staff_stmt;
     private Statement discounts_stmt;
     private Statement configs_stmt;
+    private Statement tax_stmt;
+    private Statement category_stmt;
 
     private Statement create_tables_stmt;
 
@@ -96,17 +102,36 @@ public class DBConnect {
         staff_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         discounts_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         configs_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        tax_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        category_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         productSet = products_stmt.executeQuery(all_products);
         customerSet = customers_stmt.executeQuery(all_customers);
         staffSet = staff_stmt.executeQuery(all_staff);
         discountSet = discounts_stmt.executeQuery(all_discounts);
         configSet = configs_stmt.executeQuery(all_configs);
+        taxSet = tax_stmt.executeQuery(all_tax);
+        categorySet = category_stmt.executeQuery(all_categorys);
     }
 
     public void createTables() throws SQLException {
-        create_tables_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        String createTables = "CREATE TABLE PRODUCTS (ID VARCHAR 6) NOT NULL, (BARCODE VARCHAR 14), (NAME VARCHAR 50)NOT NULL, (PRICE DOUBLE), (STOCK INTEGER), (COMMENTS VARCHAR 200)";
-        create_tables_stmt.execute(createTables);
+        create_tables_stmt = con.createStatement();
+        String createTableProducts = "CREATE TABLE PRODUCTS("
+                + "ID VARCHAR(6) NOT NULL, "
+                + "BARCODE VARCHAR(14) NOT NULL, "
+                + "NAME VARCHAR(50) NOT NULL, "
+                + "PRICE NUMBER(10) NOT NULL, "
+                + "STOCK NUMBER(5) NOT NULL, "
+                + "COMMENTS VARCHAR(200) NOT NULL, "
+                + "PRIMARY KEY (ID) )";
+        String createTableCustomers = "CREATE TABLE CUSTOMER(ID VARCHAR(6) NOT NULL, ADDRESS VARCHAR(200) NOT NULL, NAME VARCHAR(50) NOT NULL, PHONE VARCHAR(11) NOT NULL, PRIMARY KEY (ID))";
+        String createTableStaff = "CREATE TABLE PRODUCTS(ID VARCHAR(6) NOT NULL, NAME VARCHAR(50) NOT NULL, POSITION VARCHAR(12) NOT NULL, USERNAME VARCHAR(20) NOT NULL, PASSWORD VARCHAR(30), PRIMARY KEY (ID))";
+        String createTableConfigs = "CREATE TABLE CONFIGURATION(NAME VARCHAR(20) NOT NULL, VALUE VARCHAR(50) NOT NULL, PRIMARY KEY (NAME))";
+        //String createTableDiscounts = "CREATE TABLE DISCOUNTS (ID VARCHAR(6) NOT NULL, TYPE VARCHAR(20) NOT NULL, PERCENTAGE DOUBLE(3), BARCODES BLOB, PRIMARY KEY (ID))";
+        create_tables_stmt.execute(createTableProducts);
+        create_tables_stmt.execute(createTableCustomers);
+        create_tables_stmt.execute(createTableStaff);
+        create_tables_stmt.execute(createTableConfigs);
+        //create_tables_stmt.execute(createTableDiscounts);
     }
 
     /**
@@ -120,6 +145,7 @@ public class DBConnect {
             staffSet.close();
             discountSet.close();
             configSet.close();
+            taxSet.close();
             con.close();
             connected = false;
         } catch (SQLException ex) {
@@ -145,8 +171,14 @@ public class DBConnect {
             double price = productSet.getDouble(4);
             int stock = productSet.getInt(5);
             String comments = productSet.getString(6);
+            String shortName = productSet.getString(7);
+            String categoryID = productSet.getString(8);
+            String taxID = productSet.getString(9);
+            double costPrice = productSet.getDouble(10);
+            int minStock = productSet.getInt(11);
+            int maxStock = productSet.getInt(12);
 
-            Product p = new Product(name, comments, price, stock, barcode, code);
+            Product p = new Product(name, shortName, categoryID, comments, taxID, price, costPrice, stock, minStock, maxStock, barcode, code);
 
             products.add(p);
         }
@@ -157,12 +189,22 @@ public class DBConnect {
     public List<Customer> getAllCustomers() throws SQLException {
         List<Customer> customers = new ArrayList<>();
         while (customerSet.next()) {
-            String id = customerSet.getString(1);
-            String add = customerSet.getString(2);
-            String name = customerSet.getString(3);
-            String phone = customerSet.getString(4);
+            String id = customerSet.getString("ID");
+            String name = customerSet.getString("NAME");
+            String phone = customerSet.getString("PHONE");
+            String mobile = customerSet.getString("MOBILE");
+            String email = customerSet.getString("EMAIL");
+            String address1 = customerSet.getString("ADDRESS_LINE_1");
+            String address2 = customerSet.getString("ADDRESS_LINE_2");
+            String town = customerSet.getString("TOWN");
+            String county = customerSet.getString("COUNTY");
+            String country = customerSet.getString("COUNTRY");
+            String postcode = customerSet.getString("POSTCODE");
+            String notes = customerSet.getString("NOTES");
+            double discount = customerSet.getDouble("DISCOUNT");
+            int loyaltyPoints = customerSet.getInt("LOYALTY_POINTS");
 
-            Customer c = new Customer(name, add, id, phone);
+            Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, id);
 
             customers.add(c);
         }
@@ -227,14 +269,14 @@ public class DBConnect {
 
     public HashMap<String, String> getAllConfigs() throws SQLException {
         HashMap<String, String> configs = new HashMap<>();
-        
+
         while (configSet.next()) {
             String name = configSet.getString(1);
             String value = configSet.getString(2);
             configs.put(name, value);
         }
-        
-        if(configs.isEmpty()){
+
+        if (configs.isEmpty()) {
             configs.put("products", 0 + "");
             configs.put("customers", 0 + "");
             configs.put("staff", 0 + "");
@@ -244,15 +286,49 @@ public class DBConnect {
         return configs;
     }
 
+    public List<Tax> getAllTax() throws SQLException {
+        List<Tax> tax = new ArrayList<>();
+
+        while (taxSet.next()) {
+            String id = taxSet.getString("TAX_ID");
+            String name = taxSet.getString("NAME");
+            double value = taxSet.getDouble("VALUE");
+            Tax t = new Tax(id, name, value);
+
+            tax.add(t);
+        }
+
+        return tax;
+    }
+
+    public List<Category> getAllCategorys() throws SQLException {
+        List<Category> categorys = new ArrayList<>();
+
+        while (categorySet.next()) {
+            String id = categorySet.getString("ID");
+            String name = categorySet.getString("NAME");
+            Category c = new Category(id, name);
+            categorys.add(c);
+        }
+
+        return categorys;
+    }
+
     public void addProduct(Product p) throws SQLException {
         productSet.moveToInsertRow();
 
-        productSet.updateString(1, p.getProductCode());
-        productSet.updateString(2, p.getBarcode());
-        productSet.updateString(3, p.getName());
-        productSet.updateDouble(4, p.getPrice());
-        productSet.updateInt(5, p.getStock());
-        productSet.updateString(6, p.getComments());
+        productSet.updateString("ID", p.getProductCode());
+        productSet.updateString("BARCODE", p.getBarcode());
+        productSet.updateString("NAME", p.getName());
+        productSet.updateDouble("PRICE", p.getPrice());
+        productSet.updateInt("STOCK", p.getStock());
+        productSet.updateString("COMMENTS", p.getComments());
+        productSet.updateString("SHORT_NAME", p.getShortName());
+        productSet.updateString("CATEGORY_ID", p.getCategoryID());
+        productSet.updateString("TAX_ID", p.getTaxID());
+        productSet.updateDouble("COST_PRICE", p.getCostPrice());
+        productSet.updateInt("MIN_PRODUCT_LEVEL", p.getMinStockLevel());
+        productSet.updateInt("MAX_PRODUCT_LEVEL", p.getMaxStockLevel());
         productSet.insertRow();
     }
 
@@ -265,12 +341,18 @@ public class DBConnect {
 
         for (Product p : products) {
             productSet.moveToInsertRow();
-            productSet.updateString(1, p.getProductCode());
-            productSet.updateString(2, p.getBarcode());
-            productSet.updateString(3, p.getName());
-            productSet.updateDouble(4, p.getPrice());
-            productSet.updateInt(5, p.getStock());
-            productSet.updateString(6, p.getComments());
+            productSet.updateString("ID", p.getProductCode());
+            productSet.updateString("BARCODE", p.getBarcode());
+            productSet.updateString("NAME", p.getName());
+            productSet.updateDouble("PRICE", p.getPrice());
+            productSet.updateInt("STOCK", p.getStock());
+            productSet.updateString("COMMENTS", p.getComments());
+            productSet.updateString("SHORT_NAME", p.getShortName());
+            productSet.updateString("CATEGORY_ID", p.getCategoryID());
+            productSet.updateString("TAX_ID", p.getTaxID());
+            productSet.updateDouble("COST_PRICE", p.getCostPrice());
+            productSet.updateInt("MIN_PRODUCT_LEVEL", p.getMinStockLevel());
+            productSet.updateInt("MAX_PRODUCT_LEVEL", p.getMaxStockLevel());
             productSet.insertRow();
         }
 
@@ -291,10 +373,20 @@ public class DBConnect {
 
         for (Customer c : customers) {
             customerSet.moveToInsertRow();
-            customerSet.updateString(1, c.getId());
-            customerSet.updateString(2, c.getAddress());
-            customerSet.updateString(3, c.getName());
-            customerSet.updateString(4, c.getPhone());
+            customerSet.updateString("ID", c.getId());
+            customerSet.updateString("NAME", c.getName());
+            customerSet.updateString("PHONE", c.getPhone());
+            customerSet.updateString("MOBILE", c.getMobile());
+            customerSet.updateString("EMAIL", c.getEmail());
+            customerSet.updateString("ADDRESS_LINE_1", c.getAddressLine1());
+            customerSet.updateString("ADDRESS_LINE_2", c.getAddressLine2());
+            customerSet.updateString("TOWN", c.getTown());
+            customerSet.updateString("COUNTY", c.getCounty());
+            customerSet.updateString("COUNTRY", c.getCountry());
+            customerSet.updateString("POSTCODE", c.getPostcode());
+            customerSet.updateString("NOTES", c.getNotes());
+            customerSet.updateDouble("DISCOUNT", c.getDiscount());
+            customerSet.updateInt("LOYALTY_POINTS", c.getLoyaltyPoints());
             customerSet.insertRow();
         }
 
@@ -375,6 +467,51 @@ public class DBConnect {
         configs_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
 
         configSet = configs_stmt.executeQuery(all_configs);
+    }
+
+    public void updateWholeTax(List<Tax> tax) throws SQLException {
+        taxSet.beforeFirst();
+
+        while (taxSet.next()) {
+            taxSet.deleteRow();
+        }
+
+        for (Tax t : tax) {
+            taxSet.moveToInsertRow();
+            taxSet.updateString("TAX_ID", t.getId());
+            taxSet.updateString("NAME", t.getName());
+            taxSet.updateDouble("VALUE", t.getValue());
+            taxSet.insertRow();
+        }
+
+        tax_stmt.close();
+        taxSet.close();
+
+        tax_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+
+        taxSet = tax_stmt.executeQuery(all_tax);
+    }
+
+    public void updateWholeCategorys(List<Category> categorys) throws SQLException {
+        categorySet.beforeFirst();
+
+        while (categorySet.next()) {
+            categorySet.deleteRow();
+        }
+
+        for (Category c : categorys) {
+            categorySet.moveToInsertRow();
+            categorySet.updateString("ID", c.getID());
+            categorySet.updateString("NAME", c.getName());
+            categorySet.insertRow();
+        }
+        
+        category_stmt.close();
+        categorySet.close();
+        
+        category_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+        
+        categorySet = category_stmt.executeQuery(all_categorys);
     }
 
     @Override

@@ -18,8 +18,14 @@ public class Product implements Serializable {
     private String productCode;
     private String barcode;
     private String name;
+    private String shortName;
+    private String categoryID;
+    private String taxID;
     private double price;
+    private double costPrice;
     private int stock;
+    private int minStockLevel;
+    private int maxStockLevel;
     private String comments;
 
     /**
@@ -30,27 +36,36 @@ public class Product implements Serializable {
     }
 
     /**
-     * Constructor which takes in only a name and comments. This can be used for open
-     * products.
+     * Constructor which takes in only a name and comments. This can be used for
+     * open products.
      *
      * @param name the name of the product.
+     * @param shortName the shortened name of the product.
+     * @param categoryID the category this will belong to.
      * @param comments the comments.
+     * @param taxID the tax class for this product.
      */
-    public Product(String name, String comments) {
+    public Product(String name, String shortName, String categoryID, String comments, String taxID) {
         this.name = name;
+        this.shortName = shortName;
+        this.categoryID = categoryID;
         this.comments = comments;
+        this.taxID = taxID;
     }
-    
+
     /**
-     * Constructor which takes in only a name, comments and product code. This can be used for open
-     * products.
+     * Constructor which takes in only a name, comments and product code. This
+     * can be used for open products.
      *
      * @param name the name of the product.
+     * @param shortName the shortened name of the product.
+     * @param categoryID the category this will belong to.
      * @param comments the comments.
+     * @param taxID the tax class for this product.
      * @param productCode the product code.
      */
-    public Product(String name, String comments, String productCode) {
-        this(name, comments);
+    public Product(String name, String shortName, String categoryID, String comments, String taxID, String productCode) {
+        this(name, shortName, categoryID, comments, taxID);
         this.productCode = productCode;
     }
 
@@ -58,15 +73,24 @@ public class Product implements Serializable {
      * Constructor which taken in values for all fields apart from product code.
      *
      * @param name the name for the product.
+     * @param shortName the shortened name of the product.
+     * @param categoryID the category this will belong to.
      * @param price the price for the product.
+     * @param taxID the tax class for this product.
      * @param stock the initial stock level for the product.
+     * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
+     * @param minStock the minimum stock level.
      * @param comments any comments about the product.
+     * @param maxStock the maximum stock level.
      */
-    public Product(String name, String comments, double price, int stock, String barcode) {
-        this(name, comments);
+    public Product(String name, String shortName, String categoryID, String comments, String taxID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
+        this(name, shortName, categoryID, comments, taxID);
         this.price = price;
+        this.costPrice = costPrice;
         this.stock = stock;
+        this.minStockLevel = minStock;
+        this.maxStockLevel = maxStock;
         this.barcode = barcode;
     }
 
@@ -74,14 +98,20 @@ public class Product implements Serializable {
      * Constructor which taken in values for all fields as parameters.
      *
      * @param name the name for the product.
+     * @param shortName the shortened name of the product.
+     * @param categoryID the category this will belong to.
      * @param price the price for the product.
+     * @param taxID the tax class for this product.
      * @param stock the initial stock level for the product.
+     * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
+     * @param minStock the minimum stock level.
      * @param comments any comments about the product.
+     * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String comments, double price, int stock, String barcode, String productCode) {
-        this(name, comments, price, stock, barcode);
+    public Product(String name, String shortName, String categoryID, String comments, String taxID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, String productCode) {
+        this(name, shortName, categoryID, comments, taxID, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
 
@@ -163,6 +193,54 @@ public class Product implements Serializable {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getShortName() {
+        return shortName;
+    }
+
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
+
+    public String getCategoryID() {
+        return categoryID;
+    }
+
+    public void setCategoryID(String categoryID) {
+        this.categoryID = categoryID;
+    }
+
+    public String getTaxID() {
+        return taxID;
+    }
+
+    public void setTaxID(String taxID) {
+        this.taxID = taxID;
+    }
+
+    public double getCostPrice() {
+        return costPrice;
+    }
+
+    public void setCostPrice(double costPrice) {
+        this.costPrice = costPrice;
+    }
+
+    public int getMinStockLevel() {
+        return minStockLevel;
+    }
+
+    public void setMinStockLevel(int minStockLevel) {
+        this.minStockLevel = minStockLevel;
+    }
+
+    public int getMaxStockLevel() {
+        return maxStockLevel;
+    }
+
+    public void setMaxStockLevel(int maxStockLevel) {
+        this.maxStockLevel = maxStockLevel;
     }
 
     public boolean equals(Product p) {
