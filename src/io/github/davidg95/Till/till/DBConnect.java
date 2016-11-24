@@ -78,6 +78,14 @@ public class DBConnect {
         connected = true;
     }
 
+    public void create(String username, String password) throws SQLException {
+        String dbURL = "jdbc:derby://localhost/Till;create=true";
+        con = DriverManager.getConnection(dbURL, username, password);
+        this.address = dbURL;
+        this.username = username;
+        this.password = password;
+    }
+
     public String getAddress() {
         return address;
     }
@@ -505,12 +513,12 @@ public class DBConnect {
             categorySet.updateString("NAME", c.getName());
             categorySet.insertRow();
         }
-        
+
         category_stmt.close();
         categorySet.close();
-        
+
         category_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        
+
         categorySet = category_stmt.executeQuery(all_categorys);
     }
 
