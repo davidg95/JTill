@@ -17,7 +17,7 @@ public class Customer {
     private String phone;
     private String mobile;
     private String email;
-    private double discount;
+    private String discount_id;
     private int loyaltyPoints;
     private String notes;
 
@@ -32,12 +32,12 @@ public class Customer {
 
     }
 
-    public Customer(String name, String phone, String mobile, String email, double discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyalty) {
+    public Customer(String name, String phone, String mobile, String email, String discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyalty) {
         this.name = name;
         this.phone = phone;
         this.mobile = mobile;
         this.email = email;
-        this.discount = discount;
+        this.discount_id = discount;
         this.addressLine1 = addressLine1;
         this.addressLine2 = addressLine2;
         this.town = town;
@@ -48,7 +48,7 @@ public class Customer {
         this.loyaltyPoints = loyalty;
     }
 
-    public Customer(String name, String phone, String mobile, String email, double discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, String id) {
+    public Customer(String name, String phone, String mobile, String email, String discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, String id) {
         this(name, phone, mobile, email, discount, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints);
         this.id = id;
     }
@@ -93,12 +93,12 @@ public class Customer {
         this.email = email;
     }
 
-    public double getDiscount() {
-        return discount;
+    public String getDiscountID() {
+        return discount_id;
     }
 
-    public void setDiscount(double discount) {
-        this.discount = discount;
+    public void setDiscountID(String discount) {
+        this.discount_id = discount;
     }
 
     public int getLoyaltyPoints() {

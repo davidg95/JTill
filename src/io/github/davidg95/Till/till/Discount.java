@@ -5,8 +5,6 @@
  */
 package io.github.davidg95.Till.till;
 
-import java.util.List;
-
 /**
  *
  * @author David
@@ -14,31 +12,17 @@ import java.util.List;
 public class Discount {
 
     private String id;
-    private Type type;
+    private String name;
     private double percentage;
-    private List<String> barcodes;
 
-    public enum Type {
-        PERCENTAGE_OFF, BOGOF, MAX_AND_MATCH
-    }
-
-    public Discount(String id, Type type, double percentage, List<String> barcodes) {
-        this(type, percentage, barcodes);
+    public Discount(String id, String name, double percentage) {
+        this(name, percentage);
         this.id = id;
     }
 
-    public Discount(Type type, double percentage, List<String> barcodes) {
-        this.type = type;
+    public Discount(String name, double percentage) {
+        this.name = name;
         this.percentage = percentage;
-        this.barcodes = barcodes;
-    }
-    
-    public void addBarcode(String barcode){
-        this.barcodes.add(barcode);
-    }
-    
-    public void removeBarcode(String barcode){
-        this.barcodes.remove(barcode);
     }
 
     public String getId() {
@@ -49,12 +33,12 @@ public class Discount {
         this.id = id;
     }
 
-    public Type getType() {
-        return type;
+    public String getName() {
+        return name;
     }
 
-    public void setType(Type type) {
-        this.type = type;
+    public void setType(String name) {
+        this.name = name;
     }
 
     public double getPercentage() {
@@ -65,16 +49,8 @@ public class Discount {
         this.percentage = percentage;
     }
 
-    public List<String> getBarcodes() {
-        return barcodes;
-    }
-
-    public void setBarcodes(List<String> barcodes) {
-        this.barcodes = barcodes;
-    }
-    
     @Override
     public String toString() {
-        return "ID: " + this.id + "\nType: " + this.type.toString() + "\nPercentage: " + this.percentage + "%\nBarcodes: " + this.barcodes.size();
+        return "ID: " + this.id + "\nName: " + this.name + "\nPercentage: " + this.percentage;
     }
 }

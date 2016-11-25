@@ -26,6 +26,7 @@ public class Product implements Serializable {
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
+    private String discountID;
     private String comments;
 
     /**
@@ -44,13 +45,15 @@ public class Product implements Serializable {
      * @param categoryID the category this will belong to.
      * @param comments the comments.
      * @param taxID the tax class for this product.
+     * @param discountID the discount ID for the product.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID) {
+    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID) {
         this.name = name;
         this.shortName = shortName;
         this.categoryID = categoryID;
         this.comments = comments;
         this.taxID = taxID;
+        this.discountID = discountID;
     }
 
     /**
@@ -62,10 +65,11 @@ public class Product implements Serializable {
      * @param categoryID the category this will belong to.
      * @param comments the comments.
      * @param taxID the tax class for this product.
+     * @param discountID the discount ID for this product.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID, String productCode) {
-        this(name, shortName, categoryID, comments, taxID);
+    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID, String productCode) {
+        this(name, shortName, categoryID, comments, taxID, discountID);
         this.productCode = productCode;
     }
 
@@ -77,6 +81,7 @@ public class Product implements Serializable {
      * @param categoryID the category this will belong to.
      * @param price the price for the product.
      * @param taxID the tax class for this product.
+     * @param discountID the discount ID for this product.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
@@ -84,8 +89,8 @@ public class Product implements Serializable {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
-        this(name, shortName, categoryID, comments, taxID);
+    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
+        this(name, shortName, categoryID, comments, taxID, discountID);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -102,6 +107,7 @@ public class Product implements Serializable {
      * @param categoryID the category this will belong to.
      * @param price the price for the product.
      * @param taxID the tax class for this product.
+     * @param discountID the discount ID for the product.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
@@ -110,8 +116,8 @@ public class Product implements Serializable {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, String productCode) {
-        this(name, shortName, categoryID, comments, taxID, price, costPrice, stock, minStock, maxStock, barcode);
+    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, String productCode) {
+        this(name, shortName, categoryID, comments, taxID, discountID, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
 
@@ -241,6 +247,14 @@ public class Product implements Serializable {
 
     public void setMaxStockLevel(int maxStockLevel) {
         this.maxStockLevel = maxStockLevel;
+    }
+
+    public String getDiscountID() {
+        return discountID;
+    }
+
+    public void setDiscountID(String discountID) {
+        this.discountID = discountID;
     }
 
     public boolean equals(Product p) {

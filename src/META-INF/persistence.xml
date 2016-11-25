@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="TillPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>io.github.davidg95.Till.EntityClasses.Staff</class>
+    <class>io.github.davidg95.Till.EntityClasses.Tax</class>
+    <class>io.github.davidg95.Till.EntityClasses.Customers</class>
+    <class>io.github.davidg95.Till.EntityClasses.Discounts</class>
+    <class>io.github.davidg95.Till.EntityClasses.Categorys</class>
+    <class>io.github.davidg95.Till.EntityClasses.Products</class>
+    <class>io.github.davidg95.Till.EntityClasses.Configs</class>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:derby:TillEmbedded;create=true"/>
+      <property name="javax.persistence.jdbc.user" value="App"/>
+      <property name="javax.persistence.jdbc.driver" value="org.apache.derby.jdbc.EmbeddedDriver"/>
+      <property name="javax.persistence.jdbc.password" value="App"/>
+    </properties>
+  </persistence-unit>
+</persistence>

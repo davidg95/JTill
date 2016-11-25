@@ -5,9 +5,9 @@
  */
 package io.github.davidg95.Till.till;
 
-import io.github.davidg95.Till.till.Discount.Type;
 import io.github.davidg95.Till.till.Staff.Position;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.derby.jdbc.EmbeddedDriver;
 
 /**
  * Database connection class which handles communication with the database.
@@ -25,6 +26,7 @@ import java.util.Map;
 public class DBConnect {
 
     private Connection con;
+    private Driver embedded;
 
     private String address;
     private String username;
@@ -40,9 +42,9 @@ public class DBConnect {
     private ResultSet taxSet;
     private ResultSet categorySet;
 
-    private final String all_products = "SELECT * FROM Products";
-    private final String all_customers = "SELECT * FROM Customers";
-    private final String all_staff = "SELECT * FROM Staff";
+    private final String all_products = "SELECT * FROM PRODUCTS";
+    private final String all_customers = "SELECT * FROM CUSTOMERS";
+    private final String all_staff = "SELECT * FROM STAFF";
     private final String all_discounts = "SELECT * FROM DISCOUNTS";
     private final String all_configs = "SELECT * FROM CONFIGS";
     private final String all_tax = "SELECT * FROM TAX";
@@ -79,11 +81,90 @@ public class DBConnect {
     }
 
     public void create(String username, String password) throws SQLException {
-        String dbURL = "jdbc:derby://localhost/Till;create=true";
-        con = DriverManager.getConnection(dbURL, username, password);
-        this.address = dbURL;
-        this.username = username;
-        this.password = password;
+        embedded = new EmbeddedDriver();
+        DriverManager.registerDriver(embedded);
+        con = DriverManager.getConnection("jdbc:derby:TillEmbedded;create=true", "App", "App");
+
+        this.address = "jdbc:derby:TillEmbedded;create=true";
+        this.username = "App";
+        this.password = "App";
+        
+        createTables();
+    }
+
+    private void createTables() throws SQLException {
+        String categorys = "create table APP.CATEGORYS\n"
+                + "(\n"
+                + "	ID VARCHAR(6) not null primary key,\n"
+                + "	NAME VARCHAR(20) not null\n"
+                + ")";
+        String configs = "create table APP.CONFIGS\n"
+                + "(\n"
+                + "	NAME VARCHAR(20) not null primary key,\n"
+                + "	VALUE VARCHAR(20) not null\n"
+                + ")";
+        String customers = "create table \"APP\".CUSTOMERS\n"
+                + "(\n"
+                + "	ID VARCHAR(6) not null primary key,\n"
+                + "	NAME VARCHAR(50) not null,\n"
+                + "	PHONE VARCHAR(15),\n"
+                + "	MOBILE VARCHAR(15),\n"
+                + "	EMAIL VARCHAR(50),\n"
+                + "	ADDRESS_LINE_1 VARCHAR(50),\n"
+                + "	ADDRESS_LINE_2 VARCHAR(50),\n"
+                + "	TOWN VARCHAR(50),\n"
+                + "	COUNTY VARCHAR(50),\n"
+                + "	COUNTRY VARCHAR(50),\n"
+                + "	POSTCODE VARCHAR(20),\n"
+                + "	NOTES VARCHAR(200),\n"
+                + "	DISCOUNT_ID VARCHAR(6) not null,\n"
+                + "	LOYALTY_POINTS INTEGER not null\n"
+                + ")";
+        String discounts = "create table \"APP\".DISCOUNTS\n"
+                + "(\n"
+                + "	ID VARCHAR(6) not null primary key,\n"
+                + "	NAME VARCHAR(20) not null,\n"
+                + "	PERCENTAGE DOUBLE not null\n"
+                + ")";
+        String products = "create table \"APP\".PRODUCTS\n"
+                + "(\n"
+                + "	ID VARCHAR(6) not null primary key,\n"
+                + "	BARCODE VARCHAR(20),\n"
+                + "	NAME VARCHAR(50) not null,\n"
+                + "	PRICE DOUBLE,\n"
+                + "	STOCK INTEGER,\n"
+                + "	COMMENTS VARCHAR(200),\n"
+                + "	SHORT_NAME VARCHAR(50) not null,\n"
+                + "	CATEGORY_ID VARCHAR(6) not null,\n"
+                + "	TAX_ID VARCHAR(6) not null,\n"
+                + "	COST_PRICE DOUBLE,\n"
+                + "	MIN_PRODUCT_LEVEL INTEGER,\n"
+                + "	MAX_PRODUCT_LEVEL INTEGER,\n"
+                + "	DISCOUNT_ID VARCHAR(6) default '000000' not null\n"
+                + ")";
+        String staff = "create table \"APP\".STAFF\n"
+                + "(\n"
+                + "	ID VARCHAR(6) not null primary key,\n"
+                + "	NAME VARCHAR(50) not null,\n"
+                + "	POSITION VARCHAR(20) not null,\n"
+                + "	USERNAME VARCHAR(20) not null,\n"
+                + "	PASSWORD VARCHAR(20) not null\n"
+                + ")";
+        String tax = "create table \"APP\".TAX\n"
+                + "(\n"
+                + "	ID VARCHAR(6) not null primary key,\n"
+                + "	NAME VARCHAR(20) not null,\n"
+                + "	VALUE DOUBLE not null\n"
+                + ")";
+        
+        Statement stmt = con.createStatement();
+        stmt.execute(categorys);
+        stmt.execute(configs);
+        stmt.execute(customers);
+        stmt.execute(discounts);
+        stmt.execute(products);
+        stmt.execute(staff);
+        stmt.execute(tax);
     }
 
     public String getAddress() {
@@ -121,27 +202,6 @@ public class DBConnect {
         categorySet = category_stmt.executeQuery(all_categorys);
     }
 
-    public void createTables() throws SQLException {
-        create_tables_stmt = con.createStatement();
-        String createTableProducts = "CREATE TABLE PRODUCTS("
-                + "ID VARCHAR(6) NOT NULL, "
-                + "BARCODE VARCHAR(14) NOT NULL, "
-                + "NAME VARCHAR(50) NOT NULL, "
-                + "PRICE NUMBER(10) NOT NULL, "
-                + "STOCK NUMBER(5) NOT NULL, "
-                + "COMMENTS VARCHAR(200) NOT NULL, "
-                + "PRIMARY KEY (ID) )";
-        String createTableCustomers = "CREATE TABLE CUSTOMER(ID VARCHAR(6) NOT NULL, ADDRESS VARCHAR(200) NOT NULL, NAME VARCHAR(50) NOT NULL, PHONE VARCHAR(11) NOT NULL, PRIMARY KEY (ID))";
-        String createTableStaff = "CREATE TABLE PRODUCTS(ID VARCHAR(6) NOT NULL, NAME VARCHAR(50) NOT NULL, POSITION VARCHAR(12) NOT NULL, USERNAME VARCHAR(20) NOT NULL, PASSWORD VARCHAR(30), PRIMARY KEY (ID))";
-        String createTableConfigs = "CREATE TABLE CONFIGURATION(NAME VARCHAR(20) NOT NULL, VALUE VARCHAR(50) NOT NULL, PRIMARY KEY (NAME))";
-        //String createTableDiscounts = "CREATE TABLE DISCOUNTS (ID VARCHAR(6) NOT NULL, TYPE VARCHAR(20) NOT NULL, PERCENTAGE DOUBLE(3), BARCODES BLOB, PRIMARY KEY (ID))";
-        create_tables_stmt.execute(createTableProducts);
-        create_tables_stmt.execute(createTableCustomers);
-        create_tables_stmt.execute(createTableStaff);
-        create_tables_stmt.execute(createTableConfigs);
-        //create_tables_stmt.execute(createTableDiscounts);
-    }
-
     /**
      * Method to close the database connection. This will close the data sets
      * and close the connection.
@@ -173,25 +233,93 @@ public class DBConnect {
     public List<Product> getAllProducts() throws SQLException {
         List<Product> products = new ArrayList<>();
         while (productSet.next()) {
-            String code = productSet.getString(1);
-            String barcode = productSet.getString(2);
-            String name = productSet.getString(3);
-            double price = productSet.getDouble(4);
-            int stock = productSet.getInt(5);
-            String comments = productSet.getString(6);
-            String shortName = productSet.getString(7);
-            String categoryID = productSet.getString(8);
-            String taxID = productSet.getString(9);
-            double costPrice = productSet.getDouble(10);
-            int minStock = productSet.getInt(11);
-            int maxStock = productSet.getInt(12);
+            String code = productSet.getString("ID");
+            String barcode = productSet.getString("BARCODE");
+            String name = productSet.getString("NAME");
+            double price = productSet.getDouble("PRICE");
+            int stock = productSet.getInt("STOCK");
+            String comments = productSet.getString("COMMENTS");
+            String shortName = productSet.getString("SHORT_NAME");
+            String categoryID = productSet.getString("CATEGORY_ID");
+            String taxID = productSet.getString("TAX_ID");
+            double costPrice = productSet.getDouble("COST_PRICE");
+            int minStock = productSet.getInt("MIN_PRODUCT_LEVEL");
+            int maxStock = productSet.getInt("MAX_PRODUCT_LEVEL");
+            String discountID = productSet.getString("DISCOUNT_ID");
 
-            Product p = new Product(name, shortName, categoryID, comments, taxID, price, costPrice, stock, minStock, maxStock, barcode, code);
+            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, price, costPrice, stock, minStock, maxStock, barcode, code);
 
             products.add(p);
         }
 
         return products;
+    }
+    
+    private List<Product> getProductsFromResultSet(ResultSet set) throws SQLException{
+        List<Product> products = new ArrayList<>();
+        while (productSet.next()) {
+            String code = productSet.getString("ID");
+            String barcode = productSet.getString("BARCODE");
+            String name = productSet.getString("NAME");
+            double price = productSet.getDouble("PRICE");
+            int stock = productSet.getInt("STOCK");
+            String comments = productSet.getString("COMMENTS");
+            String shortName = productSet.getString("SHORT_NAME");
+            String categoryID = productSet.getString("CATEGORY_ID");
+            String taxID = productSet.getString("TAX_ID");
+            double costPrice = productSet.getDouble("COST_PRICE");
+            int minStock = productSet.getInt("MIN_PRODUCT_LEVEL");
+            int maxStock = productSet.getInt("MAX_PRODUCT_LEVEL");
+            String discountID = productSet.getString("DISCOUNT_ID");
+
+            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, price, costPrice, stock, minStock, maxStock, barcode, code);
+
+            products.add(p);
+        }
+
+        return products;
+    }
+    
+    public void addProduct(Product p) throws SQLException {
+        productSet.moveToInsertRow();
+
+        productSet.updateString("ID", p.getProductCode());
+        productSet.updateString("BARCODE", p.getBarcode());
+        productSet.updateString("NAME", p.getName());
+        productSet.updateDouble("PRICE", p.getPrice());
+        productSet.updateInt("STOCK", p.getStock());
+        productSet.updateString("COMMENTS", p.getComments());
+        productSet.updateString("SHORT_NAME", p.getShortName());
+        productSet.updateString("CATEGORY_ID", p.getCategoryID());
+        productSet.updateString("TAX_ID", p.getTaxID());
+        productSet.updateDouble("COST_PRICE", p.getCostPrice());
+        productSet.updateInt("MIN_PRODUCT_LEVEL", p.getMinStockLevel());
+        productSet.updateInt("MAX_PRODUCT_LEVEL", p.getMaxStockLevel());
+        productSet.insertRow();
+    }
+    
+    public void removeProduct(Product p) throws SQLException{
+        String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode();
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+    
+    public Product getProduct(String code) throws SQLException{
+        String query = "SELECT * FROM Products WHERE PRODUCTS.ID = " + code;
+        Statement stmt = con.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        
+        List<Product> products = getProductsFromResultSet(res);
+        return products.get(0);
+    }
+    
+    public Product getProductByBarcode(String barcode) throws SQLException{
+        String query = "SELECT * FROM Products WHERE PRODUCTS.BARCODE = " + barcode;
+        Statement stmt = con.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+        
+        List<Product> products = getProductsFromResultSet(res);
+        return products.get(0);
     }
 
     public List<Customer> getAllCustomers() throws SQLException {
@@ -209,7 +337,7 @@ public class DBConnect {
             String country = customerSet.getString("COUNTRY");
             String postcode = customerSet.getString("POSTCODE");
             String notes = customerSet.getString("NOTES");
-            double discount = customerSet.getDouble("DISCOUNT");
+            String discount = customerSet.getString("DISCOUNT_ID");
             int loyaltyPoints = customerSet.getInt("LOYALTY_POINTS");
 
             Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, id);
@@ -223,11 +351,11 @@ public class DBConnect {
     public List<Staff> getAllStaff() throws SQLException {
         List<Staff> staff = new ArrayList<>();
         while (staffSet.next()) {
-            String id = staffSet.getString(1);
-            String name = staffSet.getString(2);
-            String position = staffSet.getString(3);
-            String uname = staffSet.getString(4);
-            String pword = staffSet.getString(5);
+            String id = staffSet.getString("ID");
+            String name = staffSet.getString("NAME");
+            String position = staffSet.getString("POSITION");
+            String uname = staffSet.getString("USERNAME");
+            String pword = staffSet.getString("PASSWORD");
 
             Position enumPosition;
 
@@ -252,22 +380,11 @@ public class DBConnect {
     public List<Discount> getAllDiscounts() throws SQLException {
         List<Discount> discounts = new ArrayList<>();
         while (discountSet.next()) {
-            String id = discountSet.getString(1);
-            String type = discountSet.getString(2);
-            double percentage = discountSet.getDouble(3);
-            List<String> barcodes = (List<String>) discountSet.getObject(4);
+            String id = discountSet.getString("ID");
+            String name = discountSet.getString("NAME");
+            double percentage = discountSet.getDouble("PERCENTAGE");
 
-            Type discountType;
-
-            if (type.equals(Type.BOGOF.toString())) {
-                discountType = Type.BOGOF;
-            } else if (type.equals(Type.MAX_AND_MATCH.toString())) {
-                discountType = Type.MAX_AND_MATCH;
-            } else {
-                discountType = Type.PERCENTAGE_OFF;
-            }
-
-            Discount d = new Discount(id, discountType, percentage, barcodes);
+            Discount d = new Discount(id, name, percentage);
 
             discounts.add(d);
         }
@@ -279,8 +396,8 @@ public class DBConnect {
         HashMap<String, String> configs = new HashMap<>();
 
         while (configSet.next()) {
-            String name = configSet.getString(1);
-            String value = configSet.getString(2);
+            String name = configSet.getString("NAME");
+            String value = configSet.getString("VALUE");
             configs.put(name, value);
         }
 
@@ -289,6 +406,8 @@ public class DBConnect {
             configs.put("customers", 0 + "");
             configs.put("staff", 0 + "");
             configs.put("discounts", 0 + "");
+            configs.put("tax", 0 + "");
+            configs.put("categorys", 0 + "");
         }
 
         return configs;
@@ -298,7 +417,7 @@ public class DBConnect {
         List<Tax> tax = new ArrayList<>();
 
         while (taxSet.next()) {
-            String id = taxSet.getString("TAX_ID");
+            String id = taxSet.getString("ID");
             String name = taxSet.getString("NAME");
             double value = taxSet.getDouble("VALUE");
             Tax t = new Tax(id, name, value);
@@ -320,24 +439,6 @@ public class DBConnect {
         }
 
         return categorys;
-    }
-
-    public void addProduct(Product p) throws SQLException {
-        productSet.moveToInsertRow();
-
-        productSet.updateString("ID", p.getProductCode());
-        productSet.updateString("BARCODE", p.getBarcode());
-        productSet.updateString("NAME", p.getName());
-        productSet.updateDouble("PRICE", p.getPrice());
-        productSet.updateInt("STOCK", p.getStock());
-        productSet.updateString("COMMENTS", p.getComments());
-        productSet.updateString("SHORT_NAME", p.getShortName());
-        productSet.updateString("CATEGORY_ID", p.getCategoryID());
-        productSet.updateString("TAX_ID", p.getTaxID());
-        productSet.updateDouble("COST_PRICE", p.getCostPrice());
-        productSet.updateInt("MIN_PRODUCT_LEVEL", p.getMinStockLevel());
-        productSet.updateInt("MAX_PRODUCT_LEVEL", p.getMaxStockLevel());
-        productSet.insertRow();
     }
 
     public void updateWholeProducts(List<Product> products) throws SQLException {
@@ -393,7 +494,7 @@ public class DBConnect {
             customerSet.updateString("COUNTRY", c.getCountry());
             customerSet.updateString("POSTCODE", c.getPostcode());
             customerSet.updateString("NOTES", c.getNotes());
-            customerSet.updateDouble("DISCOUNT", c.getDiscount());
+            customerSet.updateString("DISCOUNT_ID", c.getDiscountID());
             customerSet.updateInt("LOYALTY_POINTS", c.getLoyaltyPoints());
             customerSet.insertRow();
         }
@@ -441,9 +542,8 @@ public class DBConnect {
         for (Discount d : discounts) {
             discountSet.moveToInsertRow();
             discountSet.updateString(1, d.getId());
-            discountSet.updateString(2, d.getType().toString());
+            discountSet.updateString(2, d.getName());
             discountSet.updateDouble(3, d.getPercentage());
-            discountSet.updateObject(5, d.getBarcodes());
             discountSet.insertRow();
         }
 
@@ -486,7 +586,7 @@ public class DBConnect {
 
         for (Tax t : tax) {
             taxSet.moveToInsertRow();
-            taxSet.updateString("TAX_ID", t.getId());
+            taxSet.updateString("ID", t.getId());
             taxSet.updateString("NAME", t.getName());
             taxSet.updateDouble("VALUE", t.getValue());
             taxSet.insertRow();
