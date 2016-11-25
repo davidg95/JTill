@@ -88,7 +88,7 @@ public class DBConnect {
         this.address = "jdbc:derby:TillEmbedded;create=true";
         this.username = "App";
         this.password = "App";
-        
+        connected = true;
         createTables();
     }
 
