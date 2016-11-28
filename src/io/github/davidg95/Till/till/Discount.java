@@ -11,11 +11,11 @@ package io.github.davidg95.Till.till;
  */
 public class Discount {
 
-    private String id;
+    private int id;
     private String name;
     private double percentage;
 
-    public Discount(String id, String name, double percentage) {
+    public Discount(int id, String name, double percentage) {
         this(name, percentage);
         this.id = id;
     }
@@ -25,11 +25,11 @@ public class Discount {
         this.percentage = percentage;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -51,6 +51,6 @@ public class Discount {
 
     @Override
     public String toString() {
-        return "ID: " + this.id + "\nName: " + this.name + "\nPercentage: " + this.percentage;
+        return this.name;
     }
 }

@@ -15,18 +15,18 @@ import java.io.Serializable;
  */
 public class Product implements Serializable {
 
-    private String productCode;
+    private int productCode;
     private String barcode;
     private String name;
     private String shortName;
-    private String categoryID;
-    private String taxID;
+    private int categoryID;
+    private int taxID;
     private double price;
     private double costPrice;
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
-    private String discountID;
+    private int discountID;
     private String comments;
 
     /**
@@ -47,7 +47,7 @@ public class Product implements Serializable {
      * @param taxID the tax class for this product.
      * @param discountID the discount ID for the product.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID) {
         this.name = name;
         this.shortName = shortName;
         this.categoryID = categoryID;
@@ -68,7 +68,7 @@ public class Product implements Serializable {
      * @param discountID the discount ID for this product.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID, String productCode) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, int productCode) {
         this(name, shortName, categoryID, comments, taxID, discountID);
         this.productCode = productCode;
     }
@@ -89,7 +89,7 @@ public class Product implements Serializable {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
         this(name, shortName, categoryID, comments, taxID, discountID);
         this.price = price;
         this.costPrice = costPrice;
@@ -116,7 +116,7 @@ public class Product implements Serializable {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String categoryID, String comments, String taxID, String discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, String productCode) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
         this(name, shortName, categoryID, comments, taxID, discountID, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
@@ -149,15 +149,15 @@ public class Product implements Serializable {
         if (this.stock > 0) {
             stock--;
         } else {
-            throw new OutOfStockException(this.productCode);
+            throw new OutOfStockException(this.productCode + "");
         }
     }
 
-    public String getProductCode() {
+    public int getProductCode() {
         return productCode;
     }
 
-    public void setProductCode(String productCode) {
+    public void setProductCode(int productCode) {
         this.productCode = productCode;
     }
 
@@ -209,19 +209,19 @@ public class Product implements Serializable {
         this.shortName = shortName;
     }
 
-    public String getCategoryID() {
+    public int getCategoryID() {
         return categoryID;
     }
 
-    public void setCategoryID(String categoryID) {
+    public void setCategoryID(int categoryID) {
         this.categoryID = categoryID;
     }
 
-    public String getTaxID() {
+    public int getTaxID() {
         return taxID;
     }
 
-    public void setTaxID(String taxID) {
+    public void setTaxID(int taxID) {
         this.taxID = taxID;
     }
 
@@ -249,16 +249,31 @@ public class Product implements Serializable {
         this.maxStockLevel = maxStockLevel;
     }
 
-    public String getDiscountID() {
+    public int getDiscountID() {
         return discountID;
     }
 
-    public void setDiscountID(String discountID) {
+    public void setDiscountID(int discountID) {
         this.discountID = discountID;
     }
 
+    public String getSQLInsertString() {
+        return "'" + this.barcode
+                + "','" + this.name
+                + "'," + this.price
+                + "," + this.stock
+                + ",'" + this.comments
+                + "','" + this.shortName
+                + "','" + this.categoryID
+                + "','" + this.taxID
+                + "'," + this.costPrice
+                + "," + this.minStockLevel
+                + "," + this.maxStockLevel
+                + ",'" + this.discountID + "'";
+    }
+
     public boolean equals(Product p) {
-        return this.productCode.equals(p.productCode);
+        return this.productCode == p.productCode;
     }
 
     @Override

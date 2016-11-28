@@ -12,7 +12,7 @@ package io.github.davidg95.Till.till;
  */
 public class Customer {
 
-    private String id;
+    private int id;
     private String name;
     private String phone;
     private String mobile;
@@ -48,7 +48,7 @@ public class Customer {
         this.loyaltyPoints = loyalty;
     }
 
-    public Customer(String name, String phone, String mobile, String email, String discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, String id) {
+    public Customer(String name, String phone, String mobile, String email, String discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, int id) {
         this(name, phone, mobile, email, discount, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints);
         this.id = id;
     }
@@ -61,11 +61,11 @@ public class Customer {
         this.name = name;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -165,10 +165,26 @@ public class Customer {
         this.postcode = postcode;
     }
 
+    public String getSQLInsertString() {
+        return "'" + this.name
+                + "','" + this.phone
+                + "','" + this.mobile
+                + "','" + this.email
+                + "','" + this.addressLine1
+                + "','" + this.addressLine2
+                + "','" + this.town
+                + "','" + this.county
+                + "','" + this.country
+                + "','" + this.postcode
+                + "','" + this.notes
+                + "','" + this.discount_id
+                + "'," + this.loyaltyPoints;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof Customer) {
-            if (this.id.equals(((Customer) o).getId())) {
+            if (this.id == ((Customer) o).getId()) {
                 return true;
             }
         }

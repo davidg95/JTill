@@ -14,21 +14,21 @@ import java.util.Objects;
  */
 public class Tax implements Serializable {
 
-    private String id;
+    private int id;
     private String name;
     private double value;
 
-    public Tax(String id, String name, double value) {
+    public Tax(int id, String name, double value) {
         this.id = id;
         this.name = name;
         this.value = value;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -65,7 +65,7 @@ public class Tax implements Serializable {
 
     @Override
     public String toString() {
-        return "ID: " + this.id + "\nClass: " + this.name + "\nValue: " + this.value + "%";
+        return this.name;
     }
 
 }

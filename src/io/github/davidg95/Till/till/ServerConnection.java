@@ -90,13 +90,13 @@ public class ServerConnection {
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
      */
-    public void removeProduct(String code) throws IOException, ProductNotFoundException {
+    public void removeProduct(int code) throws IOException, ProductNotFoundException {
         out.println("REMOVEPRODUCT," + code);
 
         String input = in.readLine();
 
         if (input.equals("FAIL")) {
-            throw new ProductNotFoundException(code);
+            throw new ProductNotFoundException(code + "");
         }
     }
 
@@ -109,15 +109,15 @@ public class ServerConnection {
      * @throws ProductNotFoundException if the product was not found.
      * @throws OutOfStockException if the product is out of stock.
      */
-    public void purchaseProduct(String code) throws IOException, ProductNotFoundException, OutOfStockException {
+    public void purchaseProduct(int code) throws IOException, ProductNotFoundException, OutOfStockException {
         out.println("PURCHASE," + code);
 
         String input = in.readLine();
 
         if (input.equals("NOTFOUND")) {
-            throw new ProductNotFoundException(code);
+            throw new ProductNotFoundException(code + "");
         } else if (input.equals("STOCK")) {
-            throw new OutOfStockException(code);
+            throw new OutOfStockException(code + "");
         }
     }
 
@@ -129,7 +129,7 @@ public class ServerConnection {
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
      */
-    public Product getProduct(String code) throws IOException, ProductNotFoundException {
+    public Product getProduct(int code) throws IOException, ProductNotFoundException {
         try {
             out.println("GETPRODUCT," + code);
 
@@ -142,7 +142,7 @@ public class ServerConnection {
             }
         } catch (ClassNotFoundException ex) {
         }
-        throw new ProductNotFoundException(code);
+        throw new ProductNotFoundException(code + "");
     }
 
     /**

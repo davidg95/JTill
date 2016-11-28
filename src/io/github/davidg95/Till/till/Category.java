@@ -13,19 +13,19 @@ import java.util.Objects;
  */
 public class Category {
 
-    private String ID;
+    private int ID;
     private String name;
 
-    public Category(String ID, String name) {
+    public Category(int ID, String name) {
         this.ID = ID;
         this.name = name;
     }
 
-    public String getID() {
+    public int getID() {
         return ID;
     }
 
-    public void setID(String ID) {
+    public void setID(int ID) {
         this.ID = ID;
     }
 
@@ -48,6 +48,6 @@ public class Category {
 
     @Override
     public String toString() {
-        return "ID: " + this.ID + "\nName: " + this.name;
+        return this.name;
     }
 }

@@ -14,7 +14,7 @@ import java.io.Serializable;
 public class Staff implements Serializable {
 
     private String name;
-    private String id;
+    private int id;
     private Position position;
     private String username;
     private String password;
@@ -33,7 +33,7 @@ public class Staff implements Serializable {
         this.password = password;
     }
 
-    public Staff(String name, Position position, String username, String password, String id) {
+    public Staff(String name, Position position, String username, String password, int id) {
         this(name, position, username, password);
         this.id = id;
     }
@@ -93,11 +93,11 @@ public class Staff implements Serializable {
         this.name = name;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
