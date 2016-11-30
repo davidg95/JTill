@@ -6,7 +6,6 @@
 package io.github.davidg95.Till.till;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 /**
  *
@@ -46,21 +45,6 @@ public class Tax implements Serializable {
 
     public void setValue(double value) {
         this.value = value;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        final Tax other = (Tax) obj;
-        if (Double.doubleToLongBits(this.value) != Double.doubleToLongBits(other.value)) {
-            return false;
-        }
-        if (!Objects.equals(this.id, other.id)) {
-            return false;
-        }
-        if (!Objects.equals(this.name, other.name)) {
-            return false;
-        }
-        return true;
     }
 
     @Override

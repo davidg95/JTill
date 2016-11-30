@@ -264,12 +264,12 @@ public class Product implements Serializable {
                 + "," + this.stock
                 + ",'" + this.comments
                 + "','" + this.shortName
-                + "','" + this.categoryID
-                + "','" + this.taxID
-                + "'," + this.costPrice
+                + "'," + this.categoryID
+                + "," + this.taxID
+                + "," + this.costPrice
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel
-                + ",'" + this.discountID + "'";
+                + "," + this.discountID;
     }
 
     public boolean equals(Product p) {

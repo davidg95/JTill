@@ -48,6 +48,11 @@ public class Discount {
     public void setPercentage(double percentage) {
         this.percentage = percentage;
     }
+    
+    public String getSQLInsertString(){
+        return "'" + this.name
+                + "'," + this.percentage;
+    }
 
     @Override
     public String toString() {

@@ -42,16 +42,12 @@ public class DBConnect {
     private ResultSet taxSet;
     private ResultSet categorySet;
 
-    private final String all_products = "SELECT * FROM PRODUCTS";
-    private final String all_customers = "SELECT * FROM CUSTOMERS";
     private final String all_staff = "SELECT * FROM STAFF";
     private final String all_discounts = "SELECT * FROM DISCOUNTS";
     private final String all_configs = "SELECT * FROM CONFIGS";
     private final String all_tax = "SELECT * FROM TAX";
     private final String all_categorys = "SELECT * FROM CATEGORYS";
 
-    private Statement products_stmt;
-    private Statement customers_stmt;
     private Statement staff_stmt;
     private Statement discounts_stmt;
     private Statement configs_stmt;
@@ -64,8 +60,6 @@ public class DBConnect {
     private static int discountCounter;
     private static int taxCounter;
     private static int categoryCounter;
-
-    private Statement create_tables_stmt;
 
     public DBConnect() {
 
@@ -192,9 +186,9 @@ public class DBConnect {
         stmt.execute(products);
         stmt.execute(staff);
 
-        String addCategory = "INSERT INTO CATEGORYS VALUES ('Default')";
-        String addTax = "INSERT INTO TAX VALUES ('ZERO',0.0)";
-        String addDiscount = "INSERT INTO DISCOUNTS VALUES ('NONE',0.0)";
+        String addCategory = "INSERT INTO CATEGORYS (NAME) VALUES ('Default')";
+        String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
+        String addDiscount = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES ('NONE',0.0)";
         stmt.executeUpdate(addCategory);
         stmt.executeUpdate(addTax);
         stmt.executeUpdate(addDiscount);
@@ -312,9 +306,9 @@ public class DBConnect {
      */
     public void addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (BARCODE, NAME, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate(query);
-        stmt.close();
+        try (Statement stmt = con.createStatement()) {
+            stmt.executeUpdate(query);
+        }
         saveConfigs();
     }
 
@@ -327,12 +321,12 @@ public class DBConnect {
      */
     public boolean checkBarcode(String barcode) throws SQLException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.BARCODE = '" + barcode + "'";
-        Statement stmt = con.createStatement();
-        ResultSet res = stmt.executeQuery(query);
-
-        List<Product> lp = getProductsFromResultSet(res);
-
-        stmt.close();
+        ResultSet res;
+        List<Product> lp;
+        try (Statement stmt = con.createStatement()) {
+            res = stmt.executeQuery(query);
+            lp = getProductsFromResultSet(res);
+        }
         res.close();
 
         return !lp.isEmpty();
@@ -346,9 +340,9 @@ public class DBConnect {
      */
     public void removeProduct(Product p) throws SQLException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode();
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate(query);
-        stmt.close();
+        try (Statement stmt = con.createStatement()) {
+            stmt.executeUpdate(query);
+        }
     }
 
     /**
@@ -359,9 +353,9 @@ public class DBConnect {
      */
     public void removeProduct(int id) throws SQLException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + id + "";
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate(query);
-        stmt.close();
+        try (Statement stmt = con.createStatement()) {
+            stmt.executeUpdate(query);
+        }
     }
 
     /**
@@ -475,19 +469,6 @@ public class DBConnect {
         return products.size();
     }
 
-//    public String generateProductCode() {
-//        String no;
-//        String zeros;
-//        no = Integer.toString(productCounter);
-//        zeros = "";
-//        for (int i = no.length(); i < 5; i++) {
-//            zeros += "0";
-//        }
-//        productCounter++;
-//
-//        return "P" + zeros + no;
-//    }
-
     public List<Customer> getAllCustomers() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
@@ -552,9 +533,9 @@ public class DBConnect {
      */
     public void addCustomer(Customer c) throws SQLException {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, DISCOUNT_ID, LOYALTY_POINTS) VALUES (" + c.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
-        stmt.executeUpdate(query);
-        stmt.close();
+        try (Statement stmt = con.createStatement()) {
+            stmt.executeUpdate(query);
+        }
     }
 
     public void removeCustomer(Customer c) throws SQLException {
@@ -684,6 +665,53 @@ public class DBConnect {
         return discounts;
     }
 
+    public List<Discount> getDiscountsFromResultSet(ResultSet set) throws SQLException {
+        List<Discount> discounts = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String name = set.getString("NAME");
+            double percentage = set.getDouble("PERCENTAGE");
+
+            Discount d = new Discount(id, name, percentage);
+
+            discounts.add(d);
+        }
+
+        return discounts;
+    }
+
+    public void addDiscount(Discount d) throws SQLException {
+        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES (" + d.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public void removeDiscount(Discount d) throws SQLException {
+        String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + d.getId();
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public void removeDiscount(int id) throws SQLException {
+        String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public Discount getDiscount(int id) throws SQLException, DiscountNotFoundException {
+        String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNT.ID = " + id;
+        Statement stmt = con.createStatement();
+        ResultSet set = stmt.executeQuery(query);
+
+        List<Discount> discounts = getDiscountsFromResultSet(set);
+
+        if (discounts.isEmpty()) {
+            throw new DiscountNotFoundException(id + "");
+        }
+
+        return discounts.get(0);
+    }
+
     public HashMap<String, String> getAllConfigs() throws SQLException {
         HashMap<String, String> configs = new HashMap<>();
 
@@ -737,73 +765,54 @@ public class DBConnect {
         return categorys;
     }
 
-//    public void updateWholeProducts(List<Product> products) throws SQLException {
-//        productSet.beforeFirst();
-//
-//        while (productSet.next()) {
-//            productSet.deleteRow();
-//        }
-//
-//        for (Product p : products) {
-//            productSet.moveToInsertRow();
-//            productSet.updateString("ID", p.getProductCode());
-//            productSet.updateString("BARCODE", p.getBarcode());
-//            productSet.updateString("NAME", p.getName());
-//            productSet.updateDouble("PRICE", p.getPrice());
-//            productSet.updateInt("STOCK", p.getStock());
-//            productSet.updateString("COMMENTS", p.getComments());
-//            productSet.updateString("SHORT_NAME", p.getShortName());
-//            productSet.updateString("CATEGORY_ID", p.getCategoryID());
-//            productSet.updateString("TAX_ID", p.getTaxID());
-//            productSet.updateDouble("COST_PRICE", p.getCostPrice());
-//            productSet.updateInt("MIN_PRODUCT_LEVEL", p.getMinStockLevel());
-//            productSet.updateInt("MAX_PRODUCT_LEVEL", p.getMaxStockLevel());
-//            productSet.insertRow();
-//        }
-//
-//        products_stmt.close();
-//        productSet.close();
-//
-//        products_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-//
-//        productSet = products_stmt.executeQuery(all_products);
-//    }
+    public List<Category> getCategorysFromResultSet(ResultSet set) throws SQLException {
+        List<Category> categorys = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String name = set.getString("NAME");
+            Category c = new Category(id, name);
+            categorys.add(c);
+        }
+        return categorys;
+    }
 
-//    public void updateWholeCustomers(List<Customer> customers) throws SQLException {
-//        customerSet.beforeFirst();
-//
-//        while (customerSet.next()) {
-//            customerSet.deleteRow();
-//        }
-//
-//        for (Customer c : customers) {
-//            customerSet.moveToInsertRow();
-//            customerSet.updateString("ID", c.getId());
-//            customerSet.updateString("NAME", c.getName());
-//            customerSet.updateString("PHONE", c.getPhone());
-//            customerSet.updateString("MOBILE", c.getMobile());
-//            customerSet.updateString("EMAIL", c.getEmail());
-//            customerSet.updateString("ADDRESS_LINE_1", c.getAddressLine1());
-//            customerSet.updateString("ADDRESS_LINE_2", c.getAddressLine2());
-//            customerSet.updateString("TOWN", c.getTown());
-//            customerSet.updateString("COUNTY", c.getCounty());
-//            customerSet.updateString("COUNTRY", c.getCountry());
-//            customerSet.updateString("POSTCODE", c.getPostcode());
-//            customerSet.updateString("NOTES", c.getNotes());
-//            customerSet.updateString("DISCOUNT_ID", c.getDiscountID());
-//            customerSet.updateInt("LOYALTY_POINTS", c.getLoyaltyPoints());
-//            customerSet.insertRow();
-//        }
-//
-//        customers_stmt.close();
-//        customerSet.close();
-//
-//        customers_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-//
-//        customerSet = customers_stmt.executeQuery(all_customers);
-//    }
+    public void addCategory(Category c) throws SQLException {
+        String query = "INSERT INTO CATEGORYS (NAME) VALUES (" + c.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public void removeCategory(Category c) throws SQLException {
+        String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + c.getID();
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public void removeCategory(int id) throws SQLException {
+        String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public Category getCategory(int id) throws SQLException, CategoryNotFoundException {
+        String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
+        Statement stmt = con.createStatement();
+        ResultSet set = stmt.executeQuery(query);
+
+        List<Category> categorys = getCategorysFromResultSet(set);
+
+        if (categorys.isEmpty()) {
+            throw new CategoryNotFoundException(id + "");
+        }
+
+        return categorys.get(0);
+    }
 
     public void updateWholeStaff(List<Staff> staff) throws SQLException {
+        String query = "SELECT * FROM STAFF";
+        Statement stmt = con.createStatement();
+        staffSet = stmt.executeQuery(query);
+
         staffSet.beforeFirst();
 
         while (staffSet.next()) {
@@ -812,7 +821,6 @@ public class DBConnect {
 
         for (Staff s : staff) {
             staffSet.moveToInsertRow();
-            staffSet.updateInt(1, s.getId());
             staffSet.updateString(2, s.getName());
             staffSet.updateString(3, s.getPosition().toString());
             staffSet.updateString(4, s.getUsername());
@@ -931,10 +939,10 @@ public class DBConnect {
         configs.put("tax", "" + taxCounter);
         configs.put("categorys", "" + categoryCounter);
 
-        try {
-            updateWholeConfigs(configs);
-        } catch (SQLException ex) {
-        }
+//        try {
+//            updateWholeConfigs(configs);
+//        } catch (SQLException ex) {
+//        }
     }
 
     /**
