@@ -487,7 +487,7 @@ public class DBConnect {
             String country = set.getString("COUNTRY");
             String postcode = set.getString("POSTCODE");
             String notes = set.getString("NOTES");
-            String discount = set.getString("DISCOUNT_ID");
+            int discount = set.getInt("DISCOUNT_ID");
             int loyaltyPoints = set.getInt("LOYALTY_POINTS");
 
             Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, id);
@@ -513,7 +513,7 @@ public class DBConnect {
             String country = set.getString("COUNTRY");
             String postcode = set.getString("POSTCODE");
             String notes = set.getString("NOTES");
-            String discount = set.getString("DISCOUNT_ID");
+            int discount = set.getInt("DISCOUNT_ID");
             int loyaltyPoints = set.getInt("LOYALTY_POINTS");
 
             Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, id);
@@ -699,7 +699,7 @@ public class DBConnect {
     }
 
     public Discount getDiscount(int id) throws SQLException, DiscountNotFoundException {
-        String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNT.ID = " + id;
+        String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
         ResultSet set = stmt.executeQuery(query);
 
@@ -748,6 +748,52 @@ public class DBConnect {
         }
 
         return tax;
+    }
+    
+    public List<Tax> getTaxFromResultSet(ResultSet set) throws SQLException {
+        List<Tax> tax = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String name = set.getString("NAME");
+            double value = set.getDouble("VALUE");
+            Tax t = new Tax(id, name, value);
+
+            tax.add(t);
+        }
+
+        return tax;
+    }
+
+    public void addTax(Tax t) throws SQLException {
+        String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public void removeTax(Tax t) throws SQLException {
+        String query = "DELETE FROM TAX WHERE TAX.ID = " + t.getId();
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public void removeTax(int id) throws SQLException {
+        String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+
+    public Tax getTax(int id) throws SQLException, TaxNotFoundException {
+        String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
+        Statement stmt = con.createStatement();
+        ResultSet set = stmt.executeQuery(query);
+
+        List<Tax> tax = getTaxFromResultSet(set);
+
+        if (tax.isEmpty()) {
+            throw new TaxNotFoundException(id + "");
+        }
+
+        return tax.get(0);
     }
 
     public List<Category> getAllCategorys() throws SQLException {
@@ -810,7 +856,7 @@ public class DBConnect {
 
     public void updateWholeStaff(List<Staff> staff) throws SQLException {
         String query = "SELECT * FROM STAFF";
-        Statement stmt = con.createStatement();
+        Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         staffSet = stmt.executeQuery(query);
 
         staffSet.beforeFirst();

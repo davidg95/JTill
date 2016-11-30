@@ -18,7 +18,11 @@ public class Tax implements Serializable {
     private double value;
 
     public Tax(int id, String name, double value) {
+        this(name, value);
         this.id = id;
+    }
+    
+    public Tax(String name, double value) {
         this.name = name;
         this.value = value;
     }
@@ -45,6 +49,11 @@ public class Tax implements Serializable {
 
     public void setValue(double value) {
         this.value = value;
+    }
+    
+    public String getSQLInsertString(){
+        return "'" + this.name
+                + "'," + this.value;
     }
 
     @Override
