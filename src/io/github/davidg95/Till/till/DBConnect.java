@@ -14,9 +14,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.derby.jdbc.EmbeddedDriver;
 
 /**
@@ -54,16 +55,28 @@ public class DBConnect {
     private Statement configs_stmt;
     private Statement tax_stmt;
     private Statement category_stmt;
+    
+    private final Semaphore productSem;
+    private final Semaphore customerSem;
+    private final Semaphore staffSem;
+    private final Semaphore discountSem;
+    private final Semaphore taxSem;
+    private final Semaphore categorySem;
 
     private static int productCounter;
     private static int customerCounter;
-    public static int staffCounter;
+    private static int staffCounter;
     private static int discountCounter;
     private static int taxCounter;
     private static int categoryCounter;
 
     public DBConnect() {
-
+        productSem = new Semaphore(1);
+        customerSem = new Semaphore(1);
+        staffSem = new Semaphore(1);
+        discountSem = new Semaphore(1);
+        taxSem = new Semaphore(1);
+        categorySem = new Semaphore(1);
     }
 
     /**
@@ -82,7 +95,6 @@ public class DBConnect {
         connected = true;
         configs_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         configSet = configs_stmt.executeQuery(all_configs);
-        openConfigs();
         staff_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
         staffSet = staff_stmt.executeQuery(all_staff);
     }
@@ -250,6 +262,11 @@ public class DBConnect {
     }
 
     public List<Product> getAllProducts() throws SQLException {
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         String query = "SELECT * FROM PRODUCTS";
         Statement stmt = con.createStatement();
         ResultSet set = stmt.executeQuery(query);
@@ -273,6 +290,7 @@ public class DBConnect {
 
             products.add(p);
         }
+        productSem.release();
 
         return products;
     }
@@ -312,9 +330,14 @@ public class DBConnect {
     public void addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (BARCODE, NAME, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
+            try {
+                productSem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             stmt.executeUpdate(query);
+            productSem.release();
         }
-        saveConfigs();
     }
 
     /**
@@ -328,11 +351,17 @@ public class DBConnect {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.BARCODE = '" + barcode + "'";
         ResultSet res;
         List<Product> lp;
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try (Statement stmt = con.createStatement()) {
             res = stmt.executeQuery(query);
             lp = getProductsFromResultSet(res);
         }
         res.close();
+        productSem.release();
 
         return !lp.isEmpty();
     }
@@ -345,9 +374,15 @@ public class DBConnect {
      */
     public void removeProduct(Product p) throws SQLException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode();
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try (Statement stmt = con.createStatement()) {
             stmt.executeUpdate(query);
         }
+        productSem.release();
     }
 
     /**
@@ -358,9 +393,15 @@ public class DBConnect {
      */
     public void removeProduct(int id) throws SQLException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + id + "";
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try (Statement stmt = con.createStatement()) {
             stmt.executeUpdate(query);
         }
+        productSem.release();
     }
 
     /**
@@ -375,6 +416,11 @@ public class DBConnect {
     public int purchaseProduct(int code) throws SQLException, OutOfStockException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + code;
         Statement stmt = con.createStatement();
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
         while (res.next()) {
             int stock = res.getInt("STOCK");
@@ -389,6 +435,7 @@ public class DBConnect {
             stmt.executeUpdate(update);
             return stock;
         }
+        productSem.release();
         throw new ProductNotFoundException(code + "");
     }
 
@@ -403,12 +450,18 @@ public class DBConnect {
     public Product getProduct(String code) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM Products WHERE PRODUCTS.ID = '" + code + "'";
         Statement stmt = con.createStatement();
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
 
         List<Product> products = getProductsFromResultSet(res);
         if (products.isEmpty()) {
             throw new ProductNotFoundException(code);
         }
+        productSem.release();
         return products.get(0);
     }
 
@@ -423,12 +476,18 @@ public class DBConnect {
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM Products WHERE PRODUCTS.BARCODE = '" + barcode + "'";
         Statement stmt = con.createStatement();
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
 
         List<Product> products = getProductsFromResultSet(res);
         if (products.isEmpty()) {
             throw new ProductNotFoundException(barcode);
         }
+        productSem.release();
         return products.get(0);
     }
 
@@ -443,6 +502,11 @@ public class DBConnect {
     public void setStock(String code, int stock) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID='" + code + "'";
         Statement stmt = con.createStatement();
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
         while (res.next()) {
             res.close();
@@ -451,23 +515,38 @@ public class DBConnect {
             stmt.executeUpdate(update);
             return;
         }
+        productSem.release();
         throw new ProductNotFoundException(code);
     }
 
     public void getProductsDiscount(Product p) throws SQLException {
         String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = '" + p.getProductCode() + "' AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
         Statement stmt = con.createStatement();
+        try {
+            productSem.acquire();
+            discountSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
 
         while (res.next()) {
             System.out.println(res.getString(1) + "\n" + res.getString(2));
         }
+        productSem.release();
+        discountSem.release();
     }
 
     public int getProductCount() throws SQLException {
         String query = "SELECT * FROM PRODUCTS";
         Statement stmt = con.createStatement();
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
+        productSem.release();
 
         List<Product> products = getProductsFromResultSet(res);
 
@@ -477,6 +556,11 @@ public class DBConnect {
     public List<Customer> getAllCustomers() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
         List<Customer> customers = new ArrayList<>();
         while (set.next()) {
@@ -499,6 +583,8 @@ public class DBConnect {
 
             customers.add(c);
         }
+        
+        customerSem.release();
 
         return customers;
     }
@@ -538,29 +624,54 @@ public class DBConnect {
      */
     public void addCustomer(Customer c) throws SQLException {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, DISCOUNT_ID, LOYALTY_POINTS) VALUES (" + c.getSQLInsertString() + ")";
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         try (Statement stmt = con.createStatement()) {
             stmt.executeUpdate(query);
         }
+        customerSem.release();
     }
 
     public void removeCustomer(Customer c) throws SQLException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + c.getId();
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Statement stmt = con.createStatement();
         stmt.executeUpdate(query);
+        customerSem.release();
     }
 
     public void removeCustomer(int id) throws SQLException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         Statement stmt = con.createStatement();
         stmt.executeUpdate(query);
+        customerSem.release();
     }
 
     public Customer getCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
 
         List<Customer> customers = getCustomersFromResultSet(res);
+        
+        customerSem.release();
 
         if (customers.isEmpty()) {
             throw new CustomerNotFoundException(id + "");
@@ -571,24 +682,18 @@ public class DBConnect {
     public int getCustomerCount() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
+        
+        customerSem.release();
 
         List<Customer> customers = getCustomersFromResultSet(res);
 
         return customers.size();
-    }
-
-    public String generateCustomerCode() {
-        String no;
-        String zeros;
-        no = Integer.toString(customerCounter);
-        zeros = "";
-        for (int i = no.length(); i < 5; i++) {
-            zeros += "0";
-        }
-        customerCounter++;
-
-        return "C" + zeros + no;
     }
     
     //Staff Methods
@@ -596,6 +701,11 @@ public class DBConnect {
     public List<Staff> getAllStaff() throws SQLException {
         String query = "SELECT * FROM STAFF";
         Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
         List<Staff> staff = new ArrayList<>();
         while (set.next()) {
@@ -621,6 +731,8 @@ public class DBConnect {
 
             staff.add(s);
         }
+        
+        staffSem.release();
 
         return staff;
     }
@@ -657,27 +769,52 @@ public class DBConnect {
     public void addStaff(Staff s) throws SQLException{
         String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        staffSem.release();
     }
     
     public void removeStaff(Staff s) throws SQLException{
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + s.getId();
         Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        staffSem.release();
     }
     
     public void removeStaff(int id) throws SQLException{
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        staffSem.release();
     }
     
     public Staff getStaff(int id) throws SQLException, StaffNotFoundException{
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
 
         List<Staff> staff = getStaffFromResultSet(set);
+        
+        staffSem.release();
 
         if (staff.isEmpty()) {
             throw new StaffNotFoundException(id + "");
@@ -689,7 +826,14 @@ public class DBConnect {
     public Staff login(String username, String password) throws SQLException, LoginException{
         String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username + "'";
         Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
+        
+        staffSem.release();
 
         List<Staff> staff = getStaffFromResultSet(set);
 
@@ -709,7 +853,14 @@ public class DBConnect {
     public int staffCount() throws SQLException{
         String query = "SELECT * FROM STAFF";
         Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet res = stmt.executeQuery(query);
+        
+        staffSem.release();
 
         List<Staff> staff = getStaffFromResultSet(res);
 
@@ -719,6 +870,11 @@ public class DBConnect {
     public List<Discount> getAllDiscounts() throws SQLException {
         String query = "SELECT * FROM DISCOUNTS";
         Statement stmt = con.createStatement();
+        try {
+            discountSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
         List<Discount> discounts = new ArrayList<>();
         while (set.next()) {
@@ -730,6 +886,8 @@ public class DBConnect {
 
             discounts.add(d);
         }
+        
+        discountSem.release();
 
         return discounts;
     }
@@ -752,27 +910,52 @@ public class DBConnect {
     public void addDiscount(Discount d) throws SQLException {
         String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES (" + d.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
+        try {
+            discountSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        discountSem.release();
     }
 
     public void removeDiscount(Discount d) throws SQLException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + d.getId();
         Statement stmt = con.createStatement();
+        try {
+            discountSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        discountSem.release();
     }
 
     public void removeDiscount(int id) throws SQLException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            discountSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        discountSem.release();
     }
 
     public Discount getDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            discountSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
 
         List<Discount> discounts = getDiscountsFromResultSet(set);
+        
+        discountSem.release();
 
         if (discounts.isEmpty()) {
             throw new DiscountNotFoundException(id + "");
@@ -781,30 +964,14 @@ public class DBConnect {
         return discounts.get(0);
     }
 
-    public HashMap<String, String> getAllConfigs() throws SQLException {
-        HashMap<String, String> configs = new HashMap<>();
-
-        while (configSet.next()) {
-            String name = configSet.getString("NAME");
-            String value = configSet.getString("VALUE");
-            configs.put(name, value);
-        }
-
-        if (configs.isEmpty()) {
-            configs.put("products", 0 + "");
-            configs.put("customers", 0 + "");
-            configs.put("staff", 0 + "");
-            configs.put("discounts", 0 + "");
-            configs.put("tax", 0 + "");
-            configs.put("categorys", 0 + "");
-        }
-
-        return configs;
-    }
-
     public List<Tax> getAllTax() throws SQLException {
         String query = "SELECT * FROM TAX";
         Statement stmt = con.createStatement();
+        try {
+            taxSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
         List<Tax> tax = new ArrayList<>();
         while (set.next()) {
@@ -815,6 +982,8 @@ public class DBConnect {
 
             tax.add(t);
         }
+        
+        taxSem.release();
 
         return tax;
     }
@@ -836,27 +1005,52 @@ public class DBConnect {
     public void addTax(Tax t) throws SQLException {
         String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
+        try {
+            taxSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        taxSem.release();
     }
 
     public void removeTax(Tax t) throws SQLException {
         String query = "DELETE FROM TAX WHERE TAX.ID = " + t.getId();
         Statement stmt = con.createStatement();
+        try {
+            taxSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        taxSem.release();
     }
 
     public void removeTax(int id) throws SQLException {
         String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            taxSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        taxSem.release();
     }
 
     public Tax getTax(int id) throws SQLException, TaxNotFoundException {
         String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            taxSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
 
         List<Tax> tax = getTaxFromResultSet(set);
+        
+        taxSem.release();
 
         if (tax.isEmpty()) {
             throw new TaxNotFoundException(id + "");
@@ -868,6 +1062,11 @@ public class DBConnect {
     public List<Category> getAllCategorys() throws SQLException {
         String query = "SELECT * FROM CATEGORYS";
         Statement stmt = con.createStatement();
+        try {
+            categorySem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
         List<Category> categorys = new ArrayList<>();
         while (set.next()) {
@@ -880,6 +1079,8 @@ public class DBConnect {
             Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
             categorys.add(c);
         }
+        
+        categorySem.release();
 
         return categorys;
     }
@@ -902,187 +1103,58 @@ public class DBConnect {
     public void addCategory(Category c) throws SQLException {
         String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
+        try {
+            categorySem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        categorySem.release();
     }
 
     public void removeCategory(Category c) throws SQLException {
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + c.getID();
         Statement stmt = con.createStatement();
+        try {
+            categorySem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        categorySem.release();
     }
 
     public void removeCategory(int id) throws SQLException {
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            categorySem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         stmt.executeUpdate(query);
+        categorySem.release();
     }
 
     public Category getCategory(int id) throws SQLException, CategoryNotFoundException {
         String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
+        try {
+            categorySem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ResultSet set = stmt.executeQuery(query);
 
         List<Category> categorys = getCategorysFromResultSet(set);
+        
+        categorySem.release();
 
         if (categorys.isEmpty()) {
             throw new CategoryNotFoundException(id + "");
         }
 
         return categorys.get(0);
-    }
-
-    public void updateWholeStaff(List<Staff> staff) throws SQLException {
-        String query = "SELECT * FROM STAFF";
-        Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        staffSet = stmt.executeQuery(query);
-
-        staffSet.beforeFirst();
-
-        while (staffSet.next()) {
-            staffSet.deleteRow();
-        }
-
-        for (Staff s : staff) {
-            staffSet.moveToInsertRow();
-            staffSet.updateString(2, s.getName());
-            staffSet.updateString(3, s.getPosition().toString());
-            staffSet.updateString(4, s.getUsername());
-            staffSet.updateString(5, s.getPassword());
-            staffSet.insertRow();
-        }
-
-        staff_stmt.close();
-        staffSet.close();
-
-        staff_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-
-        staffSet = staff_stmt.executeQuery(all_staff);
-    }
-
-    public void updateWholeDiscounts(List<Discount> discounts) throws SQLException {
-        discountSet.beforeFirst();
-
-        while (discountSet.next()) {
-            discountSet.deleteRow();
-        }
-
-        for (Discount d : discounts) {
-            discountSet.moveToInsertRow();
-            discountSet.updateInt(1, d.getId());
-            discountSet.updateString(2, d.getName());
-            discountSet.updateDouble(3, d.getPercentage());
-            discountSet.insertRow();
-        }
-
-        discounts_stmt.close();
-        discountSet.close();
-
-        discounts_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-
-        discountSet = discounts_stmt.executeQuery(all_discounts);
-    }
-
-    public void updateWholeConfigs(HashMap<String, String> configs) throws SQLException {
-        configSet.beforeFirst();
-
-        while (configSet.next()) {
-            configSet.deleteRow();
-        }
-
-        for (Map.Entry pair : configs.entrySet()) {
-            configSet.moveToInsertRow();
-            configSet.updateString("NAME", "" + pair.getKey());
-            configSet.updateString("VALUE", "" + pair.getValue());
-            configSet.insertRow();
-        }
-
-        configs_stmt.close();
-        configSet.close();
-
-        configs_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-
-        configSet = configs_stmt.executeQuery(all_configs);
-    }
-
-    public void updateWholeTax(List<Tax> tax) throws SQLException {
-        taxSet.beforeFirst();
-
-        while (taxSet.next()) {
-            taxSet.deleteRow();
-        }
-
-        for (Tax t : tax) {
-            taxSet.moveToInsertRow();
-            taxSet.updateInt("ID", t.getId());
-            taxSet.updateString("NAME", t.getName());
-            taxSet.updateDouble("VALUE", t.getValue());
-            taxSet.insertRow();
-        }
-
-        tax_stmt.close();
-        taxSet.close();
-
-        tax_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-
-        taxSet = tax_stmt.executeQuery(all_tax);
-    }
-
-    public void updateWholeCategorys(List<Category> categorys) throws SQLException {
-        categorySet.beforeFirst();
-
-        while (categorySet.next()) {
-            categorySet.deleteRow();
-        }
-
-        for (Category c : categorys) {
-            categorySet.moveToInsertRow();
-            categorySet.updateInt("ID", c.getID());
-            categorySet.updateString("NAME", c.getName());
-            categorySet.insertRow();
-        }
-
-        category_stmt.close();
-        categorySet.close();
-
-        category_stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-
-        categorySet = category_stmt.executeQuery(all_categorys);
-    }
-
-    /**
-     * Method to save the configs.
-     */
-    public void saveConfigs() {
-        HashMap<String, String> configs = new HashMap<>();
-
-        configs.put("products", "" + productCounter);
-        configs.put("customers", "" + customerCounter);
-        configs.put("staff", "" + staffCounter);
-        configs.put("discounts", "" + discountCounter);
-        configs.put("tax", "" + taxCounter);
-        configs.put("categorys", "" + categoryCounter);
-
-//        try {
-//            updateWholeConfigs(configs);
-//        } catch (SQLException ex) {
-//        }
-    }
-
-    /**
-     * Method to load the configs.
-     */
-    public final void openConfigs() {
-        try {
-            HashMap<String, String> configs = getAllConfigs();
-
-            productCounter = Integer.parseInt(configs.get("products"));
-            customerCounter = Integer.parseInt(configs.get("customers"));
-            staffCounter = Integer.parseInt(configs.get("staff"));
-            discountCounter = Integer.parseInt(configs.get("discounts"));
-            taxCounter = Integer.parseInt(configs.get("tax"));
-            categoryCounter = Integer.parseInt(configs.get("categorys"));
-        } catch (SQLException ex) {
-        }
     }
 
     @Override

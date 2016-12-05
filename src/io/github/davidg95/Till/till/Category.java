@@ -6,6 +6,8 @@
 package io.github.davidg95.Till.till;
 
 import java.sql.Time;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 /**
  *
@@ -27,9 +29,17 @@ public class Category {
 
     public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
         this.name = name;
+        this.timeRestrict = timeRestrict;
         this.startSell = startSell;
         this.endSell = endSell;
-        this.timeRestrict = timeRestrict;
+        if (!timeRestrict) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
+                this.startSell = new Time(sdf.parse("00:00:00").getTime());
+                this.endSell = new Time(sdf.parse("00:00:00").getTime());
+            } catch (ParseException ex) {
+            }
+        }
         this.minAge = minAge;
     }
 
