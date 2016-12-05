@@ -271,6 +271,23 @@ public class Product implements Serializable {
                 + "," + this.maxStockLevel
                 + "," + this.discountID;
     }
+    
+    public String getSQlUpdateString(){
+        return "UPDATE PRODUCTS"
+                + " SET BARCODE='" + this.getBarcode()
+                + "', NAME='" + this.getName()
+                + "', PRICE=" + this.getPrice()
+                + ", STOCK=" + this.getStock()
+                + ", COMMENTS='" + this.getComments()
+                + "', SHORT_NAME='" + this.getShortName()
+                + "', CATEGORY_ID=" + this.getCategoryID()
+                + ", TAX_ID=" + this.getTaxID()
+                + ", COST_PRICE=" + this.getCostPrice()
+                + ", MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
+                + ", MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
+                + ", DISCOUNT_ID=" + this.getDiscountID()
+                + " WHERE PRODUCTS.ID=" + this.getProductCode();
+    }
 
     public boolean equals(Product p) {
         return this.productCode == p.productCode;
