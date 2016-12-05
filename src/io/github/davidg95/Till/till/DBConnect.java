@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -104,7 +105,11 @@ public class DBConnect {
                 + "	ID INT not null primary key\n"
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "	NAME VARCHAR(20) not null\n"
+                + "	NAME VARCHAR(20) not null,\n"
+                + "     SELL_START TIME,\n"
+                + "     SELL_END TIME,\n"
+                + "     TIME_RESTRICT BOOLEAN not null,\n"
+                + "     MINIMUM_AGE INT not null\n"
                 + ")";
         String discounts = "create table \"APP\".DISCOUNTS\n"
                 + "(\n"
@@ -186,7 +191,7 @@ public class DBConnect {
         stmt.execute(products);
         stmt.execute(staff);
 
-        String addCategory = "INSERT INTO CATEGORYS (NAME) VALUES ('Default')";
+        String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
         String addDiscount = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES ('NONE',0.0)";
         stmt.executeUpdate(addCategory);
@@ -585,6 +590,8 @@ public class DBConnect {
 
         return "C" + zeros + no;
     }
+    
+    //Staff Methods
 
     public List<Staff> getAllStaff() throws SQLException {
         String query = "SELECT * FROM STAFF";
@@ -645,6 +652,68 @@ public class DBConnect {
         }
 
         return staff;
+    }
+    
+    public void addStaff(Staff s) throws SQLException{
+        String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+    
+    public void removeStaff(Staff s) throws SQLException{
+        String query = "DELETE FROM STAFF WHERE STAFF.ID = " + s.getId();
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+    
+    public void removeStaff(int id) throws SQLException{
+        String query = "DELETE FROM STAFF WHERE STAFF.ID = " + id;
+        Statement stmt = con.createStatement();
+        stmt.executeUpdate(query);
+    }
+    
+    public Staff getStaff(int id) throws SQLException, StaffNotFoundException{
+        String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
+        Statement stmt = con.createStatement();
+        ResultSet set = stmt.executeQuery(query);
+
+        List<Staff> staff = getStaffFromResultSet(set);
+
+        if (staff.isEmpty()) {
+            throw new StaffNotFoundException(id + "");
+        }
+
+        return staff.get(0);
+    }
+    
+    public Staff login(String username, String password) throws SQLException, LoginException{
+        String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username + "'";
+        Statement stmt = con.createStatement();
+        ResultSet set = stmt.executeQuery(query);
+
+        List<Staff> staff = getStaffFromResultSet(set);
+
+        if (staff.isEmpty()) {
+            throw new LoginException(username + " could not be found");
+        }
+        
+        Staff s = staff.get(0);
+        
+        if(s.getPassword().equals(password)){
+            return s;
+        }
+
+        throw new LoginException("Incorrect Password");
+    }
+    
+    public int staffCount() throws SQLException{
+        String query = "SELECT * FROM STAFF";
+        Statement stmt = con.createStatement();
+        ResultSet res = stmt.executeQuery(query);
+
+        List<Staff> staff = getStaffFromResultSet(res);
+
+        return staff.size();
     }
 
     public List<Discount> getAllDiscounts() throws SQLException {
@@ -804,7 +873,11 @@ public class DBConnect {
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            Category c = new Category(id, name);
+            Time startSell = set.getTime("SELL_START");
+            Time endSell = set.getTime("SELL_END");
+            boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
+            int minAge = set.getInt("MINIMUM_AGE");
+            Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
             categorys.add(c);
         }
 
@@ -816,14 +889,18 @@ public class DBConnect {
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            Category c = new Category(id, name);
+            Time startSell = set.getTime("SELL_START");
+            Time endSell = set.getTime("SELL_END");
+            boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
+            int minAge = set.getInt("MINIMUM_AGE");
+            Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
             categorys.add(c);
         }
         return categorys;
     }
 
     public void addCategory(Category c) throws SQLException {
-        String query = "INSERT INTO CATEGORYS (NAME) VALUES (" + c.getSQLInsertString() + ")";
+        String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         stmt.executeUpdate(query);
     }

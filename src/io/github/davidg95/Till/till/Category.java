@@ -5,6 +5,8 @@
  */
 package io.github.davidg95.Till.till;
 
+import java.sql.Time;
+
 /**
  *
  * @author David
@@ -13,14 +15,22 @@ public class Category {
 
     private int ID;
     private String name;
+    private Time startSell;
+    private Time endSell;
+    private boolean timeRestrict;
+    private int minAge;
 
-    public Category(int ID, String name) {
-        this(name);
+    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
+        this(name, startSell, endSell, timeRestrict, minAge);
         this.ID = ID;
     }
 
-    public Category(String name) {
+    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
         this.name = name;
+        this.startSell = startSell;
+        this.endSell = endSell;
+        this.timeRestrict = timeRestrict;
+        this.minAge = minAge;
     }
 
     public int getID() {
@@ -39,8 +49,44 @@ public class Category {
         this.name = name;
     }
 
+    public Time getStartSell() {
+        return startSell;
+    }
+
+    public void setStartSell(Time startSell) {
+        this.startSell = startSell;
+    }
+
+    public Time getEndSell() {
+        return endSell;
+    }
+
+    public void setEndSell(Time endSell) {
+        this.endSell = endSell;
+    }
+
+    public boolean isTimeRestrict() {
+        return timeRestrict;
+    }
+
+    public void setTimeRestrict(boolean timeRestrict) {
+        this.timeRestrict = timeRestrict;
+    }
+
+    public int getMinAge() {
+        return minAge;
+    }
+
+    public void setMinAge(int minAge) {
+        this.minAge = minAge;
+    }
+
     public String getSQLInsertString() {
-        return "'" + this.name + "'";
+        return "'" + this.name
+                + "','" + this.startSell.toString()
+                + "','" + this.endSell.toString()
+                + "','" + this.timeRestrict
+                + "'," + this.minAge;
     }
 
     @Override

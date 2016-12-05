@@ -132,6 +132,13 @@ public class Staff implements Serializable {
     public boolean isTillLoggedIn() {
         return this.tillLogin;
     }
+    
+    public String getSQLInsertString(){
+        return "'" + this.name
+                + "','" + this.position.toString()
+                + "','" + this.username
+                + "','" + this.password + "'";
+    }
 
     @Override
     public String toString() {
