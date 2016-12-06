@@ -181,6 +181,24 @@ public class Customer {
                 + "," + this.loyaltyPoints;
     }
 
+    public String getSQLUpdateString() {
+        return "UPDATE CUSTOMERS"
+                + " SET NAME='" + this.getName()
+                + "', PHONE='" + this.getPhone()
+                + "', MOBILE='" + this.getMobile()
+                + "', EMAIL='" + this.getEmail()
+                + "', ADDRESS_LINE_1='" + this.getAddressLine1()
+                + "', ADDRESS_LINE_2='" + this.getAddressLine2()
+                + "', TOWN='" + this.getTown()
+                + "', COUNTY='" + this.getCounty()
+                + "', COUNTRY='" + this.getCountry()
+                + "', POSTCODE='" + this.getPostcode()
+                + "', NOTES='" + this.getNotes()
+                + "', DISCOUNT_ID=" + this.getDiscountID()
+                + ", LOYALTY_POINTS=" + this.getLoyaltyPoints()
+                + " WHERE CUSTOMERS.ID=" + this.getId();
+    }
+
     @Override
     public String toString() {
         return "ID: " + this.id + "\nName: " + this.name + "\nPhone Number: " + this.phone;

@@ -98,6 +98,16 @@ public class Category {
                 + "','" + this.timeRestrict
                 + "'," + this.minAge;
     }
+    
+    public String getSQLUpdateString(){
+        return "UPDATE CATEGORYS"
+                + " SET NAME='" + this.getName()
+                + "', SELL_START=" + this.getStartSell()
+                + ", SELL_END=" + this.getEndSell()
+                + ", TIME_RESTRICT=" + this.isTimeRestrict()
+                + ", MINIMUM_AGE=" + this.getMinAge()
+                + " WHERE CATEGORYS.ID=" + this.getID();
+    }
 
     @Override
     public String toString() {

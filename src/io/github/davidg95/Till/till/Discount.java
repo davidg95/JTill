@@ -53,6 +53,13 @@ public class Discount {
         return "'" + this.name
                 + "'," + this.percentage;
     }
+    
+    public String getSQLUpdateString(){
+        return "UPDATE DISCOUNTS"
+                + " SET NAME='" + this.getName()
+                + "', PERCENTAGE=" + this.getPercentage()
+                + " WHERE DISCOUNTS.ID=" + this.getId();
+    }
 
     @Override
     public String toString() {

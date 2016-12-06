@@ -21,7 +21,7 @@ public class Tax implements Serializable {
         this(name, value);
         this.id = id;
     }
-    
+
     public Tax(String name, double value) {
         this.name = name;
         this.value = value;
@@ -50,10 +50,17 @@ public class Tax implements Serializable {
     public void setValue(double value) {
         this.value = value;
     }
-    
-    public String getSQLInsertString(){
+
+    public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.value;
+    }
+
+    public String getSQLUpdateString() {
+        return "UPDATE TAX"
+                + " SET NAME='" + this.getName()
+                + "', VALUE=" + this.getValue()
+                + " WHERE TAX.ID=" + this.getId();
     }
 
     @Override
