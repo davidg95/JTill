@@ -98,8 +98,8 @@ public class Category {
                 + "','" + this.timeRestrict
                 + "'," + this.minAge;
     }
-    
-    public String getSQLUpdateString(){
+
+    public String getSQLUpdateString() {
         return "UPDATE CATEGORYS"
                 + " SET NAME='" + this.getName()
                 + "', SELL_START=" + this.getStartSell()
@@ -112,5 +112,9 @@ public class Category {
     @Override
     public String toString() {
         return this.name;
+    }
+
+    String getId() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

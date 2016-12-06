@@ -13,8 +13,11 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Server connection class which handles communication with the server.
@@ -89,14 +92,24 @@ public class ServerConnection {
      * @param code the code of the product to remove.
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public void removeProduct(int code) throws IOException, ProductNotFoundException {
-        out.println("REMOVEPRODUCT," + code);
+    public void removeProduct(int code) throws IOException, ProductNotFoundException, SQLException {
+        try {
+            out.println("REMOVEPRODUCT," + code);
 
-        String input = in.readLine();
+            String input = in.readLine();
 
-        if (input.equals("FAIL")) {
-            throw new ProductNotFoundException(code + "");
+            if (input.equals("FAIL")) {
+                Object o = obIn.readObject();
+                if (o instanceof ProductNotFoundException) {
+                    throw (ProductNotFoundException) o;
+                } else if (o instanceof SQLException) {
+                    throw (SQLException) o;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -108,16 +121,26 @@ public class ServerConnection {
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
      * @throws OutOfStockException if the product is out of stock.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public void purchaseProduct(int code) throws IOException, ProductNotFoundException, OutOfStockException {
-        out.println("PURCHASE," + code);
+    public void purchaseProduct(int code) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
+        try {
+            out.println("PURCHASE," + code);
 
-        String input = in.readLine();
+            String input = in.readLine();
 
-        if (input.equals("NOTFOUND")) {
-            throw new ProductNotFoundException(code + "");
-        } else if (input.equals("STOCK")) {
-            throw new OutOfStockException(code + "");
+            if (input.equals("FAIL")) {
+                Object o = obIn.readObject();
+                if (o instanceof ProductNotFoundException) {
+                    throw (ProductNotFoundException) o;
+                } else if (o instanceof SQLException) {
+                    throw (SQLException) o;
+                } else if (o instanceof OutOfStockException) {
+                    throw (OutOfStockException) o;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -128,8 +151,9 @@ public class ServerConnection {
      * @return Product object that matches the code.
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public Product getProduct(int code) throws IOException, ProductNotFoundException {
+    public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException {
         try {
             out.println("GETPRODUCT," + code);
 
@@ -139,6 +163,8 @@ public class ServerConnection {
                 return (Product) o;
             } else if (o instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
             }
         } catch (ClassNotFoundException ex) {
         }
@@ -152,8 +178,9 @@ public class ServerConnection {
      * @return Product object that matches the barcode.
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the barcode was not found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public Product getProductByBarCode(String barcode) throws IOException, ProductNotFoundException {
+    public Product getProductByBarCode(String barcode) throws IOException, ProductNotFoundException, SQLException {
         try {
             out.println("GETPRODUCTBARCODE," + barcode);
 
@@ -163,6 +190,8 @@ public class ServerConnection {
                 return (Product) o;
             } else if (o instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
             }
         } catch (ClassNotFoundException ex) {
         }
@@ -188,12 +217,17 @@ public class ServerConnection {
      *
      * @return List of type product.
      * @throws IOException if there was an error connecting.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public List<Product> getAllProducts() throws IOException {
+    public List<Product> getAllProducts() throws IOException, SQLException {
         try {
             out.println("GETALLPRODUCTS");
 
             Object o = obIn.readObject();
+
+            if (o instanceof SQLException) {
+                throw (SQLException) o;
+            }
 
             return (List<Product>) o;
         } catch (ClassNotFoundException ex) {
@@ -218,14 +252,24 @@ public class ServerConnection {
      * @param id the id of the customer to remove.
      * @throws IOException if there was an error connecting.
      * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public void removeCustomer(String id) throws IOException, CustomerNotFoundException {
-        out.println("REMOVECUSTOMER," + id);
+    public void removeCustomer(String id) throws IOException, CustomerNotFoundException, SQLException {
+        try {
+            out.println("REMOVECUSTOMER," + id);
 
-        String input = in.readLine();
+            String input = in.readLine();
 
-        if (input.equals("FAIL")) {
-            throw new CustomerNotFoundException(id);
+            if (input.equals("FAIL")) {
+                Object o = obIn.readObject();
+                if (o instanceof SQLException) {
+                    throw (SQLException) o;
+                } else if (o instanceof CustomerNotFoundException) {
+                    throw (CustomerNotFoundException) o;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -236,8 +280,9 @@ public class ServerConnection {
      * @return Customer object that matches the id.
      * @throws IOException if there was an error connecting.
      * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public Customer getCustomer(String id) throws IOException, CustomerNotFoundException {
+    public Customer getCustomer(String id) throws IOException, CustomerNotFoundException, SQLException {
         try {
             out.println("GETCUSTOMER," + id);
 
@@ -247,6 +292,8 @@ public class ServerConnection {
                 return (Customer) o;
             } else if (o instanceof CustomerNotFoundException) {
                 throw (CustomerNotFoundException) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
             }
         } catch (ClassNotFoundException ex) {
         }
@@ -272,12 +319,17 @@ public class ServerConnection {
      *
      * @return List of type Customer.
      * @throws IOException if there was an error connecting.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public List<Customer> getAllCustomers() throws IOException {
+    public List<Customer> getAllCustomers() throws IOException, SQLException {
         try {
             out.println("GETALLCUSTOMERS");
 
             Object o = obIn.readObject();
+
+            if (o instanceof SQLException) {
+                throw (SQLException) o;
+            }
 
             return (List<Customer>) o;
         } catch (ClassNotFoundException ex) {
@@ -291,6 +343,7 @@ public class ServerConnection {
      * @param s the sale to send.
      * @throws IOException if there was an error connecting.
      */
+    @Deprecated
     public void addSale(Sale s) throws IOException {
         out.println("ADDSALE");
         obOut.writeObject(s);
@@ -313,14 +366,24 @@ public class ServerConnection {
      * @param id the id of the staff to remove.
      * @throws IOException if there was a server communication error.
      * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public void removeStaff(String id) throws IOException, StaffNotFoundException {
-        out.println("REMOVESTAFF," + id);
+    public void removeStaff(String id) throws IOException, StaffNotFoundException, SQLException {
+        try {
+            out.println("REMOVESTAFF," + id);
 
-        String input = in.readLine();
+            String input = in.readLine();
 
-        if (input.equals("FAIL")) {
-            throw new StaffNotFoundException(id);
+            if (input.equals("FAIL")) {
+                Object o = obIn.readObject();
+                if (o instanceof SQLException) {
+                    throw (SQLException) o;
+                } else if (o instanceof StaffNotFoundException) {
+                    throw (StaffNotFoundException) o;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -331,8 +394,9 @@ public class ServerConnection {
      * @return member of staff.
      * @throws IOException if there was a server communication error.
      * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public Staff getStaff(String id) throws IOException, StaffNotFoundException {
+    public Staff getStaff(String id) throws IOException, StaffNotFoundException, SQLException {
         try {
             out.println("GETSTAFF," + id);
 
@@ -342,6 +406,8 @@ public class ServerConnection {
                 return (Staff) o;
             } else if (o instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
             }
         } catch (ClassNotFoundException ex) {
         }
@@ -354,6 +420,7 @@ public class ServerConnection {
      * @return int value representing the total number of staff.
      * @throws IOException if there was a server communication error.
      */
+    @Deprecated
     public int getStaffCount() throws IOException {
         out.println("GETSTAFFCOUNT");
 
@@ -367,12 +434,17 @@ public class ServerConnection {
      *
      * @return List of type staff.
      * @throws IOException if there was a server communication error.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public List<Staff> getAllStaff() throws IOException {
+    public List<Staff> getAllStaff() throws IOException, SQLException {
         try {
             out.println("GETALLSTAFF");
 
             Object o = obIn.readObject();
+
+            if (o instanceof SQLException) {
+                throw (SQLException) o;
+            }
 
             return (List<Staff>) o;
         } catch (ClassNotFoundException ex) {
@@ -389,8 +461,9 @@ public class ServerConnection {
      * @return the member of staff that has logged in.
      * @throws IOException if there was a server communication error.
      * @throws LoginException if there was an error logging in.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public Staff login(String username, String password) throws IOException, LoginException {
+    public Staff login(String username, String password) throws IOException, LoginException, SQLException {
         try {
             out.println("LOGIN," + username + "," + password);
 
@@ -400,6 +473,8 @@ public class ServerConnection {
                 return (Staff) o;
             } else if (o instanceof LoginException) {
                 throw (LoginException) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
             }
         } catch (ClassNotFoundException ex) {
         }
@@ -413,9 +488,9 @@ public class ServerConnection {
      * @return the member of staff that has logged in.
      * @throws IOException if there was a server communication error.
      * @throws LoginException if there was an error logging in.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws java.sql.SQLException if there was a database error.
      */
-    public Staff tillLogin(String id) throws IOException, LoginException, StaffNotFoundException {
+    public Staff tillLogin(String id) throws IOException, LoginException, SQLException {
         try {
             out.println("TILLLOGIN," + id);
 
@@ -425,8 +500,8 @@ public class ServerConnection {
                 return (Staff) o;
             } else if (o instanceof LoginException) {
                 throw (LoginException) o;
-            } else if (o instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
             }
         } catch (ClassNotFoundException ex) {
         }

@@ -314,7 +314,7 @@ public class DBConnect {
         }
     }
 
-    public void updateProduct(Product p) throws SQLException {
+    public void updateProduct(Product p) throws SQLException, ProductNotFoundException {
         String query = p.getSQlUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -322,12 +322,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             productSem.release();
+        }
+        if (value == 0) {
+            throw new ProductNotFoundException(p.getProductCode() + "");
         }
     }
 
@@ -366,8 +370,9 @@ public class DBConnect {
      *
      * @param p the product to remove.
      * @throws SQLException if there was an error removing the product.
+     * @throws ProductNotFoundException if the product was not found.
      */
-    public void removeProduct(Product p) throws SQLException {
+    public void removeProduct(Product p) throws SQLException, ProductNotFoundException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode();
         Statement stmt = con.createStatement();
         try {
@@ -375,12 +380,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             productSem.release();
+        }
+        if (value == 0) {
+            throw new ProductNotFoundException(p.getProductCode() + "");
         }
     }
 
@@ -389,8 +398,9 @@ public class DBConnect {
      *
      * @param id the product to remove.
      * @throws SQLException if there was an error removing the product.
+     * @throws ProductNotFoundException if the product code was not found.
      */
-    public void removeProduct(int id) throws SQLException {
+    public void removeProduct(int id) throws SQLException, ProductNotFoundException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + id + "";
         Statement stmt = con.createStatement();
         try {
@@ -398,12 +408,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             productSem.release();
+        }
+        if (value == 0) {
+            throw new ProductNotFoundException(id + "");
         }
     }
 
@@ -523,8 +537,8 @@ public class DBConnect {
      * @throws SQLException if there was an error setting the stock.
      * @throws ProductNotFoundException if the product could not be found.
      */
-    public void setStock(String code, int stock) throws SQLException, ProductNotFoundException {
-        String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID='" + code + "'";
+    public void setStock(int code, int stock) throws SQLException, ProductNotFoundException {
+        String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + code;
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
@@ -545,11 +559,11 @@ public class DBConnect {
         } finally {
             productSem.release();
         }
-        throw new ProductNotFoundException(code);
+        throw new ProductNotFoundException(code + "");
     }
 
-    public void getProductsDiscount(Product p) throws SQLException {
-        String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = '" + p.getProductCode() + "' AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
+    public List<Discount> getProductsDiscount(Product p) throws SQLException {
+        String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
@@ -557,18 +571,17 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        List<Discount> discounts;
         try {
             ResultSet res = stmt.executeQuery(query);
-
-            while (res.next()) {
-                System.out.println(res.getString(1) + "\n" + res.getString(2));
-            }
+            discounts = getDiscountsFromResultSet(res);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             productSem.release();
             discountSem.release();
         }
+        return discounts;
     }
 
     public int getProductCount() throws SQLException {
@@ -685,7 +698,7 @@ public class DBConnect {
         }
     }
 
-    public void updateCustomer(Customer c) throws SQLException {
+    public void updateCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = c.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -693,33 +706,41 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             customerSem.release();
         }
+        if (value == 0) {
+            throw new CustomerNotFoundException(c.getId() + "");
+        }
     }
 
-    public void removeCustomer(Customer c) throws SQLException {
+    public void removeCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + c.getId();
+        Statement stmt = con.createStatement();
         try {
             customerSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
-        Statement stmt = con.createStatement();
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             customerSem.release();
         }
+        if (value == 0) {
+            throw new CustomerNotFoundException(c.getId() + "");
+        }
     }
 
-    public void removeCustomer(int id) throws SQLException {
+    public void removeCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
         Statement stmt = con.createStatement();
         try {
@@ -727,12 +748,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             customerSem.release();
+        }
+        if (value == 0) {
+            throw new CustomerNotFoundException(id + "");
         }
     }
 
@@ -874,7 +899,7 @@ public class DBConnect {
         }
     }
 
-    public void updateStaff(Staff s) throws SQLException {
+    public void updateStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = s.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -882,16 +907,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             staffSem.release();
         }
+        if (value == 0) {
+            throw new StaffNotFoundException(s.getId() + "");
+        }
     }
 
-    public void removeStaff(Staff s) throws SQLException {
+    public void removeStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + s.getId();
         Statement stmt = con.createStatement();
         try {
@@ -899,16 +928,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             staffSem.release();
         }
+        if (value == 0) {
+            throw new StaffNotFoundException(s.getId() + "");
+        }
     }
 
-    public void removeStaff(int id) throws SQLException {
+    public void removeStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
         try {
@@ -916,12 +949,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             staffSem.release();
+        }
+        if (value == 0) {
+            throw new StaffNotFoundException(id + "");
         }
     }
 
@@ -1005,6 +1042,7 @@ public class DBConnect {
         return staff.size();
     }
 
+    //Discount Methods
     public List<Discount> getAllDiscounts() throws SQLException {
         String query = "SELECT * FROM DISCOUNTS";
         Statement stmt = con.createStatement();
@@ -1067,7 +1105,7 @@ public class DBConnect {
         }
     }
 
-    public void updateDiscount(Discount d) throws SQLException {
+    public void updateDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = d.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -1075,16 +1113,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             discountSem.release();
         }
+        if (value == 0) {
+            throw new DiscountNotFoundException(d.getId() + "");
+        }
     }
 
-    public void removeDiscount(Discount d) throws SQLException {
+    public void removeDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + d.getId();
         Statement stmt = con.createStatement();
         try {
@@ -1092,16 +1134,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             discountSem.release();
         }
+        if (value == 0) {
+            throw new DiscountNotFoundException(d.getId() + "");
+        }
     }
 
-    public void removeDiscount(int id) throws SQLException {
+    public void removeDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
         try {
@@ -1109,12 +1155,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             discountSem.release();
+        }
+        if (value == 0) {
+            throw new DiscountNotFoundException(id + "");
         }
     }
 
@@ -1144,6 +1194,7 @@ public class DBConnect {
         return discounts.get(0);
     }
 
+    //Tax Methods
     public List<Tax> getAllTax() throws SQLException {
         String query = "SELECT * FROM TAX";
         Statement stmt = con.createStatement();
@@ -1204,7 +1255,7 @@ public class DBConnect {
         }
     }
 
-    public void updateTax(Tax t) throws SQLException {
+    public void updateTax(Tax t) throws SQLException, TaxNotFoundException {
         String query = t.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -1212,16 +1263,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             taxSem.release();
         }
+        if (value == 0) {
+            throw new TaxNotFoundException(t.getId() + "");
+        }
     }
 
-    public void removeTax(Tax t) throws SQLException {
+    public void removeTax(Tax t) throws SQLException, TaxNotFoundException {
         String query = "DELETE FROM TAX WHERE TAX.ID = " + t.getId();
         Statement stmt = con.createStatement();
         try {
@@ -1229,16 +1284,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             taxSem.release();
         }
+        if (value == 0) {
+            throw new TaxNotFoundException(t.getId() + "");
+        }
     }
 
-    public void removeTax(int id) throws SQLException {
+    public void removeTax(int id) throws SQLException, TaxNotFoundException {
         String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
         try {
@@ -1246,12 +1305,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             taxSem.release();
+        }
+        if (value == 0) {
+            throw new TaxNotFoundException(id + "");
         }
     }
 
@@ -1281,6 +1344,7 @@ public class DBConnect {
         return tax.get(0);
     }
 
+    //Category Methods
     public List<Category> getAllCategorys() throws SQLException {
         String query = "SELECT * FROM CATEGORYS";
         Statement stmt = con.createStatement();
@@ -1344,7 +1408,7 @@ public class DBConnect {
         }
     }
 
-    public void updateCategory(Category c) throws SQLException {
+    public void updateCategory(Category c) throws SQLException, CategoryNotFoundException {
         String query = c.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -1352,16 +1416,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             categorySem.release();
         }
+        if (value == 0) {
+            throw new CategoryNotFoundException(c.getId() + "");
+        }
     }
 
-    public void removeCategory(Category c) throws SQLException {
+    public void removeCategory(Category c) throws SQLException, CategoryNotFoundException {
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + c.getID();
         Statement stmt = con.createStatement();
         try {
@@ -1369,16 +1437,20 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             categorySem.release();
         }
+        if (value == 0) {
+            throw new CategoryNotFoundException(c.getId() + "");
+        }
     }
 
-    public void removeCategory(int id) throws SQLException {
+    public void removeCategory(int id) throws SQLException, CategoryNotFoundException {
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
         try {
@@ -1386,12 +1458,16 @@ public class DBConnect {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        int value;
         try {
-            stmt.executeUpdate(query);
+            value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
             throw ex;
         } finally {
             categorySem.release();
+        }
+        if (value == 0) {
+            throw new CategoryNotFoundException(id + "");
         }
     }
 
