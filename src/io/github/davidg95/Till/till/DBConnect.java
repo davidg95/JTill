@@ -1499,6 +1499,10 @@ public class DBConnect {
 
     @Override
     public String toString() {
-        return "Connected to database " + this.address + "\nOn user " + this.username;
+        if (connected) {
+            return "Connected to database " + this.address + "\nOn user " + this.username;
+        } else {
+            return "Not connected to database";
+        }
     }
 }
