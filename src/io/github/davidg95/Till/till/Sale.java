@@ -13,36 +13,36 @@ import java.util.List;
  *
  * @author David
  */
-public class Sale implements Serializable{
+public class Sale implements Serializable {
+
     private String code;
-    private List<Product> products;
+    private List<Integer> products;
     private double total;
-    private Customer customer;
-    
-    public Sale(){
+    private int customer;
+
+    public Sale() {
         products = new ArrayList<>();
     }
-    
-    public Sale(Customer c){
+
+    public Sale(Customer c) {
         products = new ArrayList<>();
-        this.customer = c;
+        this.customer = c.getId();
     }
-    
-    public int addItem(Product p){
-        products.add(p);
+
+    public int addItem(Product p) {
+        products.add(p.getProductCode());
+        total += p.getPrice();
         int count = 0;
-        for(Product pr: products){
-            if(pr.equals(p)){
+        for (int pr : products) {
+            if (pr == p.getProductCode()) {
                 count++;
             }
         }
         return count;
     }
-    
-    public void complete(){
-        for(Product p: products){
-            total += p.getPrice();
-        }
+
+    public void complete() {
+
     }
 
     public String getCode() {
@@ -53,11 +53,11 @@ public class Sale implements Serializable{
         this.code = code;
     }
 
-    public List<Product> getProducts() {
+    public List<Integer> getProducts() {
         return products;
     }
 
-    public void setProducts(List<Product> products) {
+    public void setProducts(List<Integer> products) {
         this.products = products;
     }
 
@@ -69,12 +69,16 @@ public class Sale implements Serializable{
         this.total = total;
     }
 
-    public Customer getCustomer() {
+    public int getCustomer() {
         return customer;
     }
 
-    public void setCustomer(Customer customer) {
+    public void setCustomer(int customer) {
         this.customer = customer;
     }
-    
+
+    public int getItemCount() {
+        return products.size();
+    }
+
 }

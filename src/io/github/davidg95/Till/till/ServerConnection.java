@@ -343,7 +343,6 @@ public class ServerConnection {
      * @param s the sale to send.
      * @throws IOException if there was an error connecting.
      */
-    @Deprecated
     public void addSale(Sale s) throws IOException {
         out.println("ADDSALE");
         obOut.writeObject(s);
