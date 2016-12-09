@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.Till.till;
 
+import java.awt.Color;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,13 +22,15 @@ public class Category {
     private Time endSell;
     private boolean timeRestrict;
     private int minAge;
+    private boolean button;
+    private int color;
 
-    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
-        this(name, startSell, endSell, timeRestrict, minAge);
+    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, boolean button, int color) {
+        this(name, startSell, endSell, timeRestrict, minAge, button, color);
         this.ID = ID;
     }
 
-    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
+    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, boolean button, int color) {
         this.name = name;
         this.timeRestrict = timeRestrict;
         this.startSell = startSell;
@@ -41,6 +44,8 @@ public class Category {
             }
         }
         this.minAge = minAge;
+        this.button = button;
+        this.color = color;
     }
 
     public int getID() {
@@ -91,12 +96,37 @@ public class Category {
         this.minAge = minAge;
     }
 
+    public boolean isButton() {
+        return button;
+    }
+
+    public void setButton(boolean button) {
+        this.button = button;
+    }
+
+    public int getColorValue() {
+        return color;
+    }
+
+    public void setColorValue(int color) {
+        this.color = color;
+    }
+    
+    public Color getColor(){
+        return new Color(color);
+    }
+    
+    public void setColor(Color c){
+        this.color = c.getRGB();
+    }
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.startSell.toString()
                 + "','" + this.endSell.toString()
                 + "','" + this.timeRestrict
-                + "'," + this.minAge;
+                + "','" + this.button
+                + "'," + this.color
+                + "," + this.minAge;
     }
 
     public String getSQLUpdateString() {
@@ -105,6 +135,8 @@ public class Category {
                 + "', SELL_START=" + this.getStartSell()
                 + ", SELL_END=" + this.getEndSell()
                 + ", TIME_RESTRICT=" + this.isTimeRestrict()
+                + ", BUTTON=" + this.isButton()
+                + ", COLOR=" + this.getColorValue()
                 + ", MINIMUM_AGE=" + this.getMinAge()
                 + " WHERE CATEGORYS.ID=" + this.getID();
     }
@@ -112,9 +144,5 @@ public class Category {
     @Override
     public String toString() {
         return this.name;
-    }
-
-    String getId() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

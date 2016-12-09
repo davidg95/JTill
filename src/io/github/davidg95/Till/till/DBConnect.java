@@ -90,6 +90,8 @@ public class DBConnect {
                 + "     SELL_START TIME,\n"
                 + "     SELL_END TIME,\n"
                 + "     TIME_RESTRICT BOOLEAN not null,\n"
+                + "     BUTTON BOOLEAN not null,\n"
+                + "     COLOR INT,\n"
                 + "     MINIMUM_AGE INT not null\n"
                 + ")";
         String discounts = "create table \"APP\".DISCOUNTS\n"
@@ -150,6 +152,8 @@ public class DBConnect {
                 + "	COST_PRICE DOUBLE,\n"
                 + "	MIN_PRODUCT_LEVEL INTEGER,\n"
                 + "	MAX_PRODUCT_LEVEL INTEGER,\n"
+                + "     BUTTON BOOLEAN not null,\n"
+                + "     COLOR INT,\n"
                 + "	DISCOUNT_ID INT not null references DISCOUNTS(ID)\n"
                 + ")";
         String staff = "create table \"APP\".STAFF\n"
@@ -172,7 +176,7 @@ public class DBConnect {
         stmt.execute(products);
         stmt.execute(staff);
 
-        String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
+        String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, BUTTON, MINIMUM_AGE) VALUES ('Default','FALSE',false,0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
         String addDiscount = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES ('NONE',0.0)";
         stmt.executeUpdate(addCategory);
@@ -249,9 +253,11 @@ public class DBConnect {
                 double costPrice = set.getDouble("COST_PRICE");
                 int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                 int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
+                boolean button = set.getBoolean("BUTTON");
+                int color = set.getInt("COLOR");
                 int discountID = set.getInt("DISCOUNT_ID");
 
-                Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, price, costPrice, stock, minStock, maxStock, barcode, code);
+                Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, price, costPrice, stock, minStock, maxStock, barcode, code);
 
                 products.add(p);
             }
@@ -279,9 +285,11 @@ public class DBConnect {
             double costPrice = set.getDouble("COST_PRICE");
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
+            boolean button = set.getBoolean("BUTTON");
+            int color = set.getInt("COLOR");
             int discountID = set.getInt("DISCOUNT_ID");
 
-            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, price, costPrice, stock, minStock, maxStock, barcode, code);
+            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, price, costPrice, stock, minStock, maxStock, barcode, code);
 
             products.add(p);
         }
@@ -297,7 +305,7 @@ public class DBConnect {
      * database.
      */
     public void addProduct(Product p) throws SQLException {
-        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
+        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, BUTTON, COLOR, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
             try {
                 productSem.acquire();
@@ -1364,7 +1372,9 @@ public class DBConnect {
                 Time endSell = set.getTime("SELL_END");
                 boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
                 int minAge = set.getInt("MINIMUM_AGE");
-                Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
+                boolean button = set.getBoolean("BUTTON");
+                int color = set.getInt("COLOR");
+                Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge, button, color);
                 categorys.add(c);
             }
         } catch (SQLException ex) {
@@ -1385,14 +1395,16 @@ public class DBConnect {
             Time endSell = set.getTime("SELL_END");
             boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
             int minAge = set.getInt("MINIMUM_AGE");
-            Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
+            boolean button = set.getBoolean("BUTTON");
+            int color = set.getInt("COLOR");
+            Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge, button, color);
             categorys.add(c);
         }
         return categorys;
     }
 
     public void addCategory(Category c) throws SQLException {
-        String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
+        String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, BUTTON, COLOR, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             categorySem.acquire();
@@ -1425,7 +1437,7 @@ public class DBConnect {
             categorySem.release();
         }
         if (value == 0) {
-            throw new CategoryNotFoundException(c.getId() + "");
+            throw new CategoryNotFoundException(c.getID() + "");
         }
     }
 
@@ -1446,7 +1458,7 @@ public class DBConnect {
             categorySem.release();
         }
         if (value == 0) {
-            throw new CategoryNotFoundException(c.getId() + "");
+            throw new CategoryNotFoundException(c.getID()+ "");
         }
     }
 

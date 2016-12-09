@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.Till.till;
 
+import java.awt.Color;
 import java.io.Serializable;
 
 /**
@@ -28,6 +29,8 @@ public class Product implements Serializable {
     private int maxStockLevel;
     private int discountID;
     private String comments;
+    private boolean button;
+    private int color;
 
     /**
      * Blank constructor.
@@ -46,14 +49,18 @@ public class Product implements Serializable {
      * @param comments the comments.
      * @param taxID the tax class for this product.
      * @param discountID the discount ID for the product.
+     * @param button whether the products will have a button or not.
+     * @param color the color of the button.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color) {
         this.name = name;
         this.shortName = shortName;
         this.categoryID = categoryID;
         this.comments = comments;
         this.taxID = taxID;
         this.discountID = discountID;
+        this.button = button;
+        this.color = color;
     }
 
     /**
@@ -66,10 +73,12 @@ public class Product implements Serializable {
      * @param comments the comments.
      * @param taxID the tax class for this product.
      * @param discountID the discount ID for this product.
+     * @param button whether the products will have a button or not.
+     * @param color the color of the button.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, discountID);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, int productCode) {
+        this(name, shortName, categoryID, comments, taxID, discountID, button, color);
         this.productCode = productCode;
     }
 
@@ -82,6 +91,8 @@ public class Product implements Serializable {
      * @param price the price for the product.
      * @param taxID the tax class for this product.
      * @param discountID the discount ID for this product.
+     * @param button whether the products will have a button or not.
+     * @param color the color of the button.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
@@ -89,8 +100,8 @@ public class Product implements Serializable {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
-        this(name, shortName, categoryID, comments, taxID, discountID);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
+        this(name, shortName, categoryID, comments, taxID, discountID, button, color);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -108,6 +119,8 @@ public class Product implements Serializable {
      * @param price the price for the product.
      * @param taxID the tax class for this product.
      * @param discountID the discount ID for the product.
+     * @param button whether the products will have a button or not.
+     * @param color the color of the button.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
@@ -116,8 +129,8 @@ public class Product implements Serializable {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, discountID, price, costPrice, stock, minStock, maxStock, barcode);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
+        this(name, shortName, categoryID, comments, taxID, discountID, button, color, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
 
@@ -257,6 +270,30 @@ public class Product implements Serializable {
         this.discountID = discountID;
     }
 
+    public boolean isButton() {
+        return button;
+    }
+
+    public void setButton(boolean button) {
+        this.button = button;
+    }
+
+    public int getColorValue() {
+        return color;
+    }
+
+    public void setColorValue(int color) {
+        this.color = color;
+    }
+    
+    public Color getColor(){
+        return new Color(color);
+    }
+    
+    public void setColor(Color c){
+        this.color = c.getRGB();
+    }
+
     public String getSQLInsertString() {
         return "'" + this.barcode
                 + "','" + this.name
@@ -269,10 +306,12 @@ public class Product implements Serializable {
                 + "," + this.costPrice
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel
+                + ",'" + this.button
+                + "'," + this.color
                 + "," + this.discountID;
     }
-    
-    public String getSQlUpdateString(){
+
+    public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
                 + " SET BARCODE='" + this.getBarcode()
                 + "', NAME='" + this.getName()
@@ -285,6 +324,8 @@ public class Product implements Serializable {
                 + ", COST_PRICE=" + this.getCostPrice()
                 + ", MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
                 + ", MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
+                + ", BUTTON=" + this.isButton()
+                + ", COLOR=" + this.getColorValue()
                 + ", DISCOUNT_ID=" + this.getDiscountID()
                 + " WHERE PRODUCTS.ID=" + this.getProductCode();
     }
