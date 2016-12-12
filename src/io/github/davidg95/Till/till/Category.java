@@ -6,6 +6,7 @@
 package io.github.davidg95.Till.till;
 
 import java.awt.Color;
+import java.io.Serializable;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,7 +15,7 @@ import java.text.SimpleDateFormat;
  *
  * @author David
  */
-public class Category {
+public class Category implements Serializable {
 
     private int ID;
     private String name;
@@ -111,14 +112,15 @@ public class Category {
     public void setColorValue(int color) {
         this.color = color;
     }
-    
-    public Color getColor(){
+
+    public Color getColor() {
         return new Color(color);
     }
-    
-    public void setColor(Color c){
+
+    public void setColor(Color c) {
         this.color = c.getRGB();
     }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.startSell.toString()

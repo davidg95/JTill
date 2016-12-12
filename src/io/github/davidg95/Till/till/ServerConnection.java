@@ -541,6 +541,40 @@ public class ServerConnection {
         }
     }
 
+    public List<Category> getCategoryButtons() throws IOException {
+        try {
+            out.println("GETCATBUTTONS");
+
+            Object o = obIn.readObject();
+
+            List<Category> categorys = (List<Category>) o;
+
+            return categorys;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public List<Product> getProductButtons(int catId) throws IOException, SQLException {
+        try {
+            out.println("GETPRODUCTBUTTONS," + catId);
+
+            Object o = obIn.readObject();
+
+            if (o instanceof SQLException) {
+                throw (SQLException) o;
+            }
+
+            List<Product> products = (List<Product>) o;
+
+            return products;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
     /**
      * Method to close the connection to the server.
      */

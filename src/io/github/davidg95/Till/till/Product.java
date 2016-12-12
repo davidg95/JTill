@@ -313,20 +313,20 @@ public class Product implements Serializable {
 
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
-                + " SET BARCODE='" + this.getBarcode()
-                + "', NAME='" + this.getName()
-                + "', PRICE=" + this.getPrice()
-                + ", STOCK=" + this.getStock()
-                + ", COMMENTS='" + this.getComments()
-                + "', SHORT_NAME='" + this.getShortName()
-                + "', CATEGORY_ID=" + this.getCategoryID()
-                + ", TAX_ID=" + this.getTaxID()
-                + ", COST_PRICE=" + this.getCostPrice()
-                + ", MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
-                + ", MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
-                + ", BUTTON=" + this.isButton()
-                + ", COLOR=" + this.getColorValue()
-                + ", DISCOUNT_ID=" + this.getDiscountID()
+                + " SET PRODUCTS.BARCODE='" + this.getBarcode()
+                + "', PRODUCTS.NAME='" + this.getName()
+                + "', PRODUCTS.PRICE=" + this.getPrice()
+                + ", PRODUCTS.STOCK=" + this.getStock()
+                + ", PRODUCTS.COMMENTS='" + this.getComments()
+                + "', PRODUCTS.SHORT_NAME='" + this.getShortName()
+                + "', PRODUCTS.CATEGORY_ID=" + this.getCategoryID()
+                + ", PRODUCTS.TAX_ID=" + this.getTaxID()
+                + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
+                + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
+                + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
+                + ", PRODUCTS.BUTTON=" + this.isButton()
+                + ", PRODUCTS.COLOR=" + this.getColorValue()
+                + ", PRODUCTS.DISCOUNT_ID=" + this.getDiscountID()
                 + " WHERE PRODUCTS.ID=" + this.getProductCode();
     }
 

@@ -1458,7 +1458,7 @@ public class DBConnect {
             categorySem.release();
         }
         if (value == 0) {
-            throw new CategoryNotFoundException(c.getID()+ "");
+            throw new CategoryNotFoundException(c.getID() + "");
         }
     }
 
@@ -1507,6 +1507,30 @@ public class DBConnect {
         }
 
         return categorys.get(0);
+    }
+
+    public List<Product> getProductsInCategory(int id) throws SQLException {
+        String query = "SELECT * FROM PRODUCTS, CATEGORYS WHERE CATEGORYS.ID = PRODUCTS.CATEGORY_ID AND CATEGORYS.ID = " + id;
+        Statement stmt = con.createStatement();
+        try {
+            categorySem.acquire();
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Product> products;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            products = getProductsFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            categorySem.release();
+            productSem.release();
+        }
+
+        return products;
     }
 
     @Override
