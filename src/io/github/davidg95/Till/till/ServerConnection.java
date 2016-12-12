@@ -367,7 +367,7 @@ public class ServerConnection {
      * @throws StaffNotFoundException if the member of staff could not be found.
      * @throws java.sql.SQLException if there was a database error.
      */
-    public void removeStaff(String id) throws IOException, StaffNotFoundException, SQLException {
+    public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
             out.println("REMOVESTAFF," + id);
 
@@ -395,7 +395,7 @@ public class ServerConnection {
      * @throws StaffNotFoundException if the member of staff could not be found.
      * @throws java.sql.SQLException if there was a database error.
      */
-    public Staff getStaff(String id) throws IOException, StaffNotFoundException, SQLException {
+    public Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
             out.println("GETSTAFF," + id);
 
@@ -410,7 +410,7 @@ public class ServerConnection {
             }
         } catch (ClassNotFoundException ex) {
         }
-        throw new StaffNotFoundException(id);
+        throw new StaffNotFoundException(id + "");
     }
 
     /**
@@ -489,7 +489,7 @@ public class ServerConnection {
      * @throws LoginException if there was an error logging in.
      * @throws java.sql.SQLException if there was a database error.
      */
-    public Staff tillLogin(String id) throws IOException, LoginException, SQLException {
+    public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         try {
             out.println("TILLLOGIN," + id);
 
@@ -514,13 +514,13 @@ public class ServerConnection {
      * @throws IOException if there was a server communication error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
-    public void logout(String id) throws IOException, StaffNotFoundException {
+    public void logout(int id) throws IOException, StaffNotFoundException {
         out.println("LOGOUT," + id);
 
         String input = in.readLine();
 
         if (input.equals("FAIL")) {
-            throw new StaffNotFoundException(id);
+            throw new StaffNotFoundException(id + "");
         }
     }
 
@@ -531,13 +531,13 @@ public class ServerConnection {
      * @throws IOException if there was a server communication error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
-    public void tillLogout(String id) throws IOException, StaffNotFoundException {
+    public void tillLogout(int id) throws IOException, StaffNotFoundException {
         out.println("TILLLOGOUT," + id);
 
         String input = in.readLine();
 
         if (input.equals("FAIL")) {
-            throw new StaffNotFoundException(id);
+            throw new StaffNotFoundException(id + "");
         }
     }
 
