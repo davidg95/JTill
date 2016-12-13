@@ -132,15 +132,27 @@ public class Category implements Serializable {
     }
 
     public String getSQLUpdateString() {
-        return "UPDATE CATEGORYS"
-                + " SET NAME='" + this.getName()
-                + "', SELL_START=" + this.getStartSell()
-                + ", SELL_END=" + this.getEndSell()
-                + ", TIME_RESTRICT=" + this.isTimeRestrict()
-                + ", BUTTON=" + this.isButton()
-                + ", COLOR=" + this.getColorValue()
-                + ", MINIMUM_AGE=" + this.getMinAge()
-                + " WHERE CATEGORYS.ID=" + this.getID();
+        if (this.isTimeRestrict()) {
+            return "UPDATE CATEGORYS"
+                    + " SET NAME='" + this.getName()
+                    + "', SELL_START='" + this.getStartSell()
+                    + "', SELL_END='" + this.getEndSell()
+                    + "', TIME_RESTRICT=" + this.isTimeRestrict()
+                    + ", BUTTON=" + this.isButton()
+                    + ", COLOR=" + this.getColorValue()
+                    + ", MINIMUM_AGE=" + this.getMinAge()
+                    + " WHERE CATEGORYS.ID=" + this.getID();
+        } else {
+            return "UPDATE CATEGORYS"
+                    + " SET NAME='" + this.getName()
+                    + "', SELL_START=" + this.getStartSell()
+                    + ", SELL_END=" + this.getEndSell()
+                    + ", TIME_RESTRICT=" + this.isTimeRestrict()
+                    + ", BUTTON=" + this.isButton()
+                    + ", COLOR=" + this.getColorValue()
+                    + ", MINIMUM_AGE=" + this.getMinAge()
+                    + " WHERE CATEGORYS.ID=" + this.getID();
+        }
     }
 
     @Override
