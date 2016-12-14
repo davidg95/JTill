@@ -143,6 +143,7 @@ public class DBConnect {
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "	BARCODE VARCHAR(20),\n"
                 + "	NAME VARCHAR(50) not null,\n"
+                + "     OPEN_PRICE BOOLEAN not null,\n"
                 + "	PRICE DOUBLE,\n"
                 + "	STOCK INTEGER,\n"
                 + "	COMMENTS VARCHAR(200),\n"
@@ -244,6 +245,7 @@ public class DBConnect {
                 int code = set.getInt("ID");
                 String barcode = set.getString("BARCODE");
                 String name = set.getString("NAME");
+                boolean open = set.getBoolean("OPEN_PRICE");
                 double price = set.getDouble("PRICE");
                 int stock = set.getInt("STOCK");
                 String comments = set.getString("COMMENTS");
@@ -257,7 +259,7 @@ public class DBConnect {
                 int color = set.getInt("COLOR");
                 int discountID = set.getInt("DISCOUNT_ID");
 
-                Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, price, costPrice, stock, minStock, maxStock, barcode, code);
+                Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
                 products.add(p);
             }
@@ -276,6 +278,7 @@ public class DBConnect {
             int code = set.getInt("ID");
             String barcode = set.getString("BARCODE");
             String name = set.getString("NAME");
+            boolean open = set.getBoolean("OPEN_PRICE");
             double price = set.getDouble("PRICE");
             int stock = set.getInt("STOCK");
             String comments = set.getString("COMMENTS");
@@ -289,7 +292,7 @@ public class DBConnect {
             int color = set.getInt("COLOR");
             int discountID = set.getInt("DISCOUNT_ID");
 
-            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, price, costPrice, stock, minStock, maxStock, barcode, code);
+            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
             products.add(p);
         }
@@ -305,7 +308,7 @@ public class DBConnect {
      * database.
      */
     public void addProduct(Product p) throws SQLException {
-        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, BUTTON, COLOR, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
+        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, BUTTON, COLOR, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
             try {
                 productSem.acquire();

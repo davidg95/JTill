@@ -22,6 +22,7 @@ public class Product implements Serializable {
     private String shortName;
     private int categoryID;
     private int taxID;
+    private boolean open;
     private double price;
     private double costPrice;
     private int stock;
@@ -51,8 +52,9 @@ public class Product implements Serializable {
      * @param discountID the discount ID for the product.
      * @param button whether the products will have a button or not.
      * @param color the color of the button.
+     * @param open if the price is open.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, boolean open) {
         this.name = name;
         this.shortName = shortName;
         this.categoryID = categoryID;
@@ -61,6 +63,7 @@ public class Product implements Serializable {
         this.discountID = discountID;
         this.button = button;
         this.color = color;
+        this.open = open;
     }
 
     /**
@@ -75,10 +78,11 @@ public class Product implements Serializable {
      * @param discountID the discount ID for this product.
      * @param button whether the products will have a button or not.
      * @param color the color of the button.
+     * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, discountID, button, color);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, boolean open, int productCode) {
+        this(name, shortName, categoryID, comments, taxID, discountID, button, color, open);
         this.productCode = productCode;
     }
 
@@ -93,6 +97,7 @@ public class Product implements Serializable {
      * @param discountID the discount ID for this product.
      * @param button whether the products will have a button or not.
      * @param color the color of the button.
+     * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
@@ -100,8 +105,8 @@ public class Product implements Serializable {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
-        this(name, shortName, categoryID, comments, taxID, discountID, button, color);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, boolean open, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
+        this(name, shortName, categoryID, comments, taxID, discountID, button, color, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -121,6 +126,7 @@ public class Product implements Serializable {
      * @param discountID the discount ID for the product.
      * @param button whether the products will have a button or not.
      * @param color the color of the button.
+     * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param barcode the barcode of the product.
@@ -129,8 +135,8 @@ public class Product implements Serializable {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, discountID, button, color, price, costPrice, stock, minStock, maxStock, barcode);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean button, int color, boolean open, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
+        this(name, shortName, categoryID, comments, taxID, discountID, button, color, open, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
 
@@ -285,19 +291,28 @@ public class Product implements Serializable {
     public void setColorValue(int color) {
         this.color = color;
     }
-    
-    public Color getColor(){
+
+    public Color getColor() {
         return new Color(color);
     }
-    
-    public void setColor(Color c){
+
+    public void setColor(Color c) {
         this.color = c.getRGB();
+    }
+
+    public boolean isOpen() {
+        return open;
+    }
+
+    public void setOpen(boolean open) {
+        this.open = open;
     }
 
     public String getSQLInsertString() {
         return "'" + this.barcode
                 + "','" + this.name
-                + "'," + this.price
+                + "'," + this.open
+                + "," + this.price
                 + "," + this.stock
                 + ",'" + this.comments
                 + "','" + this.shortName
@@ -315,7 +330,8 @@ public class Product implements Serializable {
         return "UPDATE PRODUCTS"
                 + " SET PRODUCTS.BARCODE='" + this.getBarcode()
                 + "', PRODUCTS.NAME='" + this.getName()
-                + "', PRODUCTS.PRICE=" + this.getPrice()
+                + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
+                + ", PRODUCTS.PRICE=" + this.getPrice()
                 + ", PRODUCTS.STOCK=" + this.getStock()
                 + ", PRODUCTS.COMMENTS='" + this.getComments()
                 + "', PRODUCTS.SHORT_NAME='" + this.getShortName()
