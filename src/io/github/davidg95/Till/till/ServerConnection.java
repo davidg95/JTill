@@ -346,6 +346,7 @@ public class ServerConnection {
     public void addSale(Sale s) throws IOException {
         out.println("ADDSALE");
         obOut.writeObject(s);
+        obOut.flush();
     }
 
     /**

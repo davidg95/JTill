@@ -1586,7 +1586,29 @@ public class DBConnect {
 
         return sales;
     }
+    
+    private List<Sale> getAllSalesNoSem() throws SQLException {
+        String query = "SELECT * FROM SALES";
+        Statement stmt = con.createStatement();
+        List<Sale> sales;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            sales = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                double price = set.getDouble("PRICE");
+                int customer = set.getInt("CUSTOMER");
+                Time time = set.getTime("TIMESTAMP");
+                Sale s = new Sale(id, price, customer, time.getTime());
+                sales.add(s);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        }
 
+        return sales;
+    }
+    
     public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
         List<Sale> sales = new ArrayList<>();
         while (set.next()) {
@@ -1610,7 +1632,7 @@ public class DBConnect {
         }
         try {
             stmt.executeUpdate(query);
-            List<Sale> sales = getAllSales();
+            List<Sale> sales = getAllSalesNoSem();
             Sale lastSale = sales.get(sales.size() - 1);
             for (int p : s.getProducts()) {
                 addSaleItem(lastSale, p);
