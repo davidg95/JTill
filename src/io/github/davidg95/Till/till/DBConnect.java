@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -42,6 +43,7 @@ public class DBConnect {
     private final Semaphore discountSem;
     private final Semaphore taxSem;
     private final Semaphore categorySem;
+    private final Semaphore saleSem;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -50,6 +52,7 @@ public class DBConnect {
         discountSem = new Semaphore(1);
         taxSem = new Semaphore(1);
         categorySem = new Semaphore(1);
+        saleSem = new Semaphore(1);
     }
 
     /**
@@ -117,6 +120,23 @@ public class DBConnect {
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "	VALUE VARCHAR(20) not null\n"
                 + ")";
+        String sales = "create table APP.SALES\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "        GENERATED ALWAYS AS IDENTITY\n"
+                + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "     PRICE DOUBLE,\n"
+                + "     CUSTOMER int,\n"
+                + "     TIMESTAMP TIME\n"
+                + ")";
+        String saleItems = "create table APP.SALEITEMS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "        GENERATED ALWAYS AS IDENTITY\n"
+                + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "     PRODUCT_ID INT not null references PRODUCTS(ID)\n"
+                + "     SALE_ID INT not null references SALES(ID)\n"
+                + ")";
         String customers = "create table \"APP\".CUSTOMERS\n"
                 + "(\n"
                 + "	ID INT not null primary key\n"
@@ -173,6 +193,8 @@ public class DBConnect {
         stmt.execute(categorys);
         stmt.execute(discounts);
         stmt.execute(configs);
+        stmt.execute(sales);
+        stmt.execute(saleItems);
         stmt.execute(customers);
         stmt.execute(products);
         stmt.execute(staff);
@@ -1534,6 +1556,117 @@ public class DBConnect {
         }
 
         return products;
+    }
+
+    public List<Sale> getAllSales() throws SQLException {
+        String query = "SELECT * FROM SALES";
+        Statement stmt = con.createStatement();
+        try {
+            saleSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Sale> sales;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            sales = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                double price = set.getDouble("PRICE");
+                int customer = set.getInt("CUSTOMER");
+                Time time = set.getTime("TIMESTAMP");
+                Sale s = new Sale(id, price, customer, time.getTime());
+                sales.add(s);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            saleSem.release();
+        }
+
+        return sales;
+    }
+
+    public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
+        List<Sale> sales = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            double price = set.getDouble("PRICE");
+            int customer = set.getInt("CUSTOMER");
+            Time time = set.getTime("TIMESTAMP");
+            Sale s = new Sale(id, price, customer, time.getTime());
+            sales.add(s);
+        }
+        return sales;
+    }
+
+    public void addSale(Sale s) throws SQLException {
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP) VALUES (" + s.getSQLInsertStatement() + ")";
+        Statement stmt = con.createStatement();
+        try {
+            saleSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            stmt.executeUpdate(query);
+            List<Sale> sales = getAllSales();
+            Sale lastSale = sales.get(sales.size() - 1);
+            for (int p : s.getProducts()) {
+                addSaleItem(lastSale, p);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            saleSem.release();
+        }
+    }
+
+    private void addSaleItem(Sale s, int p) throws SQLException {
+        String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, SALE_ID) VALUES (" + p + ", " + s.getCode() + ")";
+        Statement sstmt = con.createStatement();
+        sstmt.executeUpdate(secondQuery);
+    }
+
+    public Sale getSale(int id) throws SQLException, SaleNotFoundException {
+        String query = "SELECT * FROM APP.SALES WHERE SALES.ID = " + id;
+        Statement stmt = con.createStatement();
+        try {
+            saleSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Sale> sales;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            sales = getSalesFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            saleSem.release();
+        }
+
+        if (sales.isEmpty()) {
+            throw new SaleNotFoundException(id + "");
+        }
+
+        return sales.get(0);
+    }
+
+    public List<Sale> getSalesInRange(Date start, Date end) throws SQLException, IllegalArgumentException {
+        if (start.after(end)) {
+            throw new IllegalArgumentException("Start date needs to be before end date");
+        }
+        List<Sale> s = getAllSales();
+        List<Sale> sales = new ArrayList<>();
+
+        for (Sale sale : s) {
+            if (sale.getTime() >= start.getTime() && sale.getTime() <= start.getTime()) {
+                sales.add(sale);
+            }
+        }
+
+        return sales;
     }
 
     @Override

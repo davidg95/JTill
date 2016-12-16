@@ -5,12 +5,14 @@
  */
 package io.github.davidg95.Till.till;
 
+import java.io.Serializable;
+
 /**
  * Class which models a customer.
  *
  * @author David
  */
-public class Customer {
+public class Customer implements Serializable{
 
     private int id;
     private String name;

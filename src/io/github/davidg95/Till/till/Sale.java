@@ -6,6 +6,7 @@
 package io.github.davidg95.Till.till;
 
 import java.io.Serializable;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,10 +16,11 @@ import java.util.List;
  */
 public class Sale implements Serializable {
 
-    private String code;
+    private int code;
     private List<Integer> products;
     private double total;
     private int customer;
+    private long time;
 
     public Sale() {
         products = new ArrayList<>();
@@ -27,6 +29,13 @@ public class Sale implements Serializable {
     public Sale(Customer c) {
         products = new ArrayList<>();
         this.customer = c.getId();
+    }
+
+    public Sale(int code, double total, int customer, long time) {
+        this.code = code;
+        this.total = total;
+        this.customer = customer;
+        this.time = time;
     }
 
     public int addItem(Product p) {
@@ -45,11 +54,11 @@ public class Sale implements Serializable {
 
     }
 
-    public String getCode() {
+    public int getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(int code) {
         this.code = code;
     }
 
@@ -81,4 +90,17 @@ public class Sale implements Serializable {
         return products.size();
     }
 
+    public void setTime(long time) {
+        this.time = time;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public String getSQLInsertStatement() {
+        return this.total
+                + "," + this.customer
+                + ",'" + new Time(this.time).toString() + "'";
+    }
 }
