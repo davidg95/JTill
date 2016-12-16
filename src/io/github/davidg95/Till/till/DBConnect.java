@@ -134,7 +134,7 @@ public class DBConnect {
                 + "     ID INT not null primary key\n"
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "     PRODUCT_ID INT not null references PRODUCTS(ID)\n"
+                + "     PRODUCT_ID INT not null references PRODUCTS(ID),\n"
                 + "     SALE_ID INT not null references SALES(ID)\n"
                 + ")";
         String customers = "create table \"APP\".CUSTOMERS\n"
@@ -194,9 +194,9 @@ public class DBConnect {
         stmt.execute(discounts);
         stmt.execute(configs);
         stmt.execute(sales);
-        stmt.execute(saleItems);
         stmt.execute(customers);
         stmt.execute(products);
+        stmt.execute(saleItems);
         stmt.execute(staff);
 
         String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, BUTTON, MINIMUM_AGE) VALUES ('Default','FALSE',false,0)";
