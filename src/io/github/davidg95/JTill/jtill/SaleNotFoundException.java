@@ -3,18 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package io.github.davidg95.Till.till;
+package io.github.davidg95.JTill.jtill;
 
 /**
- * LoginException which can be thrown for a login error.
+ * SaleNotFoundException
  *
- * @author David
+ * @author 1301480
  */
-public class LoginException extends Exception {
+public class SaleNotFoundException extends Exception {
 
-    private final String message;
+    public final String message;
 
-    public LoginException(String message) {
+    public SaleNotFoundException(String message) {
         super();
         this.message = message;
     }
