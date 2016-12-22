@@ -1022,7 +1022,7 @@ public class DBConnect {
     }
 
     public Staff login(String username, String password) throws SQLException, LoginException {
-        String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username + "'";
+        String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username.toLowerCase() + "'";
         Statement stmt = con.createStatement();
         try {
             staffSem.acquire();

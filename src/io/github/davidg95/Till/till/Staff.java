@@ -136,7 +136,7 @@ public class Staff implements Serializable {
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.position.toString()
-                + "','" + this.username
+                + "','" + this.username.toLowerCase()
                 + "','" + this.password + "'";
     }
 
@@ -144,7 +144,7 @@ public class Staff implements Serializable {
         return "UPDATE STAFF"
                 + " SET NAME='" + this.getName()
                 + "', POSITION='" + this.getPosition().toString()
-                + "', USERNAME='" + this.getUsername()
+                + "', USERNAME='" + this.getUsername().toLowerCase()
                 + "', PASSWORD='" + this.getPassword()
                 + "' WHERE STAFF.ID=" + this.getId();
     }
