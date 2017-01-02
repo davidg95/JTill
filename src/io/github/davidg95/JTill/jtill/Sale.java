@@ -24,6 +24,7 @@ public class Sale implements Serializable {
 
     public Sale() {
         products = new ArrayList<>();
+        customer = -1;
     }
 
     public Sale(Customer c) {
