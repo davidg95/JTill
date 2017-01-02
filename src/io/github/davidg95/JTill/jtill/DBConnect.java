@@ -31,9 +31,9 @@ public class DBConnect {
     private Connection con;
     private Driver embedded;
 
-    private String address;
-    private String username;
-    private String password;
+    public String address;
+    public String username;
+    public String password;
 
     private boolean connected;
 
