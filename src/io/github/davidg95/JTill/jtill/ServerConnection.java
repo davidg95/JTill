@@ -75,6 +75,19 @@ public class ServerConnection {
         return isConnected;
     }
 
+    public TillInitData getInitData() throws IOException {
+        try {
+            out.println("INIT");
+
+            Object o = obIn.readObject();
+
+            return (TillInitData) o;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
     /**
      * Method to add a new product to the server.
      *

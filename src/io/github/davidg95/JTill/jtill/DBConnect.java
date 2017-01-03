@@ -71,14 +71,14 @@ public class DBConnect {
         connected = true;
     }
 
-    public void create(String username, String password) throws SQLException {
+    public void create(String address, String username, String password) throws SQLException {
         embedded = new EmbeddedDriver();
         DriverManager.registerDriver(embedded);
-        con = DriverManager.getConnection("jdbc:derby:TillEmbedded;create=true", "App", "App");
+        con = DriverManager.getConnection(address, username, password);
 
-        this.address = "jdbc:derby:TillEmbedded;create=true";
-        this.username = "App";
-        this.password = "App";
+        this.address = address;
+        this.username = username;
+        this.password = password;
         connected = true;
         createTables();
     }
