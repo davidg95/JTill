@@ -44,6 +44,7 @@ public class DBConnect {
     private final Semaphore taxSem;
     private final Semaphore categorySem;
     private final Semaphore saleSem;
+    private final Semaphore voucherSem;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -53,6 +54,7 @@ public class DBConnect {
         taxSem = new Semaphore(1);
         categorySem = new Semaphore(1);
         saleSem = new Semaphore(1);
+        voucherSem = new Semaphore(1);
     }
 
     /**
@@ -187,6 +189,22 @@ public class DBConnect {
                 + "	USERNAME VARCHAR(20) not null,\n"
                 + "	PASSWORD VARCHAR(20) not null\n"
                 + ")";
+        String vouchers = "create table \"APP\".VOUCHERS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     NAME VARCHAR(50) not null,\n"
+                + "     TYPE VARCHAR(30) not null,\n"
+                + "     FIELD1 VARCHAR(50),\n"
+                + "     FIELD2 VARCHAR(50),\n"
+                + "     FIELD3 VARCHAR(50),\n"
+                + "     FIELD4 VARCHAR(50),\n"
+                + "     FIELD5 VARCHAR(50),\n"
+                + "     FIELD6 VARCHAR(50),\n"
+                + "     FIELD7 VARCHAR(50),\n"
+                + "     FIELD8 VARCHAR(50)\n"
+                + ")";
 
         Statement stmt = con.createStatement();
         stmt.execute(tax);
@@ -198,6 +216,7 @@ public class DBConnect {
         stmt.execute(products);
         stmt.execute(saleItems);
         stmt.execute(staff);
+        stmt.execute(vouchers);
 
         String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, BUTTON, MINIMUM_AGE) VALUES ('Default','FALSE',false,0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
@@ -1586,7 +1605,7 @@ public class DBConnect {
 
         return sales;
     }
-    
+
     private List<Sale> getAllSalesNoSem() throws SQLException {
         String query = "SELECT * FROM SALES";
         Statement stmt = con.createStatement();
@@ -1608,7 +1627,7 @@ public class DBConnect {
 
         return sales;
     }
-    
+
     public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
         List<Sale> sales = new ArrayList<>();
         while (set.next()) {
@@ -1689,6 +1708,171 @@ public class DBConnect {
         }
 
         return sales;
+    }
+
+    //Voucher Methods
+    public List<Voucher> getAllVouchers() throws SQLException {
+        String query = "SELECT * FROM VOUCHERS";
+        Statement stmt = con.createStatement();
+        try {
+            voucherSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Voucher> vouchers;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            vouchers = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                String name = set.getString("NAME");
+                String type = set.getString("TYPE");
+                String field1 = set.getString("FIELD1");
+                String field2 = set.getString("FIELD2");
+                String field3 = set.getString("FIELD3");
+                String field4 = set.getString("FIELD4");
+                String field5 = set.getString("FIELD5");
+                String field6 = set.getString("FIELD6");
+                String field7 = set.getString("FIELD7");
+                String field8 = set.getString("FIELD8");
+                Voucher.VoucherType voucherType = Voucher.VoucherType.valueOf(type);
+                Voucher v = new Voucher(id, name, voucherType, field1, field2, field3, field4, field5, field6, field7, field8);
+                vouchers.add(v);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            voucherSem.release();
+        }
+
+        return vouchers;
+    }
+
+    public List<Voucher> getVouchersFromResultSet(ResultSet set) throws SQLException {
+        List<Voucher> vouchers = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String name = set.getString("NAME");
+            String type = set.getString("TYPE");
+            String field1 = set.getString("FIELD1");
+            String field2 = set.getString("FIELD2");
+            String field3 = set.getString("FIELD3");
+            String field4 = set.getString("FIELD4");
+            String field5 = set.getString("FIELD5");
+            String field6 = set.getString("FIELD6");
+            String field7 = set.getString("FIELD7");
+            String field8 = set.getString("FIELD8");
+            Voucher.VoucherType voucherType = Voucher.VoucherType.valueOf(type);
+            Voucher v = new Voucher(id, name, voucherType, field1, field2, field3, field4, field5, field6, field7, field8);
+            vouchers.add(v);
+        }
+        return vouchers;
+    }
+
+    public void addVoucher(Voucher v) throws SQLException {
+        String query = "INSERT INTO VOUCHERS (NAME, TYPE) VALUES (" + v.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        try {
+            voucherSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            voucherSem.release();
+        }
+    }
+
+    public void updateVoucher(Voucher v) throws SQLException, VoucherNotFoundException {
+        String query = v.getSQlUpdateString();
+        Statement stmt = con.createStatement();
+        try {
+            voucherSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            voucherSem.release();
+        }
+        if (value == 0) {
+            throw new VoucherNotFoundException(v.getId() + "");
+        }
+    }
+
+    public void removeVoucher(Voucher v) throws SQLException, VoucherNotFoundException {
+        String query = "DELETE FROM VOUCHERS WHERE VOUCHERS.ID = " + v.getId();
+        Statement stmt = con.createStatement();
+        try {
+            voucherSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            voucherSem.release();
+        }
+        if (value == 0) {
+            throw new VoucherNotFoundException(v.getId() + "");
+        }
+    }
+
+    public void removeVoucher(int id) throws SQLException, VoucherNotFoundException {
+        String query = "DELETE FROM VOUCHERS WHERE VOUCHERS.ID = " + id;
+        Statement stmt = con.createStatement();
+        try {
+            voucherSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            voucherSem.release();
+        }
+        if (value == 0) {
+            throw new VoucherNotFoundException(id + "");
+        }
+    }
+
+    public Voucher getVoucher(int id) throws SQLException, VoucherNotFoundException {
+        String query = "SELECT * FROM VOUCHERS WHERE VOUCHERS.ID = " + id;
+        Statement stmt = con.createStatement();
+        try {
+            voucherSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Voucher> vouchers;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            vouchers = getVouchersFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            voucherSem.release();
+        }
+
+        if (vouchers.isEmpty()) {
+            throw new VoucherNotFoundException(id + "");
+        }
+
+        return vouchers.get(0);
     }
 
     @Override
