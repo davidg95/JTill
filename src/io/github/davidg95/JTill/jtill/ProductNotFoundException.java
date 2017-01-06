@@ -12,21 +12,21 @@ package io.github.davidg95.JTill.jtill;
  */
 public class ProductNotFoundException extends Exception {
 
-    private final String code;
+    private final String message;
 
-    public ProductNotFoundException(String code) {
+    public ProductNotFoundException(String message) {
         super();
-        this.code = code;
+        this.message = message;
     }
 
     @Override
     public String getMessage() {
-        return "Product " + code + " could not be found";
+        return message;
     }
 
     @Override
     public String toString() {
-        return "Product " + code + " could not be found";
+        return message;
     }
 
 }

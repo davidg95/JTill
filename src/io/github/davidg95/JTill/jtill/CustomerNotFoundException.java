@@ -11,23 +11,23 @@ package io.github.davidg95.JTill.jtill;
  *
  * @author David
  */
-public class CustomerNotFoundException extends Exception{
-    
-    private final String id;
-    
-    public CustomerNotFoundException(String id){
+public class CustomerNotFoundException extends Exception {
+
+    private final String message;
+
+    public CustomerNotFoundException(String id) {
         super();
-        this.id = id;
+        this.message = id;
     }
-    
+
     @Override
-    public String getMessage(){
-        return "Customer " + id + " could not be found";
+    public String getMessage() {
+        return message;
     }
-    
+
     @Override
-    public String toString(){
-        return "Customer " + id + " could not be found";
+    public String toString() {
+        return message;
     }
 
 }

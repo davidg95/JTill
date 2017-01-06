@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import io.github.davidg95.JTill.jtill.Staff.Position;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -26,7 +27,7 @@ import org.apache.derby.jdbc.EmbeddedDriver;
  *
  * @author David
  */
-public class DBConnect {
+public class DBConnect implements DataConnectInterface {
 
     private Connection con;
     private Driver embedded;
@@ -239,19 +240,10 @@ public class DBConnect {
     }
 
     /**
-     * Method to initialise the database connection. This method will set up the
-     * SQL statements and load the data sets.
-     *
-     * @throws SQLException if there was an SQL error.
-     */
-    public void initDatabase() throws SQLException {
-
-    }
-
-    /**
      * Method to close the database connection. This will close the data sets
      * and close the connection.
      */
+    @Override
     public void close() {
         try {
             con.close();
@@ -266,10 +258,12 @@ public class DBConnect {
      *
      * @return true if it connected, false otherwise.
      */
+    @Override
     public boolean isConnected() {
         return connected;
     }
 
+    @Override
     public List<Product> getAllProducts() throws SQLException {
         String query = "SELECT * FROM PRODUCTS";
         Statement stmt = con.createStatement();
@@ -348,6 +342,7 @@ public class DBConnect {
      * @throws SQLException if there was an error adding the product to the
      * database.
      */
+    @Override
     public void addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, BUTTON, COLOR, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
@@ -366,7 +361,8 @@ public class DBConnect {
         }
     }
 
-    public void updateProduct(Product p) throws SQLException, ProductNotFoundException {
+    @Override
+    public Product updateProduct(Product p) throws SQLException, ProductNotFoundException {
         String query = p.getSQlUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -385,6 +381,7 @@ public class DBConnect {
         if (value == 0) {
             throw new ProductNotFoundException(p.getProductCode() + "");
         }
+        return p;
     }
 
     /**
@@ -394,6 +391,7 @@ public class DBConnect {
      * @return true or false indicating whether the barcode already exists.
      * @throws SQLException if there was an error checking the barcode.
      */
+    @Override
     public boolean checkBarcode(String barcode) throws SQLException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.BARCODE = '" + barcode + "'";
         ResultSet res;
@@ -424,6 +422,7 @@ public class DBConnect {
      * @throws SQLException if there was an error removing the product.
      * @throws ProductNotFoundException if the product was not found.
      */
+    @Override
     public void removeProduct(Product p) throws SQLException, ProductNotFoundException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode();
         Statement stmt = con.createStatement();
@@ -452,6 +451,7 @@ public class DBConnect {
      * @throws SQLException if there was an error removing the product.
      * @throws ProductNotFoundException if the product code was not found.
      */
+    @Override
     public void removeProduct(int id) throws SQLException, ProductNotFoundException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + id + "";
         Statement stmt = con.createStatement();
@@ -482,6 +482,7 @@ public class DBConnect {
      * @throws OutOfStockException if the product is out of stock.
      * @throws ProductNotFoundException if the product was not found.
      */
+    @Override
     public int purchaseProduct(int code) throws SQLException, OutOfStockException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + code;
         Statement stmt = con.createStatement();
@@ -521,7 +522,8 @@ public class DBConnect {
      * @throws SQLException if there was an error getting the product.
      * @throws ProductNotFoundException if the product could not be found.
      */
-    public Product getProduct(String code) throws SQLException, ProductNotFoundException {
+    @Override
+    public Product getProduct(int code) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM Products WHERE PRODUCTS.ID = '" + code + "'";
         Statement stmt = con.createStatement();
         try {
@@ -537,7 +539,7 @@ public class DBConnect {
 
             products = getProductsFromResultSet(res);
             if (products.isEmpty()) {
-                throw new ProductNotFoundException(code);
+                throw new ProductNotFoundException("Product " + code + " could not be found");
             }
         } catch (SQLException ex) {
             throw ex;
@@ -555,6 +557,7 @@ public class DBConnect {
      * @throws SQLException if there was an error getting the product.
      * @throws ProductNotFoundException if the product could not be found.
      */
+    @Override
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM Products WHERE PRODUCTS.BARCODE = '" + barcode + "'";
         Statement stmt = con.createStatement();
@@ -589,6 +592,7 @@ public class DBConnect {
      * @throws SQLException if there was an error setting the stock.
      * @throws ProductNotFoundException if the product could not be found.
      */
+    @Override
     public void setStock(int code, int stock) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + code;
         Statement stmt = con.createStatement();
@@ -614,6 +618,7 @@ public class DBConnect {
         throw new ProductNotFoundException(code + "");
     }
 
+    @Override
     public List<Discount> getProductsDiscount(Product p) throws SQLException {
         String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
         Statement stmt = con.createStatement();
@@ -636,6 +641,7 @@ public class DBConnect {
         return discounts;
     }
 
+    @Override
     public int getProductCount() throws SQLException {
         String query = "SELECT * FROM PRODUCTS";
         Statement stmt = con.createStatement();
@@ -659,6 +665,7 @@ public class DBConnect {
     }
 
     //Customer Methods
+    @Override
     public List<Customer> getAllCustomers() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
@@ -733,6 +740,7 @@ public class DBConnect {
      * @throws SQLException if there was an error adding the customer to the
      * database.
      */
+    @Override
     public void addCustomer(Customer c) throws SQLException {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, DISCOUNT_ID, LOYALTY_POINTS) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
@@ -750,7 +758,8 @@ public class DBConnect {
         }
     }
 
-    public void updateCustomer(Customer c) throws SQLException, CustomerNotFoundException {
+    @Override
+    public Customer updateCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = c.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -769,8 +778,10 @@ public class DBConnect {
         if (value == 0) {
             throw new CustomerNotFoundException(c.getId() + "");
         }
+        return c;
     }
 
+    @Override
     public void removeCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + c.getId();
         Statement stmt = con.createStatement();
@@ -792,6 +803,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public void removeCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -813,8 +825,9 @@ public class DBConnect {
         }
     }
 
+    @Override
     public Customer getCustomer(int id) throws SQLException, CustomerNotFoundException {
-        String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
+        String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = '" + id + "'";
         Statement stmt = con.createStatement();
         try {
             customerSem.acquire();
@@ -833,11 +846,38 @@ public class DBConnect {
         }
 
         if (customers.isEmpty()) {
-            throw new CustomerNotFoundException(id + "");
+            throw new CustomerNotFoundException("Customer " + id + " could not be found");
         }
         return customers.get(0);
     }
 
+    @Override
+    public List<Customer> getCustomerByName(String name) throws SQLException, CustomerNotFoundException {
+        String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.NAME = " + name;
+        Statement stmt = con.createStatement();
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Customer> customers;
+        try {
+            ResultSet res = stmt.executeQuery(query);
+
+            customers = getCustomersFromResultSet(res);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            customerSem.release();
+        }
+
+        if (customers.isEmpty()) {
+            throw new CustomerNotFoundException("Customer " + name + " could not be found");
+        }
+        return customers;
+    }
+
+    @Override
     public int getCustomerCount() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
@@ -951,7 +991,8 @@ public class DBConnect {
         }
     }
 
-    public void updateStaff(Staff s) throws SQLException, StaffNotFoundException {
+    @Override
+    public Staff updateStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = s.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -970,8 +1011,10 @@ public class DBConnect {
         if (value == 0) {
             throw new StaffNotFoundException(s.getId() + "");
         }
+        return s;
     }
 
+    @Override
     public void removeStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + s.getId();
         Statement stmt = con.createStatement();
@@ -993,6 +1036,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public void removeStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1014,6 +1058,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public Staff getStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1040,6 +1085,7 @@ public class DBConnect {
         return staff.get(0);
     }
 
+    @Override
     public Staff login(String username, String password) throws SQLException, LoginException {
         String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username.toLowerCase() + "'";
         Statement stmt = con.createStatement();
@@ -1072,6 +1118,7 @@ public class DBConnect {
         throw new LoginException("Incorrect Password");
     }
 
+    @Override
     public int staffCount() throws SQLException {
         String query = "SELECT * FROM STAFF";
         Statement stmt = con.createStatement();
@@ -1095,6 +1142,7 @@ public class DBConnect {
     }
 
     //Discount Methods
+    @Override
     public List<Discount> getAllDiscounts() throws SQLException {
         String query = "SELECT * FROM DISCOUNTS";
         Statement stmt = con.createStatement();
@@ -1140,6 +1188,7 @@ public class DBConnect {
         return discounts;
     }
 
+    @Override
     public void addDiscount(Discount d) throws SQLException {
         String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES (" + d.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
@@ -1157,7 +1206,8 @@ public class DBConnect {
         }
     }
 
-    public void updateDiscount(Discount d) throws SQLException, DiscountNotFoundException {
+    @Override
+    public Discount updateDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = d.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -1176,8 +1226,10 @@ public class DBConnect {
         if (value == 0) {
             throw new DiscountNotFoundException(d.getId() + "");
         }
+        return d;
     }
 
+    @Override
     public void removeDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + d.getId();
         Statement stmt = con.createStatement();
@@ -1199,6 +1251,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public void removeDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1220,6 +1273,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public Discount getDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1247,6 +1301,7 @@ public class DBConnect {
     }
 
     //Tax Methods
+    @Override
     public List<Tax> getAllTax() throws SQLException {
         String query = "SELECT * FROM TAX";
         Statement stmt = con.createStatement();
@@ -1290,6 +1345,7 @@ public class DBConnect {
         return tax;
     }
 
+    @Override
     public void addTax(Tax t) throws SQLException {
         String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
@@ -1307,7 +1363,8 @@ public class DBConnect {
         }
     }
 
-    public void updateTax(Tax t) throws SQLException, TaxNotFoundException {
+    @Override
+    public Tax updateTax(Tax t) throws SQLException, TaxNotFoundException {
         String query = t.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -1326,8 +1383,10 @@ public class DBConnect {
         if (value == 0) {
             throw new TaxNotFoundException(t.getId() + "");
         }
+        return t;
     }
 
+    @Override
     public void removeTax(Tax t) throws SQLException, TaxNotFoundException {
         String query = "DELETE FROM TAX WHERE TAX.ID = " + t.getId();
         Statement stmt = con.createStatement();
@@ -1349,6 +1408,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public void removeTax(int id) throws SQLException, TaxNotFoundException {
         String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1370,6 +1430,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public Tax getTax(int id) throws SQLException, TaxNotFoundException {
         String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1397,6 +1458,7 @@ public class DBConnect {
     }
 
     //Category Methods
+    @Override
     public List<Category> getAllCategorys() throws SQLException {
         String query = "SELECT * FROM CATEGORYS";
         Statement stmt = con.createStatement();
@@ -1447,6 +1509,7 @@ public class DBConnect {
         return categorys;
     }
 
+    @Override
     public void addCategory(Category c) throws SQLException {
         String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, BUTTON, COLOR, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
@@ -1464,7 +1527,8 @@ public class DBConnect {
         }
     }
 
-    public void updateCategory(Category c) throws SQLException, CategoryNotFoundException {
+    @Override
+    public Category updateCategory(Category c) throws SQLException, CategoryNotFoundException {
         String query = c.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -1483,8 +1547,10 @@ public class DBConnect {
         if (value == 0) {
             throw new CategoryNotFoundException(c.getID() + "");
         }
+        return c;
     }
 
+    @Override
     public void removeCategory(Category c) throws SQLException, CategoryNotFoundException {
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + c.getID();
         Statement stmt = con.createStatement();
@@ -1506,6 +1572,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public void removeCategory(int id) throws SQLException, CategoryNotFoundException {
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1527,6 +1594,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public Category getCategory(int id) throws SQLException, CategoryNotFoundException {
         String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1553,6 +1621,7 @@ public class DBConnect {
         return categorys.get(0);
     }
 
+    @Override
     public List<Product> getProductsInCategory(int id) throws SQLException {
         String query = "SELECT * FROM PRODUCTS, CATEGORYS WHERE CATEGORYS.ID = PRODUCTS.CATEGORY_ID AND CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1575,35 +1644,6 @@ public class DBConnect {
         }
 
         return products;
-    }
-
-    public List<Sale> getAllSales() throws SQLException {
-        String query = "SELECT * FROM SALES";
-        Statement stmt = con.createStatement();
-        try {
-            saleSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Sale> sales;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            sales = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                double price = set.getDouble("PRICE");
-                int customer = set.getInt("CUSTOMER");
-                Time time = set.getTime("TIMESTAMP");
-                Sale s = new Sale(id, price, customer, time.getTime());
-                sales.add(s);
-            }
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            saleSem.release();
-        }
-
-        return sales;
     }
 
     private List<Sale> getAllSalesNoSem() throws SQLException {
@@ -1641,6 +1681,7 @@ public class DBConnect {
         return sales;
     }
 
+    @Override
     public void addSale(Sale s) throws SQLException {
         String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
@@ -1663,12 +1704,43 @@ public class DBConnect {
         }
     }
 
+    @Override
+    public List<Sale> getAllSales() throws SQLException {
+        String query = "SELECT * FROM SALES";
+        Statement stmt = con.createStatement();
+        try {
+            saleSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Sale> sales;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            sales = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                double price = set.getDouble("PRICE");
+                int customer = set.getInt("CUSTOMER");
+                Time time = set.getTime("TIMESTAMP");
+                Sale s = new Sale(id, price, customer, time.getTime());
+                sales.add(s);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            saleSem.release();
+        }
+
+        return sales;
+    }
+
     private void addSaleItem(Sale s, int p) throws SQLException {
         String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, SALE_ID) VALUES (" + p + ", " + s.getCode() + ")";
         Statement sstmt = con.createStatement();
         sstmt.executeUpdate(secondQuery);
     }
 
+    @Override
     public Sale getSale(int id) throws SQLException, SaleNotFoundException {
         String query = "SELECT * FROM APP.SALES WHERE SALES.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1694,6 +1766,7 @@ public class DBConnect {
         return sales.get(0);
     }
 
+    @Override
     public List<Sale> getSalesInRange(Date start, Date end) throws SQLException, IllegalArgumentException {
         if (start.after(end)) {
             throw new IllegalArgumentException("Start date needs to be before end date");
@@ -1711,6 +1784,7 @@ public class DBConnect {
     }
 
     //Voucher Methods
+    @Override
     public List<Voucher> getAllVouchers() throws SQLException {
         String query = "SELECT * FROM VOUCHERS";
         Statement stmt = con.createStatement();
@@ -1769,6 +1843,7 @@ public class DBConnect {
         return vouchers;
     }
 
+    @Override
     public void addVoucher(Voucher v) throws SQLException {
         String query = "INSERT INTO VOUCHERS (NAME, TYPE) VALUES (" + v.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
@@ -1786,7 +1861,8 @@ public class DBConnect {
         }
     }
 
-    public void updateVoucher(Voucher v) throws SQLException, VoucherNotFoundException {
+    @Override
+    public Voucher updateVoucher(Voucher v) throws SQLException, VoucherNotFoundException {
         String query = v.getSQlUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -1805,8 +1881,10 @@ public class DBConnect {
         if (value == 0) {
             throw new VoucherNotFoundException(v.getId() + "");
         }
+        return v;
     }
 
+    @Override
     public void removeVoucher(Voucher v) throws SQLException, VoucherNotFoundException {
         String query = "DELETE FROM VOUCHERS WHERE VOUCHERS.ID = " + v.getId();
         Statement stmt = con.createStatement();
@@ -1828,6 +1906,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public void removeVoucher(int id) throws SQLException, VoucherNotFoundException {
         String query = "DELETE FROM VOUCHERS WHERE VOUCHERS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1849,6 +1928,7 @@ public class DBConnect {
         }
     }
 
+    @Override
     public Voucher getVoucher(int id) throws SQLException, VoucherNotFoundException {
         String query = "SELECT * FROM VOUCHERS WHERE VOUCHERS.ID = " + id;
         Statement stmt = con.createStatement();
@@ -1882,5 +1962,35 @@ public class DBConnect {
         } else {
             return "Not connected to database";
         }
+    }
+
+    @Override
+    public TillInitData getInitData() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void logout(int id) throws IOException, StaffNotFoundException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void tillLogout(int id) throws IOException, StaffNotFoundException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Category> getCategoryButtons() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<Product> getProductButtons(int catId) throws IOException, SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
