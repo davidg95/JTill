@@ -45,6 +45,10 @@ public class ServerConnection implements DataConnectInterface {
         isConnected = false;
         this.site = site;
     }
+    
+    static{
+        
+    }
 
     /**
      * Method to connect to the server.
