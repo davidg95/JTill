@@ -45,9 +45,9 @@ public class ServerConnection implements DataConnectInterface {
         isConnected = false;
         this.site = site;
     }
-    
-    static{
-        
+
+    static {
+
     }
 
     /**
@@ -87,6 +87,10 @@ public class ServerConnection implements DataConnectInterface {
             out.println("INIT");
 
             Object o = obIn.readObject();
+
+            TillInitData init = (TillInitData) o;
+
+            TillInitData.staticInit(init);
 
             return (TillInitData) o;
         } catch (ClassNotFoundException ex) {
@@ -1280,5 +1284,11 @@ public class ServerConnection implements DataConnectInterface {
     public void close() {
         out.println("CONNTERM");
         isConnected = false;
+    }
+
+    @Override
+    public void setInitData(TillInitData data) throws IOException {
+        out.println("SETINIT");
+        obOut.writeObject(data);
     }
 }

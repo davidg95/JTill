@@ -12,12 +12,25 @@ import java.io.Serializable;
  * @author David
  */
 public class TillInitData implements Serializable {
+    
+    public static TillInitData initData;
+    
     public boolean autoLogout;
     public int logoutTimeout;
+    public String logonScreenMessage;
     
-    public TillInitData(boolean autoLogout, int logoutTimeout){
-        this.autoLogout = autoLogout;
-        this.logoutTimeout = logoutTimeout;
+    public TillInitData(){
+        this.autoLogout = false;
+        this.logoutTimeout = -1;
+        this.logonScreenMessage = "";
+    }
+    
+    static{
+        initData = new TillInitData();
+    }
+    
+    public static void staticInit(TillInitData data){
+        initData = data;
     }
     
     public boolean isAutoLogout(){
@@ -35,4 +48,14 @@ public class TillInitData implements Serializable {
     public void setLogoutTimeout(int logoutTimeout){
         this.logoutTimeout = logoutTimeout;
     }
+
+    public String getLogonScreenMessage() {
+        return logonScreenMessage;
+    }
+
+    public void setLogonScreenMessage(String logonScreenMessage) {
+        this.logonScreenMessage = logonScreenMessage;
+    }
+    
+    
 }

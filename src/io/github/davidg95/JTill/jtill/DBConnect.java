@@ -6,7 +6,14 @@
 package io.github.davidg95.JTill.jtill;
 
 import io.github.davidg95.JTill.jtill.Staff.Position;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -17,6 +24,7 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,6 +54,20 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore categorySem;
     private final Semaphore saleSem;
     private final Semaphore voucherSem;
+
+    private static Properties properties;
+    public static int PORT = 600;
+    public static int MAX_CONNECTIONS = 10;
+    public static int MAX_QUEUE = 10;
+    public static String hostName;
+    public static String DB_ADDRESS = "jdbc:derby:TillEmbedded;";
+    public static String DB_USERNAME = "APP";
+    public static String DB_PASSWORD = "App";
+    public static final String defaultAddress = "jdbc:derby:TillEmbedded;";
+    public static final String defaultUsername = "APP";
+    public static final String defaultPassword = "App";
+
+    private TillInitData initData;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -1966,7 +1988,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public TillInitData getInitData() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return initData;
     }
 
     @Override
@@ -1992,5 +2014,65 @@ public class DBConnect implements DataConnectInterface {
     @Override
     public List<Product> getProductButtons(int catId) throws IOException, SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    public void loadProperties() {
+        properties = new Properties();
+        InputStream in;
+
+        try {
+            in = new FileInputStream("server.properties");
+
+            properties.load(in);
+
+            hostName = properties.getProperty("host");
+            PORT = Integer.parseInt(properties.getProperty("port", Integer.toString(PORT)));
+            MAX_CONNECTIONS = Integer.parseInt(properties.getProperty("max_conn", Integer.toString(MAX_CONNECTIONS)));
+            MAX_QUEUE = Integer.parseInt(properties.getProperty("max_queue", Integer.toString(MAX_QUEUE)));
+            TillInitData.initData.autoLogout = Boolean.parseBoolean(properties.getProperty("autoLogout", "false"));
+            TillInitData.initData.logoutTimeout = Integer.parseInt(properties.getProperty("logoutTimeout", "30"));
+            TillInitData.initData.logonScreenMessage = properties.getProperty("logonMessage");
+            DB_ADDRESS = properties.getProperty("db_address", "jdbc:derby:TillEmbedded;");
+            DB_USERNAME = properties.getProperty("db_username", "APP");
+            DB_PASSWORD = properties.getProperty("db_password", "App");
+
+            in.close();
+        } catch (FileNotFoundException | UnknownHostException ex) {
+            saveProperties();
+        } catch (IOException ex) {
+        }
+    }
+    
+    public void saveProperties() {
+        properties = new Properties();
+        OutputStream out;
+
+        try {
+            out = new FileOutputStream("server.properties");
+
+            hostName = InetAddress.getLocalHost().getHostName();
+
+            properties.setProperty("host", hostName);
+            properties.setProperty("port", Integer.toString(PORT));
+            properties.setProperty("max_conn", Integer.toString(MAX_CONNECTIONS));
+            properties.setProperty("max_queue", Integer.toString(MAX_QUEUE));
+            properties.setProperty("autoLogout", Boolean.toString(TillInitData.initData.autoLogout));
+            properties.setProperty("logoutTimeout", Integer.toString(TillInitData.initData.logoutTimeout));
+            properties.setProperty("logonMessage", TillInitData.initData.logonScreenMessage);
+            properties.setProperty("db_address", DB_ADDRESS);
+            properties.setProperty("db_username", DB_USERNAME);
+            properties.setProperty("db_password", DB_PASSWORD);
+
+            properties.store(out, null);
+            out.close();
+        } catch (FileNotFoundException | UnknownHostException ex) {
+        } catch (IOException ex) {
+        }
+    }
+
+    @Override
+    public void setInitData(TillInitData data) throws IOException {
+        this.initData = data;
+        saveProperties();
     }
 }

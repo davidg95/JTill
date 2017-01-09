@@ -5,11 +5,13 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.Serializable;
+
 /**
  *
  * @author David
  */
-public class Discount {
+public class Discount implements Serializable {
 
     private int id;
     private String name;
@@ -48,13 +50,13 @@ public class Discount {
     public void setPercentage(double percentage) {
         this.percentage = percentage;
     }
-    
-    public String getSQLInsertString(){
+
+    public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.percentage;
     }
-    
-    public String getSQLUpdateString(){
+
+    public String getSQLUpdateString() {
         return "UPDATE DISCOUNTS"
                 + " SET NAME='" + this.getName()
                 + "', PERCENTAGE=" + this.getPercentage()

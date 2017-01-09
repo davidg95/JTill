@@ -20,6 +20,8 @@ public interface DataConnectInterface {
 
     public TillInitData getInitData() throws IOException;
 
+    public void setInitData(TillInitData data) throws IOException;
+
     //Product
     public void addProduct(Product p) throws IOException, SQLException;
 
