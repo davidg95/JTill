@@ -1291,4 +1291,9 @@ public class ServerConnection implements DataConnectInterface {
         out.println("SETINIT");
         obOut.writeObject(data);
     }
+
+    @Override
+    public String toString() {
+        return "Connect to JTill Server\nServer Address: " + socket.getInetAddress().toString() + " on port " + socket.getPort();
+    }
 }
