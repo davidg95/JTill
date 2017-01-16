@@ -54,6 +54,7 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore categorySem;
     private final Semaphore saleSem;
     private final Semaphore voucherSem;
+    private final Semaphore screensSem;
 
     private static Properties properties;
     public static int PORT = 600;
@@ -78,6 +79,7 @@ public class DBConnect implements DataConnectInterface {
         categorySem = new Semaphore(1);
         saleSem = new Semaphore(1);
         voucherSem = new Semaphore(1);
+        screensSem = new Semaphore(1);
     }
 
     /**
@@ -118,8 +120,6 @@ public class DBConnect implements DataConnectInterface {
                 + "     SELL_START TIME,\n"
                 + "     SELL_END TIME,\n"
                 + "     TIME_RESTRICT BOOLEAN not null,\n"
-                + "     BUTTON BOOLEAN not null,\n"
-                + "     COLOR INT,\n"
                 + "     MINIMUM_AGE INT not null\n"
                 + ")";
         String discounts = "create table \"APP\".DISCOUNTS\n"
@@ -198,8 +198,6 @@ public class DBConnect implements DataConnectInterface {
                 + "	COST_PRICE DOUBLE,\n"
                 + "	MIN_PRODUCT_LEVEL INTEGER,\n"
                 + "	MAX_PRODUCT_LEVEL INTEGER,\n"
-                + "     BUTTON BOOLEAN not null,\n"
-                + "     COLOR INT,\n"
                 + "	DISCOUNT_ID INT not null references DISCOUNTS(ID)\n"
                 + ")";
         String staff = "create table \"APP\".STAFF\n"
@@ -228,6 +226,26 @@ public class DBConnect implements DataConnectInterface {
                 + "     FIELD7 VARCHAR(50),\n"
                 + "     FIELD8 VARCHAR(50)\n"
                 + ")";
+        String screens = "create table \"APP\".SCREENS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     NAME VARCHAR(50) not null,\n"
+                + "     ORDER INTEGER,\n"
+                + "     COLOR INT\n"
+                + ")";
+        String buttons = "create table \"APP\".BUTTONS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     NAME VARCHAR(50) not null,\n"
+                + "     ORDER INTEGER,\n"
+                + "     PRODUCT INT not null references PRODUCTS(ID),\n"
+                + "     COLOR INT,\n"
+                + "     SCREEN_ID INT not null references SCREENS(ID)\n"
+                + ")";
 
         Statement stmt = con.createStatement();
         stmt.execute(tax);
@@ -240,6 +258,8 @@ public class DBConnect implements DataConnectInterface {
         stmt.execute(saleItems);
         stmt.execute(staff);
         stmt.execute(vouchers);
+        stmt.execute(screens);
+        stmt.execute(buttons);
 
         String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, BUTTON, MINIMUM_AGE) VALUES ('Default','FALSE',false,0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
@@ -312,11 +332,9 @@ public class DBConnect implements DataConnectInterface {
                 double costPrice = set.getDouble("COST_PRICE");
                 int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                 int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
-                boolean button = set.getBoolean("BUTTON");
-                int color = set.getInt("COLOR");
                 int discountID = set.getInt("DISCOUNT_ID");
 
-                Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+                Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
                 products.add(p);
             }
@@ -345,11 +363,9 @@ public class DBConnect implements DataConnectInterface {
             double costPrice = set.getDouble("COST_PRICE");
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
-            boolean button = set.getBoolean("BUTTON");
-            int color = set.getInt("COLOR");
             int discountID = set.getInt("DISCOUNT_ID");
 
-            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, button, color, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
             products.add(p);
         }
@@ -923,6 +939,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     //Staff Methods
+    @Override
     public List<Staff> getAllStaff() throws SQLException {
         String query = "SELECT * FROM STAFF";
         Statement stmt = con.createStatement();
@@ -996,6 +1013,7 @@ public class DBConnect implements DataConnectInterface {
         return staff;
     }
 
+    @Override
     public void addStaff(Staff s) throws SQLException {
         String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
@@ -2006,16 +2024,6 @@ public class DBConnect implements DataConnectInterface {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    @Override
-    public List<Category> getCategoryButtons() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public List<Product> getProductButtons(int catId) throws IOException, SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
     public void loadProperties() {
         properties = new Properties();
         InputStream in;
@@ -2042,7 +2050,7 @@ public class DBConnect implements DataConnectInterface {
         } catch (IOException ex) {
         }
     }
-    
+
     public void saveProperties() {
         properties = new Properties();
         OutputStream out;
@@ -2074,5 +2082,314 @@ public class DBConnect implements DataConnectInterface {
     public void setInitData(TillInitData data) throws IOException {
         this.initData = data;
         saveProperties();
+    }
+
+    private List<Screen> getScreensFromResultSet(ResultSet set) throws SQLException {
+        List<Screen> screens = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String name = set.getString("NAME");
+            int order = set.getInt("ORDER");
+            int color = set.getInt("COLOR");
+            Screen s = new Screen(name, order, color, id);
+
+            screens.add(s);
+        }
+
+        return screens;
+    }
+
+    private List<Button> getButtonsFromResultSet(ResultSet set) throws SQLException {
+        List<Button> buttons = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String name = set.getString("NAME");
+            int order = set.getInt("ORDER");
+            int product = set.getInt("PRODUCT");
+            int screen = set.getInt("SCREEN_ID");
+            int color = set.getInt("COLOR");
+            Button b = new Button(name, order, product, screen, color, id);
+
+            buttons.add(b);
+        }
+
+        return buttons;
+    }
+
+    @Override
+    public void addScreen(Screen s) throws SQLException {
+        String query = "INSERT INTO SCREENS (NAME, ORDER, COLOR) VALUES (" + s.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+    }
+
+    @Override
+    public void addButton(Button b) throws SQLException {
+        String query = "INSERT INTO BUTTONS (NAME, ORDER, PRODUCT, COLOLR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+    }
+
+    @Override
+    public void removeScreen(Screen s) throws SQLException, ScreenNotFoundException {
+        String query = "DELETE FROM SCREENS WHERE SCREENS.ID = " + s.getId();
+        String buttonsQuery = "DELETE FROM BUTTONS WHERE BUTTONS.SCREEN_ID = " + s.getId();
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+            stmt.executeUpdate(buttonsQuery);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+        if (value == 0) {
+            throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        }
+    }
+
+    @Override
+    public void removeButton(Button b) throws SQLException, ButtonNotFoundException {
+        String query = "DELETE FROM BUTTONS WHERE BUTTONS.ID = " + b.getId();
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+        if (value == 0) {
+            throw new ButtonNotFoundException("Button " + b + " could not be found");
+        }
+    }
+
+    @Override
+    public Screen getScreen(int s) throws SQLException, ScreenNotFoundException {
+        String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + s;
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Screen> screens;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            screens = getScreensFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+
+        if (screens.isEmpty()) {
+            throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        }
+
+        return screens.get(0);
+    }
+
+    @Override
+    public Button getButton(int b) throws SQLException, ButtonNotFoundException {
+        String query = "SELECT * FROM SCREENS WHERE BUTTONS.ID = " + b;
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Button> buttons;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            buttons = getButtonsFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+
+        if (buttons.isEmpty()) {
+            throw new ButtonNotFoundException("Button " + b + " could not be found");
+        }
+
+        return buttons.get(0);
+    }
+
+    @Override
+    public Screen updateScreen(Screen s) throws SQLException, ScreenNotFoundException {
+        String query = s.getSQLUpdateString();
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+        if (value == 0) {
+            throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        }
+        return s;
+    }
+
+    @Override
+    public Button updateButton(Button b) throws SQLException, ButtonNotFoundException {
+        String query = b.getSQLUpdateString();
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+        if (value == 0) {
+            throw new ButtonNotFoundException("Button " + b + " could not be found");
+        }
+        return b;
+    }
+
+    @Override
+    public List<Screen> getAllScreens() throws SQLException {
+        String query = "SELECT * FROM SCREENS";
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Screen> screens;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            screens = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                String name = set.getString("NAME");
+                int order = set.getInt("ORDER");
+                int color = set.getInt("COLOR");
+                Screen s = new Screen(name, order, color, id);
+
+                screens.add(s);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+
+        return screens;
+    }
+
+    @Override
+    public List<Button> getAllButtons() throws SQLException {
+        String query = "SELECT * FROM BUTTONS";
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Button> buttons;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            buttons = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                String name = set.getString("NAME");
+                int order = set.getInt("ORDER");
+                int product = set.getInt("PRODUCT");
+                int color = set.getInt("COLOR");
+                Button b = new Button(name, order, product, color, id);
+
+                buttons.add(b);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+
+        return buttons;
+    }
+
+    @Override
+    public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
+        String query = "SELECT * FROM BUTTONS WHERE BUTTONS.SCREEN_ID=" + s.getId();
+        Statement stmt = con.createStatement();
+        try {
+            screensSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Button> buttons;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            buttons = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                String name = set.getString("NAME");
+                int order = set.getInt("ORDER");
+                int product = set.getInt("PRODUCT");
+                int color = set.getInt("COLOR");
+                Button b = new Button(name, order, product, color, id);
+
+                buttons.add(b);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            screensSem.release();
+        }
+
+        return buttons;
     }
 }

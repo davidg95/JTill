@@ -96,11 +96,6 @@ public interface DataConnectInterface {
 
     public void tillLogout(int id) throws IOException, StaffNotFoundException;
 
-    //Buttons
-    public List<Category> getCategoryButtons() throws IOException;
-
-    public List<Product> getProductButtons(int catId) throws IOException, SQLException;
-
     //Category
     public void addCategory(Category c) throws IOException, SQLException;
 
@@ -156,4 +151,27 @@ public interface DataConnectInterface {
     public List<Voucher> getAllVouchers() throws IOException, SQLException;
 
     public void close();
+
+    //Screens
+    public void addScreen(Screen s) throws IOException, SQLException;
+
+    public void addButton(Button b) throws IOException, SQLException;
+
+    public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
+
+    public void removeButton(Button b) throws IOException, SQLException, ButtonNotFoundException;
+
+    public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException;
+
+    public Button getButton(int b) throws IOException, SQLException, ButtonNotFoundException;
+
+    public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
+
+    public Button updateButton(Button b) throws IOException, SQLException, ButtonNotFoundException;
+
+    public List<Screen> getAllScreens() throws IOException, SQLException;
+
+    public List<Button> getAllButtons() throws IOException, SQLException;
+
+    public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 }

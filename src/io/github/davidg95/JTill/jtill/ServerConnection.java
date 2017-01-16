@@ -1048,42 +1048,6 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public List<Category> getCategoryButtons() throws IOException {
-        try {
-            out.println("GETCATBUTTONS");
-
-            Object o = obIn.readObject();
-
-            List<Category> categorys = (List<Category>) o;
-
-            return categorys;
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    public List<Product> getProductButtons(int catId) throws IOException, SQLException {
-        try {
-            out.println("GETPRODUCTBUTTONS," + catId);
-
-            Object o = obIn.readObject();
-
-            if (o instanceof SQLException) {
-                throw (SQLException) o;
-            }
-
-            List<Product> products = (List<Product>) o;
-
-            return products;
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
     public void addTax(Tax t) throws IOException {
         out.println("ADDTAX");
         obOut.writeObject(t);
@@ -1295,5 +1259,160 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public String toString() {
         return "Connect to JTill Server\nServer Address: " + socket.getInetAddress().toString() + " on port " + socket.getPort();
+    }
+
+    @Override
+    public void addScreen(Screen s) throws IOException, SQLException {
+        out.println("ADDSCREEN");
+        obOut.writeObject(s);
+    }
+
+    @Override
+    public void addButton(Button b) throws IOException, SQLException {
+        out.println("ADDBUTTON");
+        obOut.writeObject(b);
+    }
+
+    @Override
+    public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
+        out.println("REMOVESCREEN");
+        obOut.writeObject(s);
+        if (in.readLine().equals("FAIL")) {
+            throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        }
+    }
+
+    @Override
+    public void removeButton(Button b) throws IOException, SQLException, ButtonNotFoundException {
+        out.println("REMOVEBUTTON");
+        obOut.writeObject(b);
+        if (in.readLine().equals("FAIL")) {
+            throw new ButtonNotFoundException("Button " + b + " could not be found");
+        }
+    }
+
+    @Override
+    public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException {
+        try {
+            out.println("GETSCREEN," + s);
+            Object o = obIn.readObject();
+            if (o instanceof Screen) {
+                return (Screen) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
+            } else {
+                throw (ScreenNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public Button getButton(int b) throws IOException, SQLException, ButtonNotFoundException {
+        try {
+            out.println("GETBUTTON," + b);
+            Object o = obIn.readObject();
+            if (o instanceof Button) {
+                return (Button) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
+            } else {
+                throw (ButtonNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
+        try {
+            out.println("UPDATESCREEN");
+            obOut.writeObject(s);
+            Object o = obIn.readObject();
+            if (o instanceof Screen) {
+                return (Screen) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
+            } else {
+                throw (ScreenNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public Button updateButton(Button b) throws IOException, SQLException, ButtonNotFoundException {
+        try {
+            out.println("UPDATEBUTTON");
+            obOut.writeObject(b);
+            Object o = obIn.readObject();
+            if (o instanceof Screen) {
+                return (Button) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
+            } else {
+                throw (ButtonNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Screen> getAllScreens() throws IOException, SQLException {
+        try {
+            out.println("GETALLSCREENS");
+            Object o = obIn.readObject();
+            if (o instanceof List) {
+                return (List<Screen>) o;
+            } else {
+                throw (SQLException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Button> getAllButtons() throws IOException, SQLException {
+        try {
+            out.println("GETALLBUTTONS");
+            Object o = obIn.readObject();
+            if (o instanceof List) {
+                return (List<Button>) o;
+            } else {
+                throw (SQLException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
+        try {
+            out.println("GETBURRONSONSCREEN");
+            obOut.writeObject(s);
+            Object o = obIn.readObject();
+            if (o instanceof List) {
+                return (List<Button>) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
+            } else {
+                throw (ScreenNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 }

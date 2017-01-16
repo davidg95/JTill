@@ -135,8 +135,8 @@ public class Category implements Serializable {
         if (this.isTimeRestrict()) {
             return "UPDATE CATEGORYS"
                     + " SET NAME='" + this.getName()
-                    + "', SELL_START='" + this.getStartSell()
-                    + "', SELL_END='" + this.getEndSell()
+                    + "', SELL_START='" + this.getStartSell().toString()
+                    + "', SELL_END='" + this.getEndSell().toString()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
                     + ", BUTTON=" + this.isButton()
                     + ", COLOR=" + this.getColorValue()
@@ -145,9 +145,9 @@ public class Category implements Serializable {
         } else {
             return "UPDATE CATEGORYS"
                     + " SET NAME='" + this.getName()
-                    + "', SELL_START=" + this.getStartSell()
-                    + ", SELL_END=" + this.getEndSell()
-                    + ", TIME_RESTRICT=" + this.isTimeRestrict()
+                    + "', SELL_START='" + this.getStartSell().toString()
+                    + "', SELL_END='" + this.getEndSell().toString()
+                    + "', TIME_RESTRICT=" + this.isTimeRestrict()
                     + ", BUTTON=" + this.isButton()
                     + ", COLOR=" + this.getColorValue()
                     + ", MINIMUM_AGE=" + this.getMinAge()
