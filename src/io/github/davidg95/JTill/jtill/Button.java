@@ -6,12 +6,13 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.awt.Color;
+import java.io.Serializable;
 
 /**
  *
  * @author David
  */
-public class Button {
+public class Button implements Serializable {
 
     private int id;
     private String name;
@@ -23,6 +24,9 @@ public class Button {
     public Button(String name, int product_id, int order, int screen_id, int color) {
         this.name = name;
         this.product_id = product_id;
+        this.order = order;
+        this.screen_id = screen_id;
+        this.color = color;
     }
 
     public Button(String name, int product_id, int order, int screen_id, int color, int id) {
@@ -97,7 +101,7 @@ public class Button {
     public String getSQLUpdateString() {
         return "UPDATE BUTTONS"
                 + " SET NAME='" + this.getName()
-                + "', ORDER=" + this.getOrder()
+                + "', POSITION=" + this.getOrder()
                 + ", PRODUCT=" + this.getProduct_id()
                 + ", COLOR=" + this.getColorValue()
                 + ", SCREEN_ID=" + this.getScreen_id()

@@ -23,15 +23,13 @@ public class Category implements Serializable {
     private Time endSell;
     private boolean timeRestrict;
     private int minAge;
-    private boolean button;
-    private int color;
 
-    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, boolean button, int color) {
-        this(name, startSell, endSell, timeRestrict, minAge, button, color);
+    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
+        this(name, startSell, endSell, timeRestrict, minAge);
         this.ID = ID;
     }
 
-    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, boolean button, int color) {
+    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
         this.name = name;
         this.timeRestrict = timeRestrict;
         this.startSell = startSell;
@@ -45,8 +43,6 @@ public class Category implements Serializable {
             }
         }
         this.minAge = minAge;
-        this.button = button;
-        this.color = color;
     }
 
     public int getID() {
@@ -97,38 +93,12 @@ public class Category implements Serializable {
         this.minAge = minAge;
     }
 
-    public boolean isButton() {
-        return button;
-    }
-
-    public void setButton(boolean button) {
-        this.button = button;
-    }
-
-    public int getColorValue() {
-        return color;
-    }
-
-    public void setColorValue(int color) {
-        this.color = color;
-    }
-
-    public Color getColor() {
-        return new Color(color);
-    }
-
-    public void setColor(Color c) {
-        this.color = c.getRGB();
-    }
-
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.startSell.toString()
                 + "','" + this.endSell.toString()
                 + "','" + this.timeRestrict
-                + "','" + this.button
-                + "'," + this.color
-                + "," + this.minAge;
+                + "'," + this.minAge;
     }
 
     public String getSQLUpdateString() {
@@ -138,8 +108,6 @@ public class Category implements Serializable {
                     + "', SELL_START='" + this.getStartSell().toString()
                     + "', SELL_END='" + this.getEndSell().toString()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
-                    + ", BUTTON=" + this.isButton()
-                    + ", COLOR=" + this.getColorValue()
                     + ", MINIMUM_AGE=" + this.getMinAge()
                     + " WHERE CATEGORYS.ID=" + this.getID();
         } else {
@@ -148,8 +116,6 @@ public class Category implements Serializable {
                     + "', SELL_START='" + this.getStartSell().toString()
                     + "', SELL_END='" + this.getEndSell().toString()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
-                    + ", BUTTON=" + this.isButton()
-                    + ", COLOR=" + this.getColorValue()
                     + ", MINIMUM_AGE=" + this.getMinAge()
                     + " WHERE CATEGORYS.ID=" + this.getID();
         }

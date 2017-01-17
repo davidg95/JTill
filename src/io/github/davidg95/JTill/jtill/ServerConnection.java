@@ -217,8 +217,9 @@ public class ServerConnection implements DataConnectInterface {
                 throw (SQLException) o;
             }
         } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        throw new ProductNotFoundException(code + "");
+        throw new ProductNotFoundException("Product " + code + " was not found");
     }
 
     /**
@@ -1400,7 +1401,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            out.println("GETBURRONSONSCREEN");
+            out.println("GETBUTTONSONSCREEN");
             obOut.writeObject(s);
             Object o = obIn.readObject();
             if (o instanceof List) {

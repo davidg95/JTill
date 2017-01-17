@@ -79,7 +79,7 @@ public class Screen implements Serializable {
     public String getSQLUpdateString() {
         return "UPDATE SCREENS"
                 + " SET NAME='" + this.getName()
-                + "', ORDER=" + this.getOrder()
+                + "', POSITION=" + this.getOrder()
                 + ", COLOR=" + this.getColorValue()
                 + " WHERE SCREENS.ID=" + this.getId();
     }

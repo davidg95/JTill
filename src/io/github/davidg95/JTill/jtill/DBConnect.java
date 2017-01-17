@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import org.apache.derby.jdbc.EmbeddedDriver;
 
 /**
@@ -232,7 +233,7 @@ public class DBConnect implements DataConnectInterface {
                 + "         GENERATED ALWAYS AS IDENTITY\n"
                 + "         (START WITH 1, INCREMENT BY 1),\n"
                 + "     NAME VARCHAR(50) not null,\n"
-                + "     ORDER INTEGER,\n"
+                + "     POSITION INTEGER,\n"
                 + "     COLOR INT\n"
                 + ")";
         String buttons = "create table \"APP\".BUTTONS\n"
@@ -241,32 +242,74 @@ public class DBConnect implements DataConnectInterface {
                 + "         GENERATED ALWAYS AS IDENTITY\n"
                 + "         (START WITH 1, INCREMENT BY 1),\n"
                 + "     NAME VARCHAR(50) not null,\n"
-                + "     ORDER INTEGER,\n"
+                + "     POSITION INTEGER,\n"
                 + "     PRODUCT INT not null references PRODUCTS(ID),\n"
                 + "     COLOR INT,\n"
                 + "     SCREEN_ID INT not null references SCREENS(ID)\n"
                 + ")";
 
         Statement stmt = con.createStatement();
-        stmt.execute(tax);
-        stmt.execute(categorys);
-        stmt.execute(discounts);
-        stmt.execute(configs);
-        stmt.execute(sales);
-        stmt.execute(customers);
-        stmt.execute(products);
-        stmt.execute(saleItems);
-        stmt.execute(staff);
-        stmt.execute(vouchers);
-        stmt.execute(screens);
-        stmt.execute(buttons);
+        try {
+            stmt.execute(tax);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(categorys);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(discounts);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(configs);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(sales);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(customers);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(products);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(saleItems);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(staff);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(vouchers);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(screens);
+        } catch (SQLException ex) {
+            error(ex);
+        }
+        try {
+            stmt.execute(buttons);
+        } catch (SQLException ex) {
+            error(ex);
+        }
 
-        String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, BUTTON, MINIMUM_AGE) VALUES ('Default','FALSE',false,0)";
+        String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
         String addDiscount = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES ('NONE',0.0)";
         stmt.executeUpdate(addCategory);
         stmt.executeUpdate(addTax);
         stmt.executeUpdate(addDiscount);
+    }
+
+    private void error(SQLException ex) {
+        JOptionPane.showMessageDialog(null, ex, "Database error", JOptionPane.ERROR_MESSAGE);
     }
 
     public String getAddress() {
@@ -382,7 +425,7 @@ public class DBConnect implements DataConnectInterface {
      */
     @Override
     public void addProduct(Product p) throws SQLException {
-        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, BUTTON, COLOR, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
+        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
             try {
                 productSem.acquire();
@@ -562,7 +605,7 @@ public class DBConnect implements DataConnectInterface {
      */
     @Override
     public Product getProduct(int code) throws SQLException, ProductNotFoundException {
-        String query = "SELECT * FROM Products WHERE PRODUCTS.ID = '" + code + "'";
+        String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID = " + code;
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
@@ -1518,9 +1561,7 @@ public class DBConnect implements DataConnectInterface {
                 Time endSell = set.getTime("SELL_END");
                 boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
                 int minAge = set.getInt("MINIMUM_AGE");
-                boolean button = set.getBoolean("BUTTON");
-                int color = set.getInt("COLOR");
-                Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge, button, color);
+                Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
                 categorys.add(c);
             }
         } catch (SQLException ex) {
@@ -1541,9 +1582,7 @@ public class DBConnect implements DataConnectInterface {
             Time endSell = set.getTime("SELL_END");
             boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
             int minAge = set.getInt("MINIMUM_AGE");
-            boolean button = set.getBoolean("BUTTON");
-            int color = set.getInt("COLOR");
-            Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge, button, color);
+            Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
             categorys.add(c);
         }
         return categorys;
@@ -1551,7 +1590,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addCategory(Category c) throws SQLException {
-        String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, BUTTON, COLOR, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
+        String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             categorySem.acquire();
@@ -2089,7 +2128,7 @@ public class DBConnect implements DataConnectInterface {
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            int order = set.getInt("ORDER");
+            int order = set.getInt("POSITION");
             int color = set.getInt("COLOR");
             Screen s = new Screen(name, order, color, id);
 
@@ -2104,11 +2143,11 @@ public class DBConnect implements DataConnectInterface {
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            int order = set.getInt("ORDER");
+            int order = set.getInt("POSITION");
             int product = set.getInt("PRODUCT");
             int screen = set.getInt("SCREEN_ID");
             int color = set.getInt("COLOR");
-            Button b = new Button(name, order, product, screen, color, id);
+            Button b = new Button(name, product, order, screen, color, id);
 
             buttons.add(b);
         }
@@ -2118,7 +2157,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addScreen(Screen s) throws SQLException {
-        String query = "INSERT INTO SCREENS (NAME, ORDER, COLOR) VALUES (" + s.getSQLInsertString() + ")";
+        String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR) VALUES (" + s.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             screensSem.acquire();
@@ -2136,7 +2175,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addButton(Button b) throws SQLException {
-        String query = "INSERT INTO BUTTONS (NAME, ORDER, PRODUCT, COLOLR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
+        String query = "INSERT INTO BUTTONS (NAME, POSITION, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             screensSem.acquire();
@@ -2314,7 +2353,7 @@ public class DBConnect implements DataConnectInterface {
             while (set.next()) {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
-                int order = set.getInt("ORDER");
+                int order = set.getInt("POSITION");
                 int color = set.getInt("COLOR");
                 Screen s = new Screen(name, order, color, id);
 
@@ -2345,10 +2384,11 @@ public class DBConnect implements DataConnectInterface {
             while (set.next()) {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
-                int order = set.getInt("ORDER");
+                int order = set.getInt("POSITION");
                 int product = set.getInt("PRODUCT");
                 int color = set.getInt("COLOR");
-                Button b = new Button(name, order, product, color, id);
+                int screen = set.getInt("SCREEN_ID");
+                Button b = new Button(name, product, order, screen, color, id);
 
                 buttons.add(b);
             }
@@ -2377,10 +2417,11 @@ public class DBConnect implements DataConnectInterface {
             while (set.next()) {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
-                int order = set.getInt("ORDER");
+                int order = set.getInt("POSITION");
                 int product = set.getInt("PRODUCT");
                 int color = set.getInt("COLOR");
-                Button b = new Button(name, order, product, color, id);
+                int screen = set.getInt("SCREEN_ID");
+                Button b = new Button(name, product, order, screen, color, id);
 
                 buttons.add(b);
             }
