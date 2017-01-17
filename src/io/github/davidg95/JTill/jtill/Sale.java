@@ -43,11 +43,7 @@ public class Sale implements Serializable {
         products.add(p.getProductCode());
         total += p.getPrice();
         int count = 0;
-        for (int pr : products) {
-            if (pr == p.getProductCode()) {
-                count++;
-            }
-        }
+        count = products.stream().filter((pr) -> (pr == p.getProductCode())).map((_item) -> 1).reduce(count, Integer::sum); //Increaces the count of that product in the sale
         return count;
     }
 

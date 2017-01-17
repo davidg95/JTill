@@ -5,7 +5,6 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import java.awt.Color;
 import java.io.Serializable;
 import java.sql.Time;
 import java.text.ParseException;

@@ -65,9 +65,9 @@ public class DBConnect implements DataConnectInterface {
     public static String DB_ADDRESS = "jdbc:derby:TillEmbedded;";
     public static String DB_USERNAME = "APP";
     public static String DB_PASSWORD = "App";
-    public static final String defaultAddress = "jdbc:derby:TillEmbedded;";
-    public static final String defaultUsername = "APP";
-    public static final String defaultPassword = "App";
+    public static final String DEFAULT_ADDRESS = "jdbc:derby:TillEmbedded;";
+    public static final String DEFAULT_USERNAME = "APP";
+    public static final String DEFAULT_PASSWORD = "App";
 
     private TillInitData initData;
 
@@ -1853,11 +1853,9 @@ public class DBConnect implements DataConnectInterface {
         List<Sale> s = getAllSales();
         List<Sale> sales = new ArrayList<>();
 
-        for (Sale sale : s) {
-            if (sale.getTime() >= start.getTime() && sale.getTime() <= start.getTime()) {
-                sales.add(sale);
-            }
-        }
+        s.stream().filter((sale) -> (sale.getTime() >= start.getTime() && sale.getTime() <= start.getTime())).forEachOrdered((sale) -> {
+            sales.add(sale);
+        });
 
         return sales;
     }
