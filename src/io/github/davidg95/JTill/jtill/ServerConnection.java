@@ -1403,6 +1403,7 @@ public class ServerConnection implements DataConnectInterface {
         try {
             out.println("GETBUTTONSONSCREEN");
             obOut.writeObject(s);
+            obOut.flush();
             Object o = obIn.readObject();
             if (o instanceof List) {
                 return (List<Button>) o;

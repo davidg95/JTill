@@ -39,11 +39,13 @@ public class Sale implements Serializable {
         this.time = time;
     }
 
-    public int addItem(Product p) {
-        products.add(p.getProductCode());
-        total += p.getPrice();
+    public int addItem(Product p, int quantity) {
         int count = 0;
-        count = products.stream().filter((pr) -> (pr == p.getProductCode())).map((_item) -> 1).reduce(count, Integer::sum); //Increaces the count of that product in the sale
+        for (int i = 0; i < quantity; i++) {
+            products.add(p.getProductCode());
+            total += p.getPrice();
+            count = products.stream().filter((pr) -> (pr == p.getProductCode())).map((_item) -> 1).reduce(count, Integer::sum); //Increaces the count of that product in the sale
+        }
         return count;
     }
 
