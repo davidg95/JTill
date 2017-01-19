@@ -1355,7 +1355,7 @@ public class ServerConnection implements DataConnectInterface {
             out.println("UPDATEBUTTON");
             obOut.writeObject(b);
             Object o = obIn.readObject();
-            if (o instanceof Screen) {
+            if (o instanceof Button) {
                 return (Button) o;
             } else if (o instanceof SQLException) {
                 throw (SQLException) o;
