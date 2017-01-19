@@ -185,6 +185,8 @@ public class ServerConnection implements DataConnectInterface {
                     throw (SQLException) o;
                 } else if (o instanceof OutOfStockException) {
                     throw (OutOfStockException) o;
+                } else {
+                    throw new ProductNotFoundException(code + " has not been found");
                 }
             }
         } catch (ClassNotFoundException ex) {
