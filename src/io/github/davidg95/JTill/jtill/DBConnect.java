@@ -2048,17 +2048,41 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
+        Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ResultSet res;
+        try {
+            res = stmt.executeQuery(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            staffSem.release();
+        }
+
+        List<Staff> staff = getStaffFromResultSet(res);
+
+        if (staff.isEmpty()) {
+            throw new LoginException(id + " could not be found");
+        }
+
+        Staff s = staff.get(0);
+
+        return s;
     }
 
     @Override
     public void logout(int id) throws IOException, StaffNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
     @Override
     public void tillLogout(int id) throws IOException, StaffNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
     }
 
     public void loadProperties() {
