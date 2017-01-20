@@ -69,8 +69,6 @@ public class DBConnect implements DataConnectInterface {
     public static final String DEFAULT_USERNAME = "APP";
     public static final String DEFAULT_PASSWORD = "App";
 
-    private TillInitData initData;
-
     public DBConnect() {
         productSem = new Semaphore(1);
         customerSem = new Semaphore(1);
@@ -2042,11 +2040,6 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public TillInitData getInitData() throws IOException {
-        return initData;
-    }
-
-    @Override
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
@@ -2077,12 +2070,12 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void logout(int id) throws IOException, StaffNotFoundException {
-        
+
     }
 
     @Override
     public void tillLogout(int id) throws IOException, StaffNotFoundException {
-        
+
     }
 
     public void loadProperties() {
@@ -2137,12 +2130,6 @@ public class DBConnect implements DataConnectInterface {
         } catch (FileNotFoundException | UnknownHostException ex) {
         } catch (IOException ex) {
         }
-    }
-
-    @Override
-    public void setInitData(TillInitData data) throws IOException {
-        this.initData = data;
-        saveProperties();
     }
 
     private List<Screen> getScreensFromResultSet(ResultSet set) throws SQLException {
@@ -2454,5 +2441,15 @@ public class DBConnect implements DataConnectInterface {
         }
 
         return buttons;
+    }
+
+    @Override
+    public void deleteAllScreensAndButtons() throws IOException, SQLException {
+        String buttons = "DROP TABLE BUTTONS";
+        String screens = "DROP TABLE SCREENS";
+        Statement stmt = con.createStatement();
+        stmt.execute(buttons);
+        stmt.execute(screens);
+        createTables();
     }
 }

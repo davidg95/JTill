@@ -18,10 +18,6 @@ public interface DataConnectInterface {
 
     public boolean isConnected();
 
-    public TillInitData getInitData() throws IOException;
-
-    public void setInitData(TillInitData data) throws IOException;
-
     //Product
     public void addProduct(Product p) throws IOException, SQLException;
 
@@ -174,4 +170,6 @@ public interface DataConnectInterface {
     public List<Button> getAllButtons() throws IOException, SQLException;
 
     public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
+
+    public void deleteAllScreensAndButtons() throws IOException, SQLException;
 }

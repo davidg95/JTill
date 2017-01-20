@@ -81,24 +81,6 @@ public class ServerConnection implements DataConnectInterface {
         return isConnected;
     }
 
-    @Override
-    public TillInitData getInitData() throws IOException {
-        try {
-            out.println("INIT");
-
-            Object o = obIn.readObject();
-
-            TillInitData init = (TillInitData) o;
-
-            TillInitData.staticInit(init);
-
-            return (TillInitData) o;
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
     /**
      * Method to add a new product to the server.
      *
@@ -1254,12 +1236,6 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void setInitData(TillInitData data) throws IOException {
-        out.println("SETINIT");
-        obOut.writeObject(data);
-    }
-
-    @Override
     public String toString() {
         return "Connect to JTill Server\nServer Address: " + socket.getInetAddress().toString() + " on port " + socket.getPort();
     }
@@ -1418,5 +1394,10 @@ public class ServerConnection implements DataConnectInterface {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    @Override
+    public void deleteAllScreensAndButtons() throws IOException, SQLException {
+        out.println("DROPSCREENSANDBUTTONS");
     }
 }
