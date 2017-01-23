@@ -18,6 +18,8 @@ public interface DataConnectInterface {
 
     public boolean isConnected();
 
+    public void setGUI(GUIInterface g);
+
     //Product
     public void addProduct(Product p) throws IOException, SQLException;
 

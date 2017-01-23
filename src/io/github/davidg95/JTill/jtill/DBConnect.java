@@ -69,6 +69,8 @@ public class DBConnect implements DataConnectInterface {
     public static final String DEFAULT_USERNAME = "APP";
     public static final String DEFAULT_PASSWORD = "App";
 
+    private GUIInterface g;
+
     public DBConnect() {
         productSem = new Semaphore(1);
         customerSem = new Semaphore(1);
@@ -2451,5 +2453,10 @@ public class DBConnect implements DataConnectInterface {
         stmt.execute(buttons);
         stmt.execute(screens);
         createTables();
+    }
+
+    @Override
+    public void setGUI(GUIInterface g) {
+        this.g = g;
     }
 }

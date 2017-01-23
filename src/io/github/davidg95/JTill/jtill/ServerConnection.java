@@ -31,6 +31,9 @@ public class ServerConnection implements DataConnectInterface {
     private boolean isConnected;
     private final String site;
 
+    private GUIInterface g;
+    private IncomingThread in;
+
     /**
      * Blank constructor.
      *
@@ -57,6 +60,47 @@ public class ServerConnection implements DataConnectInterface {
         obIn = new ObjectInputStream(socket.getInputStream());
         obOut.writeObject(site);
         isConnected = true;
+        //in = new IncomingThread(g, obIn, obOut);
+        //in.start();
+    }
+
+    public class IncomingThread extends Thread {
+
+        private GUIInterface g;
+        private final ObjectInputStream obIn;
+        private final ObjectOutputStream obOut;
+
+        private boolean running = true;
+
+        private ConnectionData data;
+
+        public IncomingThread(GUIInterface g, ObjectInputStream obIn, ObjectOutputStream obOut) {
+            super("Incoming Thread");
+            this.g = g;
+            this.obIn = obIn;
+            this.obOut = obOut;
+        }
+
+        @Override
+        public void run() {
+            while (running) {
+                try {
+                    data = (ConnectionData) obIn.readObject();
+                    String flag = data.getFlag();
+
+                    switch (flag) {
+                        case "LOG":
+                            g.log((String) data.getData());
+                            break;
+                        case "CONN":
+                            g.setClientLabel((String) data.getData());
+                            break;
+                    }
+                } catch (IOException | ClassNotFoundException ex) {
+                    Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
     }
 
     /**
@@ -1458,5 +1502,10 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void deleteAllScreensAndButtons() throws IOException, SQLException {
         obOut.writeObject(new ConnectionData("DROPSCREENSANDBUTTONS"));
+    }
+
+    @Override
+    public void setGUI(GUIInterface g) {
+        this.g = g;
     }
 }
