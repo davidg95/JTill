@@ -5,12 +5,9 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.sql.SQLException;
@@ -28,8 +25,6 @@ import java.util.logging.Logger;
 public class ServerConnection implements DataConnectInterface {
 
     private Socket socket;
-    private BufferedReader in;
-    private PrintWriter out;
     private ObjectInputStream obIn;
     private ObjectOutputStream obOut;
 
@@ -61,12 +56,10 @@ public class ServerConnection implements DataConnectInterface {
         socket = new Socket();
 
         socket.connect(new InetSocketAddress(IP, PORT), 2000);
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
         obOut = new ObjectOutputStream(socket.getOutputStream());
         obOut.flush();
         obIn = new ObjectInputStream(socket.getInputStream());
-        out.println(site);
+        obOut.writeObject(site);
         isConnected = true;
     }
 
@@ -89,7 +82,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addProduct(Product p) throws IOException {
-        out.println("NEWPRODUCT");
+        obOut.writeObject("NEWPRODUCT");
         obOut.writeObject(p);
     }
 
@@ -104,9 +97,9 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeProduct(int code) throws IOException, ProductNotFoundException, SQLException {
         try {
-            out.println("REMOVEPRODUCT," + code);
+            obOut.writeObject("REMOVEPRODUCT," + code);
 
-            String input = in.readLine();
+            String input = (String) obIn.readObject();
 
             if (input.equals("FAIL")) {
                 Object o = obIn.readObject();
@@ -124,8 +117,8 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeProduct(Product p) throws IOException, ProductNotFoundException, SQLException {
         try {
-            out.println("REMOVEPRODUCT," + p.getProductCode());
-            String input = in.readLine();
+            obOut.writeObject("REMOVEPRODUCT," + p.getProductCode());
+            String input = (String) obIn.readObject();
 
             if (input.equals("FAIL")) {
                 Object o = obIn.readObject();
@@ -155,9 +148,9 @@ public class ServerConnection implements DataConnectInterface {
     public int purchaseProduct(int code) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         String input = null;
         try {
-            out.println("PURCHASE," + code);
+            obOut.writeObject("PURCHASE," + code);
 
-            input = in.readLine();
+            input = (String) obIn.readObject();
 
             if (input.equals("FAIL")) {
                 Object o = obIn.readObject();
@@ -189,7 +182,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException {
         try {
-            out.println("GETPRODUCT," + code);
+            obOut.writeObject("GETPRODUCT," + code);
 
             Object o = obIn.readObject();
 
@@ -218,7 +211,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Product getProductByBarcode(String barcode) throws IOException, ProductNotFoundException, SQLException {
         try {
-            out.println("GETPRODUCTBARCODE," + barcode);
+            obOut.writeObject("GETPRODUCTBARCODE," + barcode);
 
             Object o = obIn.readObject();
 
@@ -237,7 +230,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Product updateProduct(Product p) throws IOException, SQLException, ProductNotFoundException {
         try {
-            out.println("UPDATEPRODUCT");
+            obOut.writeObject("UPDATEPRODUCT");
 
             obOut.writeObject(p);
 
@@ -256,9 +249,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public boolean checkBarcode(String barcode) throws IOException, SQLException {
-        out.println("CHECKBARCODE," + barcode);
+        obOut.writeObject("CHECKBARCODE," + barcode);
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "USED":
@@ -272,9 +270,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void setStock(int code, int stock) throws IOException, ProductNotFoundException, SQLException {
-        out.println(code + "," + stock);
+        obOut.writeObject(code + "," + stock);
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -290,7 +293,7 @@ public class ServerConnection implements DataConnectInterface {
     public List<Discount> getProductsDiscount(Product p) throws IOException, SQLException {
         List<Discount> discounts = null;
         try {
-            out.println("GETPRODUCTSDISCOUNT");
+            obOut.writeObject("GETPRODUCTSDISCOUNT");
             obOut.writeObject(p);
 
             Object o = obIn.readObject();
@@ -315,9 +318,14 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public int getProductCount() throws IOException {
-        out.println("GETPRODUCTCOUNT");
+        obOut.writeObject("GETPRODUCTCOUNT");
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         return Integer.parseInt(input);
     }
@@ -332,7 +340,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Product> getAllProducts() throws IOException, SQLException {
         try {
-            out.println("GETALLPRODUCTS");
+            obOut.writeObject("GETALLPRODUCTS");
 
             Object o = obIn.readObject();
 
@@ -354,7 +362,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addCustomer(Customer customer) throws IOException {
-        out.println("NEWCUSTOMER");
+        obOut.writeObject("NEWCUSTOMER");
         obOut.writeObject(customer);
     }
 
@@ -369,9 +377,9 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
         try {
-            out.println("REMOVECUSTOMER," + id);
+            obOut.writeObject("REMOVECUSTOMER," + id);
 
-            String input = in.readLine();
+            String input = (String) obIn.readObject();
 
             if (input.equals("FAIL")) {
                 Object o = obIn.readObject();
@@ -389,9 +397,9 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeCustomer(Customer c) throws IOException, SQLException, CustomerNotFoundException {
         try {
-            out.println("REMOVECUSTOMER," + c.getId());
+            obOut.writeObject("REMOVECUSTOMER," + c.getId());
 
-            String input = in.readLine();
+            String input = (String) obIn.readObject();
 
             if (input.equals("FAIL")) {
                 Object o = obIn.readObject();
@@ -418,7 +426,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
         try {
-            out.println("GETCUSTOMER," + id);
+            obOut.writeObject("GETCUSTOMER," + id);
 
             Object o = obIn.readObject();
 
@@ -437,7 +445,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException {
         try {
-            out.println("GETCUSTOMERBYNAME," + name);
+            obOut.writeObject("GETCUSTOMERBYNAME," + name);
 
             Object o = obIn.readObject();
 
@@ -461,9 +469,14 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public int getCustomerCount() throws IOException {
-        out.println("GETCUSTOMERCOUNT");
+        obOut.writeObject("GETCUSTOMERCOUNT");
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         return Integer.parseInt(input);
     }
@@ -478,7 +491,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Customer> getAllCustomers() throws IOException, SQLException {
         try {
-            out.println("GETALLCUSTOMERS");
+            obOut.writeObject("GETALLCUSTOMERS");
 
             Object o = obIn.readObject();
 
@@ -495,7 +508,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Customer updateCustomer(Customer c) throws IOException, SQLException, CustomerNotFoundException {
         try {
-            out.println("UPDATECUSTOMER");
+            obOut.writeObject("UPDATECUSTOMER");
             obOut.writeObject(c);
 
             Object o = obIn.readObject();
@@ -520,7 +533,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addSale(Sale s) throws IOException {
-        out.println("ADDSALE");
+        obOut.writeObject("ADDSALE");
         obOut.writeObject(s);
         obOut.flush();
     }
@@ -528,7 +541,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Sale> getAllSales() throws IOException, SQLException {
         try {
-            out.println("GETALLSALES");
+            obOut.writeObject("GETALLSALES");
             Object o = obIn.readObject();
 
             if (o instanceof List) {
@@ -545,7 +558,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Sale getSale(int id) throws IOException, SQLException, SaleNotFoundException {
         try {
-            out.println("GETSALE," + id);
+            obOut.writeObject("GETSALE," + id);
 
             Object o = obIn.readObject();
 
@@ -565,7 +578,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Sale> getSalesInRange(Date start, Date end) throws IOException, SQLException {
         try {
-            out.println("GETSALESDATERANGE");
+            obOut.writeObject("GETSALESDATERANGE");
             obOut.writeObject(start);
             obOut.writeObject(end);
 
@@ -590,7 +603,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addStaff(Staff s) throws IOException {
-        out.println("ADDSTAFF");
+        obOut.writeObject("ADDSTAFF");
         obOut.writeObject(s);
     }
 
@@ -605,9 +618,9 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
-            out.println("REMOVESTAFF," + id);
+            obOut.writeObject("REMOVESTAFF," + id);
 
-            String input = in.readLine();
+            String input = (String) obIn.readObject();
 
             if (input.equals("FAIL")) {
                 Object o = obIn.readObject();
@@ -625,9 +638,9 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
         try {
-            out.println("REMOVESTAFF," + s.getId());
+            obOut.writeObject("REMOVESTAFF," + s.getId());
 
-            String input = in.readLine();
+            String input = (String) obIn.readObject();
 
             if (input.equals("FAIL")) {
                 Object o = obIn.readObject();
@@ -654,7 +667,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
-            out.println("GETSTAFF," + id);
+            obOut.writeObject("GETSTAFF," + id);
 
             Object o = obIn.readObject();
 
@@ -680,7 +693,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Staff> getAllStaff() throws IOException, SQLException {
         try {
-            out.println("GETALLSTAFF");
+            obOut.writeObject("GETALLSTAFF");
 
             Object o = obIn.readObject();
 
@@ -698,7 +711,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Staff updateStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
         try {
-            out.println("UPDATESTAFF");
+            obOut.writeObject("UPDATESTAFF");
             obOut.writeObject(s);
 
             Object o = obIn.readObject();
@@ -718,8 +731,13 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public int staffCount() throws IOException, SQLException {
-        out.println("STAFFCOUNT");
-        String input = in.readLine();
+        obOut.writeObject("STAFFCOUNT");
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         if (input.equals("FAIL")) {
             throw new SQLException("Database Error");
@@ -741,7 +759,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Staff login(String username, String password) throws IOException, LoginException, SQLException {
         try {
-            out.println("LOGIN," + username + "," + password);
+            obOut.writeObject("LOGIN," + username + "," + password);
 
             Object o = obIn.readObject();
 
@@ -769,7 +787,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         try {
-            out.println("TILLLOGIN," + id);
+            obOut.writeObject("TILLLOGIN," + id);
 
             Object o = obIn.readObject();
 
@@ -794,9 +812,14 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void logout(int id) throws IOException, StaffNotFoundException {
-        out.println("LOGOUT," + id);
+        obOut.writeObject("LOGOUT," + id);
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         if (input.equals("FAIL")) {
             throw new StaffNotFoundException(id + "");
@@ -812,9 +835,14 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void tillLogout(int id) throws IOException, StaffNotFoundException {
-        out.println("TILLLOGOUT," + id);
+        obOut.writeObject("TILLLOGOUT," + id);
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         if (input.equals("FAIL")) {
             throw new StaffNotFoundException(id + "");
@@ -823,14 +851,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addCategory(Category c) throws IOException {
-        out.println("ADDCATEGORY");
+        obOut.writeObject("ADDCATEGORY");
         obOut.writeObject(c);
     }
 
     @Override
     public Category updateCategory(Category c) throws IOException, SQLException, CategoryNotFoundException {
         try {
-            out.println("UPDATECATEGORY");
+            obOut.writeObject("UPDATECATEGORY");
             obOut.writeObject(c);
 
             Object o = obIn.readObject();
@@ -850,8 +878,13 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void removeCategory(Category c) throws IOException, CategoryNotFoundException, SQLException {
-        out.println("REMOVECATEGORY," + c.getID());
-        String input = in.readLine();
+        obOut.writeObject("REMOVECATEGORY," + c.getID());
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -865,8 +898,13 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void removeCategory(int id) throws IOException, CategoryNotFoundException, SQLException {
-        out.println("REMOVECATEGORY," + id);
-        String input = in.readLine();
+        obOut.writeObject("REMOVECATEGORY," + id);
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -881,7 +919,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Category getCategory(int id) throws IOException, SQLException, CategoryNotFoundException {
         try {
-            out.println("GETCATEGORY," + id);
+            obOut.writeObject("GETCATEGORY," + id);
             Object o = obIn.readObject();
 
             if (o instanceof Category) {
@@ -900,7 +938,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Category> getAllCategorys() throws IOException, SQLException {
         try {
-            out.println("GETALLCATEGORYS");
+            obOut.writeObject("GETALLCATEGORYS");
 
             Object o = obIn.readObject();
 
@@ -918,7 +956,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException {
         try {
-            out.println("GETPRODUCTSINCATEGORY");
+            obOut.writeObject("GETPRODUCTSINCATEGORY");
 
             Object o = obIn.readObject();
 
@@ -937,14 +975,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addDiscount(Discount d) throws IOException {
-        out.println("ADDDISCOUNT");
+        obOut.writeObject("ADDDISCOUNT");
         obOut.writeObject(d);
     }
 
     @Override
     public Discount updateDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException {
         try {
-            out.println("UPDATEDISCOUNT");
+            obOut.writeObject("UPDATEDISCOUNT");
             obOut.writeObject(d);
 
             Object o = obIn.readObject();
@@ -964,9 +1002,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void removeDiscount(Discount d) throws IOException, DiscountNotFoundException, SQLException {
-        out.println("REMOVEDISCOUNT," + d.getId());
+        obOut.writeObject("REMOVEDISCOUNT," + d.getId());
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -980,9 +1023,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void removeDiscount(int id) throws IOException, DiscountNotFoundException, SQLException {
-        out.println("REMOVEDISCOUNT," + id);
+        obOut.writeObject("REMOVEDISCOUNT," + id);
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -997,7 +1045,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Discount getDiscount(int id) throws IOException, SQLException, DiscountNotFoundException {
         try {
-            out.println("GETDISCOUNT," + id);
+            obOut.writeObject("GETDISCOUNT," + id);
 
             Object o = obIn.readObject();
 
@@ -1017,7 +1065,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Discount> getAllDiscounts() throws IOException, SQLException {
         try {
-            out.println("GETALLDISCOUNTS");
+            obOut.writeObject("GETALLDISCOUNTS");
 
             Object o = obIn.readObject();
 
@@ -1034,15 +1082,20 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addTax(Tax t) throws IOException {
-        out.println("ADDTAX");
+        obOut.writeObject("ADDTAX");
         obOut.writeObject(t);
     }
 
     @Override
     public void removeTax(Tax t) throws IOException, TaxNotFoundException, SQLException {
-        out.println("REMOVETAX," + t.getId());
+        obOut.writeObject("REMOVETAX," + t.getId());
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -1056,9 +1109,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void removeTax(int id) throws IOException, TaxNotFoundException, SQLException {
-        out.println("REMOVETAX," + id);
+        obOut.writeObject("REMOVETAX," + id);
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -1073,7 +1131,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Tax getTax(int id) throws IOException, SQLException, TaxNotFoundException {
         try {
-            out.println("GETTAX," + id);
+            obOut.writeObject("GETTAX," + id);
 
             Object o = obIn.readObject();
 
@@ -1093,7 +1151,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Tax updateTax(Tax t) throws IOException, SQLException, TaxNotFoundException {
         try {
-            out.println("UPDATETAX");
+            obOut.writeObject("UPDATETAX");
             obOut.writeObject(t);
 
             Object o = obIn.readObject();
@@ -1114,7 +1172,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Tax> getAllTax() throws IOException, SQLException {
         try {
-            out.println("GETALLTAX");
+            obOut.writeObject("GETALLTAX");
 
             Object o = obIn.readObject();
 
@@ -1131,15 +1189,20 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addVoucher(Voucher v) throws IOException {
-        out.println("ADDVOUCHER");
+        obOut.writeObject("ADDVOUCHER");
         obOut.writeObject(v);
     }
 
     @Override
     public void removeVoucher(Voucher v) throws IOException, VoucherNotFoundException, SQLException {
-        out.println("REMOVEVOUCHER," + v.getId());
+        obOut.writeObject("REMOVEVOUCHER," + v.getId());
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -1153,9 +1216,14 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void removeVoucher(int id) throws IOException, VoucherNotFoundException, SQLException {
-        out.println("REMOVEVOUCHER," + id);
+        obOut.writeObject("REMOVEVOUCHER," + id);
 
-        String input = in.readLine();
+        String input = "";
+        try {
+            input = (String) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         switch (input) {
             case "FAIL":
@@ -1170,7 +1238,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Voucher getVoucher(int id) throws IOException, SQLException, VoucherNotFoundException {
         try {
-            out.println("GETVOUCHER," + id);
+            obOut.writeObject("GETVOUCHER," + id);
 
             Object o = obIn.readObject();
 
@@ -1190,7 +1258,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Voucher updateVoucher(Voucher v) throws IOException, SQLException, VoucherNotFoundException {
         try {
-            out.println("UPDATEVOUCHER");
+            obOut.writeObject("UPDATEVOUCHER");
             obOut.writeObject(v);
 
             Object o = obIn.readObject();
@@ -1211,7 +1279,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Voucher> getAllVouchers() throws IOException, SQLException {
         try {
-            out.println("GETALLVOUCHERS");
+            obOut.writeObject("GETALLVOUCHERS");
 
             Object o = obIn.readObject();
 
@@ -1231,8 +1299,12 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void close() {
-        out.println("CONNTERM");
-        isConnected = false;
+        try {
+            obOut.writeObject("CONNTERM");
+            isConnected = false;
+        } catch (IOException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -1242,38 +1314,46 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addScreen(Screen s) throws IOException, SQLException {
-        out.println("ADDSCREEN");
+        obOut.writeObject("ADDSCREEN");
         obOut.writeObject(s);
     }
 
     @Override
     public void addButton(Button b) throws IOException, SQLException {
-        out.println("ADDBUTTON");
+        obOut.writeObject("ADDBUTTON");
         obOut.writeObject(b);
     }
 
     @Override
     public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
-        out.println("REMOVESCREEN");
+        obOut.writeObject("REMOVESCREEN");
         obOut.writeObject(s);
-        if (in.readLine().equals("FAIL")) {
-            throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        try {
+            if (((String) obIn.readObject()).equals("FAIL")) {
+                throw new ScreenNotFoundException("Screen " + s + " could not be found");
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
     public void removeButton(Button b) throws IOException, SQLException, ButtonNotFoundException {
-        out.println("REMOVEBUTTON");
+        obOut.writeObject("REMOVEBUTTON");
         obOut.writeObject(b);
-        if (in.readLine().equals("FAIL")) {
-            throw new ButtonNotFoundException("Button " + b + " could not be found");
+        try {
+            if (((String) obIn.readObject()).equals("FAIL")) {
+                throw new ButtonNotFoundException("Button " + b + " could not be found");
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
     public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            out.println("GETSCREEN," + s);
+            obOut.writeObject("GETSCREEN," + s);
             Object o = obIn.readObject();
             if (o instanceof Screen) {
                 return (Screen) o;
@@ -1291,7 +1371,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Button getButton(int b) throws IOException, SQLException, ButtonNotFoundException {
         try {
-            out.println("GETBUTTON," + b);
+            obOut.writeObject("GETBUTTON," + b);
             Object o = obIn.readObject();
             if (o instanceof Button) {
                 return (Button) o;
@@ -1309,7 +1389,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            out.println("UPDATESCREEN");
+            obOut.writeObject("UPDATESCREEN");
             obOut.writeObject(s);
             Object o = obIn.readObject();
             if (o instanceof Screen) {
@@ -1328,7 +1408,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Button updateButton(Button b) throws IOException, SQLException, ButtonNotFoundException {
         try {
-            out.println("UPDATEBUTTON");
+            obOut.writeObject("UPDATEBUTTON");
             obOut.writeObject(b);
             Object o = obIn.readObject();
             if (o instanceof Button) {
@@ -1347,7 +1427,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Screen> getAllScreens() throws IOException, SQLException {
         try {
-            out.println("GETALLSCREENS");
+            obOut.writeObject("GETALLSCREENS");
             Object o = obIn.readObject();
             if (o instanceof List) {
                 return (List<Screen>) o;
@@ -1363,7 +1443,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Button> getAllButtons() throws IOException, SQLException {
         try {
-            out.println("GETALLBUTTONS");
+            obOut.writeObject("GETALLBUTTONS");
             Object o = obIn.readObject();
             if (o instanceof List) {
                 return (List<Button>) o;
@@ -1379,7 +1459,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            out.println("GETBUTTONSONSCREEN");
+            obOut.writeObject("GETBUTTONSONSCREEN");
             obOut.writeObject(s);
             obOut.flush();
             Object o = obIn.readObject();
@@ -1398,6 +1478,6 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void deleteAllScreensAndButtons() throws IOException, SQLException {
-        out.println("DROPSCREENSANDBUTTONS");
+        obOut.writeObject("DROPSCREENSANDBUTTONS");
     }
 }
