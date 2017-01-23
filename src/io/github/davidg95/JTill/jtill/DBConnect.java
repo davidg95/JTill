@@ -653,7 +653,7 @@ public class DBConnect implements DataConnectInterface {
 
             products = getProductsFromResultSet(res);
             if (products.isEmpty()) {
-                throw new ProductNotFoundException(barcode);
+                throw new ProductNotFoundException(barcode + " could not be found");
             }
         } catch (SQLException ex) {
             throw ex;
