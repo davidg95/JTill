@@ -1111,8 +1111,7 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addTax(Tax t) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDTAX"));
-        obOut.writeObject(t);
+        obOut.writeObject(new ConnectionData("ADDTAX", t));
     }
 
     @Override
