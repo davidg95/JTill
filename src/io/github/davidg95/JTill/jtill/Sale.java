@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,21 +19,23 @@ public class Sale implements Serializable {
 
     private int code;
     private List<Integer> products;
-    private double total;
+    private BigDecimal total;
     private int customer;
     private long time;
 
     public Sale() {
         products = new ArrayList<>();
         customer = -1;
+        total = new BigDecimal("0.00");
     }
 
     public Sale(Customer c) {
         products = new ArrayList<>();
         this.customer = c.getId();
+        total = new BigDecimal("0.00");
     }
 
-    public Sale(int code, double total, int customer, long time) {
+    public Sale(int code, BigDecimal total, int customer, long time) {
         this.code = code;
         this.total = total;
         this.customer = customer;
@@ -43,7 +46,7 @@ public class Sale implements Serializable {
         int count = 0;
         for (int i = 0; i < quantity; i++) {
             products.add(p.getProductCode());
-            total += p.getPrice();
+            total = total.add(p.getPrice());
             count = products.stream().filter((pr) -> (pr == p.getProductCode())).map((_item) -> 1).reduce(count, Integer::sum); //Increaces the count of that product in the sale
         }
         return count;
@@ -69,11 +72,11 @@ public class Sale implements Serializable {
         this.products = products;
     }
 
-    public double getTotal() {
+    public BigDecimal getTotal() {
         return total;
     }
 
-    public void setTotal(double total) {
+    public void setTotal(BigDecimal total) {
         this.total = total;
     }
 

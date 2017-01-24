@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * Class of type product which implements Serializable. This class models a
@@ -22,8 +23,8 @@ public class Product implements Serializable {
     private int categoryID;
     private int taxID;
     private boolean open;
-    private double price;
-    private double costPrice;
+    private BigDecimal price;
+    private BigDecimal costPrice;
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
@@ -94,7 +95,7 @@ public class Product implements Serializable {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open, double price, double costPrice, int stock, int minStock, int maxStock, String barcode) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode) {
         this(name, shortName, categoryID, comments, taxID, discountID, open);
         this.price = price;
         this.costPrice = costPrice;
@@ -122,7 +123,7 @@ public class Product implements Serializable {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open, double price, double costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
         this(name, shortName, categoryID, comments, taxID, discountID, open, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
@@ -175,11 +176,11 @@ public class Product implements Serializable {
         this.name = name;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -231,11 +232,11 @@ public class Product implements Serializable {
         this.taxID = taxID;
     }
 
-    public double getCostPrice() {
+    public BigDecimal getCostPrice() {
         return costPrice;
     }
 
-    public void setCostPrice(double costPrice) {
+    public void setCostPrice(BigDecimal costPrice) {
         this.costPrice = costPrice;
     }
 

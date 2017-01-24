@@ -12,6 +12,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -366,13 +367,13 @@ public class DBConnect implements DataConnectInterface {
                 String barcode = set.getString("BARCODE");
                 String name = set.getString("NAME");
                 boolean open = set.getBoolean("OPEN_PRICE");
-                double price = set.getDouble("PRICE");
+                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                 int stock = set.getInt("STOCK");
                 String comments = set.getString("COMMENTS");
                 String shortName = set.getString("SHORT_NAME");
                 int categoryID = set.getInt("CATEGORY_ID");
                 int taxID = set.getInt("TAX_ID");
-                double costPrice = set.getDouble("COST_PRICE");
+                BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
                 int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                 int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
                 int discountID = set.getInt("DISCOUNT_ID");
@@ -397,13 +398,13 @@ public class DBConnect implements DataConnectInterface {
             String barcode = set.getString("BARCODE");
             String name = set.getString("NAME");
             boolean open = set.getBoolean("OPEN_PRICE");
-            double price = set.getDouble("PRICE");
+            BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
             int stock = set.getInt("STOCK");
             String comments = set.getString("COMMENTS");
             String shortName = set.getString("SHORT_NAME");
             int categoryID = set.getInt("CATEGORY_ID");
             int taxID = set.getInt("TAX_ID");
-            double costPrice = set.getDouble("COST_PRICE");
+            BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
             int discountID = set.getInt("DISCOUNT_ID");
@@ -1734,7 +1735,7 @@ public class DBConnect implements DataConnectInterface {
             sales = new ArrayList<>();
             while (set.next()) {
                 int id = set.getInt("ID");
-                double price = set.getDouble("PRICE");
+                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                 int customer = set.getInt("CUSTOMER");
                 Time time = set.getTime("TIMESTAMP");
                 Sale s = new Sale(id, price, customer, time.getTime());
@@ -1751,7 +1752,7 @@ public class DBConnect implements DataConnectInterface {
         List<Sale> sales = new ArrayList<>();
         while (set.next()) {
             int id = set.getInt("ID");
-            double price = set.getDouble("PRICE");
+            BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
             int customer = set.getInt("CUSTOMER");
             Time time = set.getTime("TIMESTAMP");
             Sale s = new Sale(id, price, customer, time.getTime());
@@ -1798,7 +1799,7 @@ public class DBConnect implements DataConnectInterface {
             sales = new ArrayList<>();
             while (set.next()) {
                 int id = set.getInt("ID");
-                double price = set.getDouble("PRICE");
+                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                 int customer = set.getInt("CUSTOMER");
                 Time time = set.getTime("TIMESTAMP");
                 Sale s = new Sale(id, price, customer, time.getTime());
