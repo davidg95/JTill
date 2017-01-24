@@ -6,12 +6,14 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author David
  */
-public class ConnectionData implements Serializable {
+public class ConnectionData implements Serializable, Cloneable {
 
     private final String flag;
     private final Object data;
@@ -41,6 +43,16 @@ public class ConnectionData implements Serializable {
 
     public Object getData2() {
         return data2;
+    }
+
+    @Override
+    public ConnectionData clone() {
+        try {
+            final ConnectionData result = (ConnectionData) super.clone();
+            return result;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 
     @Override

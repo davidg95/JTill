@@ -882,15 +882,13 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addCategory(Category c) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDCATEGORY"));
-        obOut.writeObject(c);
+        obOut.writeObject(new ConnectionData("ADDCATEGORY", c));
     }
 
     @Override
     public Category updateCategory(Category c) throws IOException, SQLException, CategoryNotFoundException {
         try {
-            obOut.writeObject(new ConnectionData("UPDATECATEGORY"));
-            obOut.writeObject(c);
+            obOut.writeObject(new ConnectionData("UPDATECATEGORY", c));
 
             Object o = obIn.readObject();
 
@@ -1490,7 +1488,7 @@ public class ServerConnection implements DataConnectInterface {
                 return (List<Button>) o;
             } else if (o instanceof SQLException) {
                 throw (SQLException) o;
-            } else {
+            } else if (o instanceof ScreenNotFoundException) {
                 throw (ScreenNotFoundException) o;
             }
         } catch (ClassNotFoundException ex) {
