@@ -45,6 +45,8 @@ public interface DataConnectInterface {
 
     public List<Discount> getProductsDiscount(Product p) throws IOException, SQLException;
 
+    public List<Product> productLookup(String terms) throws IOException, SQLException;
+
     //Customer
     public void addCustomer(Customer customer) throws IOException, SQLException;
 

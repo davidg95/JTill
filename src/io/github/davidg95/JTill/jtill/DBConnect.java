@@ -745,6 +745,36 @@ public class DBConnect implements DataConnectInterface {
         return products.size();
     }
 
+    @Override
+    public List<Product> productLookup(String terms) throws IOException, SQLException {
+        String query = "SELECT * FROM PRODUCTS";
+        Statement stmt = con.createStatement();
+        try {
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ResultSet res;
+        try {
+            res = stmt.executeQuery(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            productSem.release();
+        }
+
+        List<Product> products = getProductsFromResultSet(res);
+        List<Product> newList = new ArrayList<>();
+
+        for (Product p : products) {
+            if (p.getName().toLowerCase().contains(terms.toLowerCase()) || p.getShortName().toLowerCase().contains(terms.toLowerCase())) {
+                newList.add(p);
+            }
+        }
+
+        return newList;
+    }
+
     //Customer Methods
     @Override
     public List<Customer> getAllCustomers() throws SQLException {

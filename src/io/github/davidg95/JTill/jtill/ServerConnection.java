@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +35,8 @@ public class ServerConnection implements DataConnectInterface {
     private GUIInterface g;
     private IncomingThread in;
 
+    private final Semaphore screenSem;
+
     /**
      * Blank constructor.
      *
@@ -42,6 +45,7 @@ public class ServerConnection implements DataConnectInterface {
     public ServerConnection(String site) {
         isConnected = false;
         this.site = site;
+        screenSem = new Semaphore(1);
     }
 
     /**
@@ -60,13 +64,8 @@ public class ServerConnection implements DataConnectInterface {
         obIn = new ObjectInputStream(socket.getInputStream());
         obOut.writeObject(site);
         isConnected = true;
-        //in = new IncomingThread(g, obIn, obOut);
-        //in.start();
-    }
-
-    public void reset() throws IOException {
-        obOut.writeObject(new ConnectionData("RESET"));
-        obOut.flush();
+//        in = new IncomingThread(g, obIn, obOut);
+//        in.start();
     }
 
     public class IncomingThread extends Thread {
@@ -398,6 +397,24 @@ public class ServerConnection implements DataConnectInterface {
 
             return (List<Product>) o;
         } catch (ClassNotFoundException ex) {
+        }
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<Product> productLookup(String terms) throws IOException, SQLException {
+        try {
+            obOut.writeObject(new ConnectionData("PRODUCTLOOKUP", terms));
+
+            Object o = obIn.readObject();
+
+            if (o instanceof SQLException) {
+                throw (SQLException) o;
+            }
+
+            return (List<Product>) o;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return new ArrayList<>();
     }
