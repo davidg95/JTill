@@ -1856,24 +1856,6 @@ public class DBConnect implements DataConnectInterface {
         return sales;
     }
 
-    private Sale getSaleNoSem(int id) throws SQLException, SaleNotFoundException {
-        String query = "SELECT * FROM APP.SALES WHERE SALES.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Sale> sales;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            sales = getSalesFromResultSet(set);
-        } catch (SQLException ex) {
-            throw ex;
-        }
-
-        if (sales.isEmpty()) {
-            throw new SaleNotFoundException(id + "");
-        }
-
-        return sales.get(0);
-    }
-
     @Override
     public Sale getSale(int id) throws SQLException, SaleNotFoundException {
         String query = "SELECT * FROM APP.SALES WHERE SALES.ID = " + id;
