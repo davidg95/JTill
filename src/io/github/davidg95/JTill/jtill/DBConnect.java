@@ -559,13 +559,14 @@ public class DBConnect implements DataConnectInterface {
      * Method to purchase a product and reduce its stock level by 1.
      *
      * @param code the code of the product to purchase.
+     * @param amount the amount of the product to purchase.
      * @return the new stock level.
      * @throws SQLException if there was an error purchasing the product.
      * @throws OutOfStockException if the product is out of stock.
      * @throws ProductNotFoundException if the product was not found.
      */
     @Override
-    public int purchaseProduct(int code) throws SQLException, OutOfStockException, ProductNotFoundException {
+    public int purchaseProduct(int code, int amount) throws SQLException, OutOfStockException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + code;
         Statement stmt = con.createStatement();
         try {
@@ -578,11 +579,7 @@ public class DBConnect implements DataConnectInterface {
             while (res.next()) {
                 int stock = res.getInt("STOCK");
                 res.close();
-                if (stock > 0) {
-                    stock--;
-                } else {
-                    throw new OutOfStockException(code + "");
-                }
+                stock -= amount;
                 String update = "UPDATE PRODUCTS SET STOCK=" + stock + " WHERE PRODUCTS.ID=" + code;
                 stmt = con.createStatement();
                 stmt.executeUpdate(update);
@@ -1774,7 +1771,7 @@ public class DBConnect implements DataConnectInterface {
             stmt.executeUpdate(query);
             List<Sale> sales = getAllSalesNoSem();
             Sale lastSale = sales.get(sales.size() - 1);
-            for (int p : s.getProducts()) {
+            for (SaleItem p : s.getSaleItems()) {
                 addSaleItem(lastSale, p);
             }
         } catch (SQLException ex) {
@@ -1814,8 +1811,8 @@ public class DBConnect implements DataConnectInterface {
         return sales;
     }
 
-    private void addSaleItem(Sale s, int p) throws SQLException {
-        String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, SALE_ID) VALUES (" + p + ", " + s.getCode() + ")";
+    private void addSaleItem(Sale s, SaleItem p) throws SQLException {
+        String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, SALE_ID) VALUES (" + p.getProduct().getProductCode() + ", " + s.getCode() + ")";
         Statement sstmt = con.createStatement();
         sstmt.executeUpdate(secondQuery);
     }

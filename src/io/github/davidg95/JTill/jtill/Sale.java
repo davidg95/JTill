@@ -18,19 +18,19 @@ import java.util.List;
 public class Sale implements Serializable {
 
     private int code;
-    private List<Integer> products;
+    private List<SaleItem> saleItems;
     private BigDecimal total;
     private int customer;
     private long time;
 
     public Sale() {
-        products = new ArrayList<>();
+        saleItems = new ArrayList<>();
         customer = -1;
         total = new BigDecimal("0.00");
     }
 
     public Sale(Customer c) {
-        products = new ArrayList<>();
+        saleItems = new ArrayList<>();
         this.customer = c.getId();
         total = new BigDecimal("0.00");
     }
@@ -42,14 +42,41 @@ public class Sale implements Serializable {
         this.time = time;
     }
 
-    public int addItem(Product p, int quantity) {
-        int count = 0;
-        for (int i = 0; i < quantity; i++) {
-            products.add(p.getProductCode());
-            total = total.add(p.getPrice());
-            count = products.stream().filter((pr) -> (pr == p.getProductCode())).map((_item) -> 1).reduce(count, Integer::sum); //Increaces the count of that product in the sale
+    /**
+     * This method adds products to the sale. First it will check if the product
+     * has already been added. If it has been added then it will check if it is
+     * open priced, if it is then it will check if the price is the same, if so
+     * then the quantity is increased, if not then it continues checking the
+     * products. If it is not open price but exists it will increase the
+     * quantity. If it does not exist then it adds a new item.
+     *
+     * @param p
+     * @param quantity
+     */
+    public void addItem(Product p, int quantity) {
+        //First check if the item has already been added
+        for (SaleItem item : saleItems) {
+            if (item.getProduct().getProductCode() == p.getProductCode()) {
+                if (p.isOpen()) {
+                    if (p.getPrice().equals(item.getProduct().getPrice())) {
+                        BigDecimal inc = item.increaseQuantity(quantity);
+                        this.total = total.add(inc);
+                        return; //The product is open price and the same price so increase the quantity and exit
+                    } else {
+                        continue; //The product is open but a different price so check the next item
+                    }
+                }
+                //Product is not open price and does already exist
+                BigDecimal inc = item.increaseQuantity(quantity);
+                this.total = total.add(inc);
+                return;
+            }
         }
-        return count;
+        //If the item is not already in the sale
+        SaleItem item = new SaleItem(p, quantity);
+
+        this.total = total.add(item.getPrice());
+        saleItems.add(item);
     }
 
     public void complete() {
@@ -64,12 +91,12 @@ public class Sale implements Serializable {
         this.code = code;
     }
 
-    public List<Integer> getProducts() {
-        return products;
+    public List<SaleItem> getSaleItems() {
+        return saleItems;
     }
 
-    public void setProducts(List<Integer> products) {
-        this.products = products;
+    public void setProducts(List<SaleItem> saleItems) {
+        this.saleItems = saleItems;
     }
 
     public BigDecimal getTotal() {
@@ -88,8 +115,16 @@ public class Sale implements Serializable {
         this.customer = customer;
     }
 
-    public int getItemCount() {
-        return products.size();
+    public int getLineCount() {
+        return saleItems.size();
+    }
+
+    public int getTotalItemCount() {
+        int count = 0;
+        for (SaleItem item : saleItems) {
+            count += item.getQuantity();
+        }
+        return count;
     }
 
     public void setTime(long time) {

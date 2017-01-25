@@ -27,7 +27,7 @@ public interface DataConnectInterface {
 
     public void removeProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
 
-    public int purchaseProduct(int code) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
+    public int purchaseProduct(int code, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
 
     public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException;
 

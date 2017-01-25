@@ -64,6 +64,11 @@ public class ServerConnection implements DataConnectInterface {
         //in.start();
     }
 
+    public void reset() throws IOException {
+        obOut.writeObject(new ConnectionData("RESET"));
+        obOut.flush();
+    }
+
     public class IncomingThread extends Thread {
 
         private GUIInterface g;
@@ -177,6 +182,7 @@ public class ServerConnection implements DataConnectInterface {
      * one.
      *
      * @param code the code of the product to purchase.
+     * @param amount the amount of the product to purchase.
      * @return the new stock level;
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
@@ -184,15 +190,21 @@ public class ServerConnection implements DataConnectInterface {
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public int purchaseProduct(int code) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
+    public int purchaseProduct(int code, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         String input = null;
         try {
-            obOut.writeObject(new ConnectionData("PURCHASE", code));
+            obOut.writeObject(new ConnectionData("PURCHASE", code, amount));
 
-            input = (String) obIn.readObject();
+            Object o = obIn.readObject();
+
+            if (o instanceof String) {
+                input = (String) o;
+            } else {
+                return (int) o;
+            }
 
             if (input.equals("FAIL")) {
-                Object o = obIn.readObject();
+                o = obIn.readObject();
                 if (o instanceof ProductNotFoundException) {
                     throw (ProductNotFoundException) o;
                 } else if (o instanceof SQLException) {
