@@ -7,6 +7,7 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.Time;
 
 /**
  *
@@ -14,18 +15,27 @@ import java.math.BigDecimal;
  */
 public class SaleItem implements Serializable {
 
+    private int id;
     private Product product;
     private int quantity;
     private BigDecimal price;
+    private Sale sale;
 
-    public SaleItem(Product product, int quantity) {
+    public SaleItem(Sale sale, Product product, int quantity, int id, BigDecimal price) {
+        this(sale, product, quantity);
+        this.id = id;
+        this.price = price;
+    }
+
+    public SaleItem(Sale sale, Product product, int quantity) {
+        this.sale = sale;
         this.product = product;
         this.quantity = quantity;
         this.price = product.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
     }
 
-    public SaleItem(Product product) {
-        this(product, 1);
+    public SaleItem(Sale sale, Product product) {
+        this(sale, product, 1);
     }
 
     public BigDecimal increaseQuantity(int quantity) {
@@ -64,6 +74,29 @@ public class SaleItem implements Serializable {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Sale getSale() {
+        return sale;
+    }
+
+    public void setSale(Sale sale) {
+        this.sale = sale;
+    }
+
+    public String getSQLInsertStatement() {
+        return this.product.getProductCode()
+                + "," + this.quantity
+                + "," + this.price.doubleValue()
+                + "," + this.sale.getCode();
     }
 
     @Override

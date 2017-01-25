@@ -162,6 +162,8 @@ public class DBConnect implements DataConnectInterface {
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "     PRODUCT_ID INT not null references PRODUCTS(ID),\n"
+                + "     QUANTITY INT not null,\n"
+                + "     PRICE double not null,\n"
                 + "     SALE_ID INT not null references SALES(ID)\n"
                 + ")";
         String customers = "create table \"APP\".CUSTOMERS\n"
@@ -1736,6 +1738,7 @@ public class DBConnect implements DataConnectInterface {
                 int customer = set.getInt("CUSTOMER");
                 Time time = set.getTime("TIMESTAMP");
                 Sale s = new Sale(id, price, customer, time.getTime());
+                s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
         } catch (SQLException ex) {
@@ -1753,6 +1756,7 @@ public class DBConnect implements DataConnectInterface {
             int customer = set.getInt("CUSTOMER");
             Time time = set.getTime("TIMESTAMP");
             Sale s = new Sale(id, price, customer, time.getTime());
+            s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
         return sales;
@@ -1769,16 +1773,22 @@ public class DBConnect implements DataConnectInterface {
         }
         try {
             stmt.executeUpdate(query);
-            List<Sale> sales = getAllSalesNoSem();
-            Sale lastSale = sales.get(sales.size() - 1);
+
+            s.setCode(getLastSaleID());
+
             for (SaleItem p : s.getSaleItems()) {
-                addSaleItem(lastSale, p);
+                addSaleItem(s, p);
             }
         } catch (SQLException ex) {
             throw ex;
         } finally {
             saleSem.release();
         }
+    }
+
+    private int getLastSaleID() throws SQLException {
+        List<Sale> sales = getAllSalesNoSem();
+        return sales.get(sales.size() - 1).getCode();
     }
 
     @Override
@@ -1800,6 +1810,7 @@ public class DBConnect implements DataConnectInterface {
                 int customer = set.getInt("CUSTOMER");
                 Time time = set.getTime("TIMESTAMP");
                 Sale s = new Sale(id, price, customer, time.getTime());
+                s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
         } catch (SQLException ex) {
@@ -1812,9 +1823,55 @@ public class DBConnect implements DataConnectInterface {
     }
 
     private void addSaleItem(Sale s, SaleItem p) throws SQLException {
-        String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, SALE_ID) VALUES (" + p.getProduct().getProductCode() + ", " + s.getCode() + ")";
+        p.setSale(s);
+        String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
         Statement sstmt = con.createStatement();
         sstmt.executeUpdate(secondQuery);
+    }
+
+    private List<SaleItem> getItemsInSale(Sale sale) throws SQLException {
+        String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getCode();
+        Statement stmt = con.createStatement();
+        List<SaleItem> items;
+        ResultSet set = stmt.executeQuery(query);
+        items = getSaleItemsFromResultSet(set, sale);
+        return items;
+    }
+
+    private List<SaleItem> getSaleItemsFromResultSet(ResultSet set, Sale sale) throws SQLException {
+        List<SaleItem> sales = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            Product product = null;
+            try {
+                product = getProduct(set.getInt("PRODUCT_ID"));
+            } catch (ProductNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            int quantity = set.getInt("QUANTITY");
+            BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+            SaleItem s = new SaleItem(sale, product, quantity, id, price);
+            sales.add(s);
+        }
+        return sales;
+    }
+
+    private Sale getSaleNoSem(int id) throws SQLException, SaleNotFoundException {
+        String query = "SELECT * FROM APP.SALES WHERE SALES.ID = " + id;
+        Statement stmt = con.createStatement();
+        List<Sale> sales;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            sales = getSalesFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        }
+
+        if (sales.isEmpty()) {
+            throw new SaleNotFoundException(id + "");
+        }
+
+        return sales.get(0);
     }
 
     @Override

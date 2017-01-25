@@ -35,6 +35,11 @@ public class Sale implements Serializable {
         total = new BigDecimal("0.00");
     }
 
+    public Sale(int code, BigDecimal total, int customer, long time, List<SaleItem> saleItems) {
+        this(code, total, customer, time);
+        this.saleItems = saleItems;
+    }
+
     public Sale(int code, BigDecimal total, int customer, long time) {
         this.code = code;
         this.total = total;
@@ -73,7 +78,7 @@ public class Sale implements Serializable {
             }
         }
         //If the item is not already in the sale
-        SaleItem item = new SaleItem(p, quantity);
+        SaleItem item = new SaleItem(this, p, quantity);
 
         this.total = total.add(item.getPrice());
         saleItems.add(item);
@@ -139,5 +144,12 @@ public class Sale implements Serializable {
         return this.total
                 + "," + this.customer
                 + ",'" + new Time(this.time).toString() + "'";
+    }
+
+    @Override
+    public String toString() {
+        return this.code
+                + "\n" + this.saleItems.size()
+                + "\n" + this.total.toString();
     }
 }
