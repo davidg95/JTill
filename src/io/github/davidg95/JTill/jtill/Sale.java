@@ -57,8 +57,9 @@ public class Sale implements Serializable {
      *
      * @param p
      * @param quantity
+     * @return
      */
-    public void addItem(Product p, int quantity) {
+    public SaleItem addItem(Product p, int quantity) {
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
             if (item.getProduct().getProductCode() == p.getProductCode()) {
@@ -66,7 +67,7 @@ public class Sale implements Serializable {
                     if (p.getPrice().equals(item.getProduct().getPrice())) {
                         BigDecimal inc = item.increaseQuantity(quantity);
                         this.total = total.add(inc);
-                        return; //The product is open price and the same price so increase the quantity and exit
+                        return new SaleItem(this, p, quantity); //The product is open price and the same price so increase the quantity and exit
                     } else {
                         continue; //The product is open but a different price so check the next item
                     }
@@ -74,7 +75,7 @@ public class Sale implements Serializable {
                 //Product is not open price and does already exist
                 BigDecimal inc = item.increaseQuantity(quantity);
                 this.total = total.add(inc);
-                return;
+                return new SaleItem(this, p, quantity);
             }
         }
         //If the item is not already in the sale
@@ -82,6 +83,7 @@ public class Sale implements Serializable {
 
         this.total = total.add(item.getPrice());
         saleItems.add(item);
+        return item;
     }
 
     public void complete() {
@@ -138,6 +140,36 @@ public class Sale implements Serializable {
 
     public long getTime() {
         return time;
+    }
+
+    /**
+     * Method to void an item from the sale. It will first check though the list
+     * looking for the item. If the quantity of the item in the last is greater
+     * than the quantity being voided, then the quantity of the item in the list
+     * is simply reduced. If the quantities are the same then the item is
+     * removed from the list.
+     *
+     * @param si
+     */
+    public void voidItem(SaleItem si) {
+        for (SaleItem item : saleItems) {
+            if (item.getProduct().getProductCode() == si.getProduct().getProductCode()) {
+                if (item.getQuantity() > si.getQuantity()) { //If the quantities are different then reduce the quantity.
+                    item.decreaseQuantity(si.getQuantity());
+                } else if (item.getQuantity() == si.getQuantity()) { //If the quantities are the same then remove the item.
+                    saleItems.remove(si);
+                    updateTotal();
+                    return;
+                }
+            }
+        }
+    }
+
+    private void updateTotal() {
+        total = new BigDecimal("0");
+        for (SaleItem item : saleItems) {
+            total = total.add(item.getPrice());
+        }
     }
 
     public String getSQLInsertStatement() {

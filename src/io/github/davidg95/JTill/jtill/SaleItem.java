@@ -7,7 +7,6 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.Time;
 
 /**
  *
