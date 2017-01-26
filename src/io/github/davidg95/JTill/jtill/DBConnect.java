@@ -1765,7 +1765,15 @@ public class DBConnect implements DataConnectInterface {
             while (set.next()) {
                 int id = set.getInt("ID");
                 BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                int customer = set.getInt("CUSTOMER");
+                int customerid = set.getInt("CUSTOMER");
+                Customer customer = null;
+                if (customerid > -1) {
+                    try {
+                        customer = getCustomer(customerid);
+                    } catch (CustomerNotFoundException ex) {
+                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
                 Time time = set.getTime("TIMESTAMP");
                 Sale s = new Sale(id, price, customer, time.getTime());
                 s.setProducts(getItemsInSale(s));
@@ -1783,7 +1791,13 @@ public class DBConnect implements DataConnectInterface {
         while (set.next()) {
             int id = set.getInt("ID");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            int customer = set.getInt("CUSTOMER");
+            int customerid = set.getInt("CUSTOMER");
+            Customer customer = null;
+            try {
+                customer = getCustomer(customerid);
+            } catch (CustomerNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             Time time = set.getTime("TIMESTAMP");
             Sale s = new Sale(id, price, customer, time.getTime());
             s.setProducts(getItemsInSale(s));
@@ -1837,7 +1851,12 @@ public class DBConnect implements DataConnectInterface {
             while (set.next()) {
                 int id = set.getInt("ID");
                 BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                int customer = set.getInt("CUSTOMER");
+                int customerid = set.getInt("CUSTOMER");
+                Customer customer = null;
+                try {
+                    customer = getCustomer(customerid);
+                } catch (CustomerNotFoundException ex) {
+                }
                 Time time = set.getTime("TIMESTAMP");
                 Sale s = new Sale(id, price, customer, time.getTime());
                 s.setProducts(getItemsInSale(s));

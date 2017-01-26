@@ -12,7 +12,7 @@ import java.io.Serializable;
  *
  * @author David
  */
-public class Customer implements Serializable{
+public class Customer implements Serializable {
 
     private int id;
     private String name;
@@ -203,7 +203,7 @@ public class Customer implements Serializable{
 
     @Override
     public String toString() {
-        return "ID: " + this.id + "\nName: " + this.name + "\nPhone Number: " + this.phone;
+        return "ID: " + this.id + "\nName: " + this.name;
     }
 
 }

@@ -20,27 +20,27 @@ public class Sale implements Serializable {
     private int code;
     private List<SaleItem> saleItems;
     private BigDecimal total;
-    private int customer;
+    private Customer customer;
     private long time;
 
     public Sale() {
         saleItems = new ArrayList<>();
-        customer = -1;
+        customer = null;
         total = new BigDecimal("0.00");
     }
 
     public Sale(Customer c) {
         saleItems = new ArrayList<>();
-        this.customer = c.getId();
+        this.customer = c;
         total = new BigDecimal("0.00");
     }
 
-    public Sale(int code, BigDecimal total, int customer, long time, List<SaleItem> saleItems) {
+    public Sale(int code, BigDecimal total, Customer customer, long time, List<SaleItem> saleItems) {
         this(code, total, customer, time);
         this.saleItems = saleItems;
     }
 
-    public Sale(int code, BigDecimal total, int customer, long time) {
+    public Sale(int code, BigDecimal total, Customer customer, long time) {
         this.code = code;
         this.total = total;
         this.customer = customer;
@@ -114,11 +114,11 @@ public class Sale implements Serializable {
         this.total = total;
     }
 
-    public int getCustomer() {
+    public Customer getCustomer() {
         return customer;
     }
 
-    public void setCustomer(int customer) {
+    public void setCustomer(Customer customer) {
         this.customer = customer;
     }
 
@@ -176,7 +176,7 @@ public class Sale implements Serializable {
 
     public String getSQLInsertStatement() {
         return this.total
-                + "," + this.customer
+                + "," + this.customer.getId()
                 + ",'" + new Time(this.time).toString() + "'";
     }
 
