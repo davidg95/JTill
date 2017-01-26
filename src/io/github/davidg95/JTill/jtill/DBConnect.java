@@ -938,7 +938,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public Customer getCustomer(int id) throws SQLException, CustomerNotFoundException {
-        String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = '" + id + "'";
+        String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
         Statement stmt = con.createStatement();
         try {
             customerSem.acquire();

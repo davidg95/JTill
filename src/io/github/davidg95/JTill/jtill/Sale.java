@@ -156,6 +156,8 @@ public class Sale implements Serializable {
             if (item.getProduct().getProductCode() == si.getProduct().getProductCode()) {
                 if (item.getQuantity() > si.getQuantity()) { //If the quantities are different then reduce the quantity.
                     item.decreaseQuantity(si.getQuantity());
+                    updateTotal();
+                    return;
                 } else if (item.getQuantity() == si.getQuantity()) { //If the quantities are the same then remove the item.
                     saleItems.remove(si);
                     updateTotal();
