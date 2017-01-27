@@ -175,9 +175,15 @@ public class Sale implements Serializable {
     }
 
     public String getSQLInsertStatement() {
-        return this.total
-                + "," + this.customer.getId()
-                + ",'" + new Time(this.time).toString() + "'";
+        if (this.customer == null) {
+            return this.total
+                    + ",-1"
+                    + ",'" + new Time(this.time).toString() + "'";
+        } else {
+            return this.total
+                    + "," + this.customer.getId()
+                    + ",'" + new Time(this.time).toString() + "'";
+        }
     }
 
     @Override
