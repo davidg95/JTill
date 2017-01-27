@@ -909,6 +909,38 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
+    public Sale updateSale(Sale s) throws IOException, SaleNotFoundException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(new ConnectionData("UPDATESALE", s));
+
+            Object o;
+            try {
+                o = obIn.readObject();
+            } catch (IOException ex) {
+                throw ex;
+            } finally {
+                sem.release();
+            }
+
+            if (o instanceof Sale) {
+                return (Sale) o;
+            } else if (o instanceof SQLException) {
+                throw (SQLException) o;
+            } else {
+                throw (SaleNotFoundException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
     public List<Sale> getSalesInRange(Date start, Date end) throws IOException, SQLException {
         try {
             try {

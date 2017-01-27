@@ -73,6 +73,8 @@ public interface DataConnectInterface {
 
     public List<Sale> getSalesInRange(Date start, Date end) throws IOException, SQLException;
 
+    public Sale updateSale(Sale s) throws IOException, SQLException, SaleNotFoundException;
+
     //Staff
     public void addStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 

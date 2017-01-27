@@ -22,29 +22,33 @@ public class Sale implements Serializable {
     private BigDecimal total;
     private Customer customer;
     private long time;
+    private boolean chargeAccount;
 
     public Sale() {
         saleItems = new ArrayList<>();
         customer = null;
         total = new BigDecimal("0.00");
+        chargeAccount = false;
     }
 
-    public Sale(Customer c) {
+    public Sale(Customer c, boolean chargeAccount) {
         saleItems = new ArrayList<>();
         this.customer = c;
+        this.chargeAccount = chargeAccount;
         total = new BigDecimal("0.00");
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, long time, List<SaleItem> saleItems) {
-        this(code, total, customer, time);
+    public Sale(int code, BigDecimal total, Customer customer, long time, boolean chargeAccount, List<SaleItem> saleItems) {
+        this(code, total, customer, time, chargeAccount);
         this.saleItems = saleItems;
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, long time) {
+    public Sale(int code, BigDecimal total, Customer customer, long time, boolean chargeAccount) {
         this.code = code;
         this.total = total;
         this.customer = customer;
         this.time = time;
+        this.chargeAccount = chargeAccount;
     }
 
     /**
@@ -142,6 +146,14 @@ public class Sale implements Serializable {
         return time;
     }
 
+    public boolean isChargeAccount() {
+        return chargeAccount;
+    }
+
+    public void setChargeAccount(boolean chargeAccount) {
+        this.chargeAccount = chargeAccount;
+    }
+
     /**
      * Method to void an item from the sale. It will first check though the list
      * looking for the item. If the quantity of the item in the last is greater
@@ -175,14 +187,34 @@ public class Sale implements Serializable {
     }
 
     public String getSQLInsertStatement() {
-        if (this.customer == null) {
+        if (this.customer == null) { //If no customer was assigned then set the customer ID to -1
             return this.total
                     + ",-1"
-                    + ",'" + new Time(this.time).toString() + "'";
+                    + ",'" + new Time(this.time).toString()
+                    + "'," + this.chargeAccount;
         } else {
             return this.total
                     + "," + this.customer.getId()
-                    + ",'" + new Time(this.time).toString() + "'";
+                    + ",'" + new Time(this.time).toString()
+                    + "'," + this.chargeAccount;
+        }
+    }
+
+    public String getSQLUpdateStatement() {
+        if (this.customer == null) {
+            return "UPDATE SALES"
+                    + " SET PRICE=" + this.total
+                    + ", SET CUSTOMER=" + this.customer.getId()
+                    + ", TIMESTAMP='" + new Time(this.time).toString()
+                    + "', CHARGE_ACCOUNT=" + this.chargeAccount
+                    + " WHERE SALES.ID=" + this.code;
+        } else {
+            return "UPDATE SALES"
+                    + " SET PRICE=" + this.total
+                    + ", SET CUSTOMER=-1"
+                    + ", TIMESTAMP='" + new Time(this.time).toString()
+                    + "', CHARGE_ACCOUNT=" + this.chargeAccount
+                    + " WHERE SALES.ID=" + this.code;
         }
     }
 

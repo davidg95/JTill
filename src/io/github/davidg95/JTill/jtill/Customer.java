@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * Class which models a customer.
@@ -30,11 +31,13 @@ public class Customer implements Serializable {
     private String country;
     private String postcode;
 
+    private BigDecimal moneyDue;
+
     public Customer() {
 
     }
 
-    public Customer(String name, String phone, String mobile, String email, int discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyalty) {
+    public Customer(String name, String phone, String mobile, String email, int discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyalty, BigDecimal moneyDue) {
         this.name = name;
         this.phone = phone;
         this.mobile = mobile;
@@ -48,10 +51,11 @@ public class Customer implements Serializable {
         this.postcode = postcode;
         this.notes = notes;
         this.loyaltyPoints = loyalty;
+        this.moneyDue = moneyDue;
     }
 
-    public Customer(String name, String phone, String mobile, String email, int discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, int id) {
-        this(name, phone, mobile, email, discount, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints);
+    public Customer(String name, String phone, String mobile, String email, int discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, int id) {
+        this(name, phone, mobile, email, discount, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
         this.id = id;
     }
 
@@ -167,6 +171,22 @@ public class Customer implements Serializable {
         this.postcode = postcode;
     }
 
+    public int getDiscount_id() {
+        return discount_id;
+    }
+
+    public void setDiscount_id(int discount_id) {
+        this.discount_id = discount_id;
+    }
+
+    public BigDecimal getMoneyDue() {
+        return moneyDue;
+    }
+
+    public void setMoneyDue(BigDecimal moneyDue) {
+        this.moneyDue = moneyDue;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.phone
@@ -180,7 +200,8 @@ public class Customer implements Serializable {
                 + "','" + this.postcode
                 + "','" + this.notes
                 + "'," + this.discount_id
-                + "," + this.loyaltyPoints;
+                + "," + this.loyaltyPoints
+                + "," + this.moneyDue.doubleValue();
     }
 
     public String getSQLUpdateString() {
@@ -198,6 +219,7 @@ public class Customer implements Serializable {
                 + "', NOTES='" + this.getNotes()
                 + "', DISCOUNT_ID=" + this.getDiscountID()
                 + ", LOYALTY_POINTS=" + this.getLoyaltyPoints()
+                + ", MONEY_DUE=" + this.getMoneyDue().doubleValue()
                 + " WHERE CUSTOMERS.ID=" + this.getId();
     }
 

@@ -154,7 +154,8 @@ public class DBConnect implements DataConnectInterface {
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "     PRICE DOUBLE,\n"
                 + "     CUSTOMER int,\n"
-                + "     TIMESTAMP TIME\n"
+                + "     TIMESTAMP TIME,\n"
+                + "     CHARGE_ACCOUNT boolean\n"
                 + ")";
         String saleItems = "create table APP.SALEITEMS\n"
                 + "(\n"
@@ -183,7 +184,8 @@ public class DBConnect implements DataConnectInterface {
                 + "	POSTCODE VARCHAR(20),\n"
                 + "	NOTES VARCHAR(200),\n"
                 + "	DISCOUNT_ID INT references DISCOUNTS(ID),\n"
-                + "	LOYALTY_POINTS INTEGER not null\n"
+                + "	LOYALTY_POINTS INTEGER not null,\n"
+                + "     MONEY_DUE DOUBLE not null\n"
                 + ")";
         String products = "create table \"APP\".PRODUCTS\n"
                 + "(\n"
@@ -766,11 +768,9 @@ public class DBConnect implements DataConnectInterface {
         List<Product> products = getProductsFromResultSet(res);
         List<Product> newList = new ArrayList<>();
 
-        for (Product p : products) {
-            if (p.getName().toLowerCase().contains(terms.toLowerCase()) || p.getShortName().toLowerCase().contains(terms.toLowerCase())) {
-                newList.add(p);
-            }
-        }
+        products.stream().filter((p) -> (p.getName().toLowerCase().contains(terms.toLowerCase()) || p.getShortName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((p) -> {
+            newList.add(p);
+        });
 
         return newList;
     }
@@ -804,8 +804,8 @@ public class DBConnect implements DataConnectInterface {
                 String notes = set.getString("NOTES");
                 int discount = set.getInt("DISCOUNT_ID");
                 int loyaltyPoints = set.getInt("LOYALTY_POINTS");
-
-                Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, id);
+                BigDecimal moneyDue = new BigDecimal(Double.toString(set.getDouble("MONEY_DUE")));
+                Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
 
                 customers.add(c);
             }
@@ -835,8 +835,9 @@ public class DBConnect implements DataConnectInterface {
             String notes = set.getString("NOTES");
             int discount = set.getInt("DISCOUNT_ID");
             int loyaltyPoints = set.getInt("LOYALTY_POINTS");
+            BigDecimal moneyDue = new BigDecimal(set.getDouble("MONEY_DUE"));
 
-            Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, id);
+            Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
 
             customers.add(c);
         }
@@ -853,7 +854,7 @@ public class DBConnect implements DataConnectInterface {
      */
     @Override
     public void addCustomer(Customer c) throws SQLException {
-        String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, DISCOUNT_ID, LOYALTY_POINTS) VALUES (" + c.getSQLInsertString() + ")";
+        String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, DISCOUNT_ID, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             customerSem.acquire();
@@ -1775,7 +1776,8 @@ public class DBConnect implements DataConnectInterface {
                     }
                 }
                 Time time = set.getTime("TIMESTAMP");
-                Sale s = new Sale(id, price, customer, time.getTime());
+                boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
+                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1799,7 +1801,8 @@ public class DBConnect implements DataConnectInterface {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
             Time time = set.getTime("TIMESTAMP");
-            Sale s = new Sale(id, price, customer, time.getTime());
+            boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
+            Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1808,7 +1811,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addSale(Sale s) throws SQLException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
         try {
             saleSem.acquire();
@@ -1823,10 +1826,28 @@ public class DBConnect implements DataConnectInterface {
             for (SaleItem p : s.getSaleItems()) {
                 addSaleItem(s, p);
             }
+
+            if (s.isChargeAccount()) {
+                new Thread("Charge To Account") {
+                    @Override
+                    public void run() {
+                        chargeCustomerAccount(s.getCustomer(), s.getTotal());
+                    }
+                }.start();
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
             saleSem.release();
+        }
+    }
+
+    private void chargeCustomerAccount(Customer c, BigDecimal amount) {
+        c.setMoneyDue(c.getMoneyDue().add(amount));
+        try {
+            updateCustomer(c);
+        } catch (SQLException | CustomerNotFoundException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -1858,7 +1879,8 @@ public class DBConnect implements DataConnectInterface {
                 } catch (CustomerNotFoundException ex) {
                 }
                 Time time = set.getTime("TIMESTAMP");
-                Sale s = new Sale(id, price, customer, time.getTime());
+                boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
+                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1929,6 +1951,29 @@ public class DBConnect implements DataConnectInterface {
         }
 
         return sales.get(0);
+    }
+
+    @Override
+    public Sale updateSale(Sale s) throws SQLException, SaleNotFoundException {
+        String query = s.getSQLUpdateStatement();
+        Statement stmt = con.createStatement();
+        try {
+            saleSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            saleSem.release();
+        }
+        if (value == 0) {
+            throw new SaleNotFoundException(s.getCode() + "");
+        }
+        return s;
     }
 
     @Override
