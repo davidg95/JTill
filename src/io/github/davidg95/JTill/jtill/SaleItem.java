@@ -7,6 +7,7 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 
 /**
  *
@@ -100,8 +101,16 @@ public class SaleItem implements Serializable {
 
     @Override
     public String toString() {
-        return this.product.getShortName()
-                + "\n" + this.quantity
-                + "\n" + this.price;
+        DecimalFormat df;
+        if (product.getPrice().compareTo(BigDecimal.ZERO) > 1) {
+            df = new DecimalFormat("#.00");
+        } else {
+            df = new DecimalFormat("0.00");
+        }
+        if (this.getProduct().getShortName().length() < 4) {
+            return "Qty. " + this.getQuantity() + "\t" + this.getProduct().getShortName() + "\t\t\t£" + df.format(this.getPrice());
+        } else {
+            return "Qty. " + this.getQuantity() + "\t" + this.getProduct().getShortName() + "\t£" + df.format(this.getPrice());
+        }
     }
 }

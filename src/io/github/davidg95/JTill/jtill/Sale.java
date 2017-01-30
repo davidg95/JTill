@@ -24,6 +24,8 @@ public class Sale implements Serializable {
     private long time;
     private boolean chargeAccount;
 
+    private SaleItem lastAdded;
+
     public Sale() {
         saleItems = new ArrayList<>();
         customer = null;
@@ -61,17 +63,19 @@ public class Sale implements Serializable {
      *
      * @param p
      * @param quantity
-     * @return
+     * @return true if the item was already in the sale and is being re-added,
+     * false if it is a new item in the sale.
      */
-    public SaleItem addItem(Product p, int quantity) {
+    public boolean addItem(Product p, int quantity) {
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
             if (item.getProduct().getProductCode() == p.getProductCode()) {
                 if (p.isOpen()) {
-                    if (p.getPrice().equals(item.getProduct().getPrice())) {
+                    if (p.getPrice().compareTo(item.getProduct().getPrice()) == 0) {
                         BigDecimal inc = item.increaseQuantity(quantity);
                         this.total = total.add(inc);
-                        return new SaleItem(this, p, quantity); //The product is open price and the same price so increase the quantity and exit
+                        this.lastAdded = new SaleItem(this, p, quantity);
+                        return true; //The product is open price and the same price so increase the quantity and exit
                     } else {
                         continue; //The product is open but a different price so check the next item
                     }
@@ -79,7 +83,8 @@ public class Sale implements Serializable {
                 //Product is not open price and does already exist
                 BigDecimal inc = item.increaseQuantity(quantity);
                 this.total = total.add(inc);
-                return new SaleItem(this, p, quantity);
+                this.lastAdded = new SaleItem(this, p, quantity);
+                return true;
             }
         }
         //If the item is not already in the sale
@@ -87,7 +92,8 @@ public class Sale implements Serializable {
 
         this.total = total.add(item.getPrice());
         saleItems.add(item);
-        return item;
+        this.lastAdded = item;
+        return false;
     }
 
     public void complete() {
@@ -177,6 +183,33 @@ public class Sale implements Serializable {
                 }
             }
         }
+    }
+
+    /**
+     * Method to void an item from the sale. It will first check though the list
+     * looking for the item. If the quantity of the item in the last is greater
+     * than the quantity being voided, then the quantity of the item in the list
+     * is simply reduced. If the quantities are the same then the item is
+     * removed from the list.
+     */
+    public void voidLastItem() {
+        for (SaleItem item : saleItems) {
+            if (item.getProduct().getProductCode() == lastAdded.getProduct().getProductCode()) {
+                if (item.getQuantity() > lastAdded.getQuantity()) { //If the quantities are different then reduce the quantity.
+                    item.decreaseQuantity(lastAdded.getQuantity());
+                    updateTotal();
+                    return;
+                } else if (item.getQuantity() == lastAdded.getQuantity()) { //If the quantities are the same then remove the item.
+                    saleItems.remove(lastAdded);
+                    updateTotal();
+                    return;
+                }
+            }
+        }
+    }
+
+    public SaleItem getLastAdded() {
+        return lastAdded;
     }
 
     private void updateTotal() {

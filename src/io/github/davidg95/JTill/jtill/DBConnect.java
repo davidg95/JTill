@@ -2286,10 +2286,20 @@ public class DBConnect implements DataConnectInterface {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
             int order = set.getInt("POSITION");
-            int product = set.getInt("PRODUCT");
-            int screen = set.getInt("SCREEN_ID");
+            Product p = null;
+            try {
+                p = getProduct(set.getInt("PRODUCT"));
+            } catch (ProductNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            Screen s = null;
+            try {
+                s = getScreen(set.getInt("SCREEN_ID"));
+            } catch (ScreenNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             int color = set.getInt("COLOR");
-            Button b = new Button(name, product, order, screen, color, id);
+            Button b = new Button(name, p, order, s, color, id);
 
             buttons.add(b);
         }
@@ -2401,6 +2411,26 @@ public class DBConnect implements DataConnectInterface {
 
         if (screens.isEmpty()) {
             throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        }
+
+        return screens.get(0);
+    }
+    
+    private Screen getScreenNoSem(int id) throws SQLException, ScreenNotFoundException{
+        String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + id;
+        Statement stmt = con.createStatement();
+        List<Screen> screens;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            screens = getScreensFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+        }
+
+        if (screens.isEmpty()) {
+            throw new ScreenNotFoundException("Screen " + id + " could not be found");
         }
 
         return screens.get(0);
@@ -2527,10 +2557,20 @@ public class DBConnect implements DataConnectInterface {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
                 int order = set.getInt("POSITION");
-                int product = set.getInt("PRODUCT");
+                Product p = null;
+                try {
+                    p = getProduct(set.getInt("PRODUCT"));
+                } catch (ProductNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 int color = set.getInt("COLOR");
-                int screen = set.getInt("SCREEN_ID");
-                Button b = new Button(name, product, order, screen, color, id);
+                Screen s = null;
+                try {
+                    s = getScreenNoSem(set.getInt("SCREEN_ID"));
+                } catch (ScreenNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                Button b = new Button(name, p, order, s, color, id);
 
                 buttons.add(b);
             }
@@ -2560,10 +2600,14 @@ public class DBConnect implements DataConnectInterface {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
                 int order = set.getInt("POSITION");
-                int product = set.getInt("PRODUCT");
+                Product p = null;
+                try {
+                    p = getProduct(set.getInt("PRODUCT"));
+                } catch (ProductNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 int color = set.getInt("COLOR");
-                int screen = set.getInt("SCREEN_ID");
-                Button b = new Button(name, product, order, screen, color, id);
+                Button b = new Button(name, p, order, s, color, id);
 
                 buttons.add(b);
             }

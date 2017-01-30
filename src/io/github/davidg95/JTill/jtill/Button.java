@@ -17,20 +17,20 @@ public class Button implements Serializable {
     private int id;
     private String name;
     private int order;
-    private int product_id;
-    private int screen_id;
+    private Product product;
+    private Screen screen;
     private int color;
 
-    public Button(String name, int product_id, int order, int screen_id, int color) {
+    public Button(String name, Product product, int order, Screen screen, int color) {
         this.name = name;
-        this.product_id = product_id;
+        this.product = product;
         this.order = order;
-        this.screen_id = screen_id;
+        this.screen = screen;
         this.color = color;
     }
 
-    public Button(String name, int product_id, int order, int screen_id, int color, int id) {
-        this(name, product_id, order, screen_id, color);
+    public Button(String name, Product product, int order, Screen screen, int color, int id) {
+        this(name, product, order, screen, color);
         this.id = id;
     }
 
@@ -50,12 +50,12 @@ public class Button implements Serializable {
         this.name = name;
     }
 
-    public int getProduct_id() {
-        return product_id;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setProduct_id(int product_id) {
-        this.product_id = product_id;
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
     public int getOrder() {
@@ -66,12 +66,12 @@ public class Button implements Serializable {
         this.order = order;
     }
 
-    public int getScreen_id() {
-        return screen_id;
+    public Screen getScreen() {
+        return screen;
     }
 
-    public void setScreen_id(int screen_id) {
-        this.screen_id = screen_id;
+    public void setScreen(Screen screen) {
+        this.screen = screen;
     }
 
     public int getColorValue() {
@@ -93,18 +93,18 @@ public class Button implements Serializable {
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.order
-                + "," + this.product_id
+                + "," + this.product.getProductCode()
                 + "," + this.color
-                + "," + this.screen_id;
+                + "," + this.screen.getId();
     }
 
     public String getSQLUpdateString() {
         return "UPDATE BUTTONS"
                 + " SET NAME='" + this.getName()
                 + "', POSITION=" + this.getOrder()
-                + ", PRODUCT=" + this.getProduct_id()
+                + ", PRODUCT=" + this.getProduct().getProductCode()
                 + ", COLOR=" + this.getColorValue()
-                + ", SCREEN_ID=" + this.getScreen_id()
+                + ", SCREEN_ID=" + this.getScreen().getId()
                 + " WHERE BUTTONS.ID=" + this.getId();
     }
 
