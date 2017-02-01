@@ -14,7 +14,7 @@ import java.math.BigDecimal;
  *
  * @author 1301480
  */
-public class Product implements Serializable {
+public class Product implements Serializable, Cloneable {
 
     private int productCode;
     private String barcode;
@@ -308,6 +308,16 @@ public class Product implements Serializable {
 
     public boolean equals(Product p) {
         return this.productCode == p.productCode;
+    }
+
+    @Override
+    public Product clone() {
+        try {
+            final Product result = (Product) super.clone();
+            return result;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 
     @Override

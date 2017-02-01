@@ -6,8 +6,6 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
