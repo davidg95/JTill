@@ -31,6 +31,18 @@ public class ConnectionData implements Serializable, Cloneable {
         this.data2 = data2;
     }
 
+    public static ConnectionData create(String flag) {
+        return new ConnectionData(flag);
+    }
+
+    public static ConnectionData create(String flag, Object data) {
+        return new ConnectionData(flag, data);
+    }
+
+    public static ConnectionData create(String flag, Object data1, Object data2) {
+        return new ConnectionData(flag, data1, data2);
+    }
+
     public String getFlag() {
         return flag;
     }

@@ -6,6 +6,8 @@
 package io.github.davidg95.JTill.jtill;
 
 import io.github.davidg95.JTill.jtill.Staff.Position;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -59,6 +61,7 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore screensSem;
 
     private static Properties properties;
+    private static String imageURL;
     public static int PORT = 600;
     public static int MAX_CONNECTIONS = 10;
     public static int MAX_QUEUE = 10;
@@ -2202,12 +2205,12 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void logout(int id) throws IOException, StaffNotFoundException {
+    public void logout(Staff s) throws IOException, StaffNotFoundException {
 
     }
 
     @Override
-    public void tillLogout(int id) throws IOException, StaffNotFoundException {
+    public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
 
     }
 
@@ -2230,6 +2233,7 @@ public class DBConnect implements DataConnectInterface {
             DB_ADDRESS = properties.getProperty("db_address", "jdbc:derby:TillEmbedded;");
             DB_USERNAME = properties.getProperty("db_username", "APP");
             DB_PASSWORD = properties.getProperty("db_password", "App");
+            imageURL = properties.getProperty("imageURL", "NONE");
 
             in.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
@@ -2257,6 +2261,7 @@ public class DBConnect implements DataConnectInterface {
             properties.setProperty("db_address", DB_ADDRESS);
             properties.setProperty("db_username", DB_USERNAME);
             properties.setProperty("db_password", DB_PASSWORD);
+            properties.setProperty("imageURL", imageURL);
 
             properties.store(out, null);
             out.close();
@@ -2415,8 +2420,8 @@ public class DBConnect implements DataConnectInterface {
 
         return screens.get(0);
     }
-    
-    private Screen getScreenNoSem(int id) throws SQLException, ScreenNotFoundException{
+
+    private Screen getScreenNoSem(int id) throws SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + id;
         Statement stmt = con.createStatement();
         List<Screen> screens;
@@ -2633,5 +2638,28 @@ public class DBConnect implements DataConnectInterface {
     @Override
     public void setGUI(GUIInterface g) {
         this.g = g;
+    }
+
+    @Override
+    public java.awt.Image getImage() {
+        return Toolkit.getDefaultToolkit().getImage(imageURL);
+    }
+
+    @Override
+    public javafx.scene.image.Image getFXImage() {
+        return new javafx.scene.image.Image(imageURL);
+    }
+
+    @Override
+    public void setImage(Image image) throws IOException {
+    }
+
+    @Override
+    public void setFXImage(javafx.scene.image.Image image) throws IOException {
+    }
+
+    @Override
+    public void setImagePath(String path) {
+        imageURL = path;
     }
 }

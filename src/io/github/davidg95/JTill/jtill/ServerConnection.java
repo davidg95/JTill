@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -68,9 +69,44 @@ public class ServerConnection implements DataConnectInterface {
 //        in.start();
     }
 
+    @Override
+    public Image getImage() throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("GETIMAGE"));
+            return (java.awt.Image) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public javafx.scene.image.Image getFXImage() throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("GETFXIMAGE"));
+            return (javafx.scene.image.Image) obIn.readObject();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public void setImage(Image image) throws IOException {
+    }
+
+    @Override
+    public void setFXImage(javafx.scene.image.Image image) throws IOException {
+    }
+
+    @Override
+    public void setImagePath(String path) throws IOException {
+        obOut.writeObject(ConnectionData.create("SETIMAGEPATH", path));
+    }
+
     public class IncomingThread extends Thread {
 
-        private GUIInterface g;
+        private final GUIInterface g;
         private final ObjectInputStream obIn;
         private final ObjectOutputStream obOut;
 
@@ -105,6 +141,10 @@ public class ServerConnection implements DataConnectInterface {
                 }
             }
         }
+
+        public void stopRun() {
+            running = false;
+        }
     }
 
     /**
@@ -126,7 +166,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addProduct(Product p) throws IOException {
-        obOut.writeObject(new ConnectionData("NEWPRODUCT", p));
+        obOut.writeObject(ConnectionData.create("NEWPRODUCT", p));
     }
 
     /**
@@ -145,7 +185,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("REMOVEPRODUCT", code));
+            obOut.writeObject(ConnectionData.create("REMOVEPRODUCT", code));
 
             String input;
             try {
@@ -183,7 +223,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("REMOVEPRODUCT", p.getProductCode()));
+            obOut.writeObject(ConnectionData.create("REMOVEPRODUCT", p.getProductCode()));
 
             String input;
             try {
@@ -234,7 +274,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("PURCHASE", code, amount));
+            obOut.writeObject(ConnectionData.create("PURCHASE", code, amount));
 
             Object o;
             try {
@@ -292,7 +332,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETPRODUCT", code));
+            obOut.writeObject(ConnectionData.create("GETPRODUCT", code));
 
             Object o;
             try {
@@ -333,7 +373,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETPRODUCTBARCODE", barcode));
+            obOut.writeObject(ConnectionData.create("GETPRODUCTBARCODE", barcode));
 
             Object o;
             try {
@@ -364,7 +404,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATEPRODUCT", p));
+            obOut.writeObject(ConnectionData.create("UPDATEPRODUCT", p));
 
             Object o;
             try {
@@ -393,7 +433,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("CHECKBARCODE", barcode));
+        obOut.writeObject(ConnectionData.create("CHECKBARCODE", barcode));
 
         String input = "";
         try {
@@ -423,7 +463,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("SETSTOCK", code + "," + stock));
+        obOut.writeObject(ConnectionData.create("SETSTOCK", code + "," + stock));
 
         String input = "";
         try {
@@ -455,7 +495,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETPRODUCTSDISCOUNT", p));
+            obOut.writeObject(ConnectionData.create("GETPRODUCTSDISCOUNT", p));
 
             Object o;
             try {
@@ -491,7 +531,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("GETPRODUCTCOUNT"));
+        obOut.writeObject(ConnectionData.create("GETPRODUCTCOUNT"));
 
         String input = "";
         try {
@@ -522,7 +562,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLPRODUCTS"));
+            obOut.writeObject(ConnectionData.create("GETALLPRODUCTS"));
 
             Object o;
             try {
@@ -551,7 +591,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("PRODUCTLOOKUP", terms));
+            obOut.writeObject(ConnectionData.create("PRODUCTLOOKUP", terms));
 
             Object o;
             try {
@@ -581,7 +621,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addCustomer(Customer customer) throws IOException {
-        obOut.writeObject(new ConnectionData("NEWCUSTOMER", customer));
+        obOut.writeObject(ConnectionData.create("NEWCUSTOMER", customer));
     }
 
     /**
@@ -600,7 +640,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("REMOVECUSTOMER", id));
+            obOut.writeObject(ConnectionData.create("REMOVECUSTOMER", id));
             String input;
             try {
                 input = (String) obIn.readObject();
@@ -637,7 +677,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("REMOVECUSTOMER", c.getId()));
+            obOut.writeObject(ConnectionData.create("REMOVECUSTOMER", c.getId()));
 
             String input;
             try {
@@ -684,7 +724,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETCUSTOMER", id));
+            obOut.writeObject(ConnectionData.create("GETCUSTOMER", id));
 
             Object o;
             try {
@@ -715,7 +755,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETCUSTOMERBYNAME", name));
+            obOut.writeObject(ConnectionData.create("GETCUSTOMERBYNAME", name));
 
             Object o;
             try {
@@ -751,7 +791,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("GETCUSTOMERCOUNT"));
+        obOut.writeObject(ConnectionData.create("GETCUSTOMERCOUNT"));
 
         String input = "";
         try {
@@ -782,7 +822,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLCUSTOMERS"));
+            obOut.writeObject(ConnectionData.create("GETALLCUSTOMERS"));
 
             Object o;
             try {
@@ -811,7 +851,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATECUSTOMER", c));
+            obOut.writeObject(ConnectionData.create("UPDATECUSTOMER", c));
 
             Object o;
             try {
@@ -843,7 +883,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addSale(Sale s) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDSALE", s));
+        obOut.writeObject(ConnectionData.create("ADDSALE", s));
     }
 
     @Override
@@ -854,7 +894,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLSALES"));
+            obOut.writeObject(ConnectionData.create("GETALLSALES"));
 
             Object o;
             try {
@@ -884,7 +924,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETSALE", id));
+            obOut.writeObject(ConnectionData.create("GETSALE", id));
 
             Object o;
             try {
@@ -916,7 +956,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATESALE", s));
+            obOut.writeObject(ConnectionData.create("UPDATESALE", s));
 
             Object o;
             try {
@@ -948,7 +988,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETSALESDATERANGE", start, end));
+            obOut.writeObject(ConnectionData.create("GETSALESDATERANGE", start, end));
 
             Object o;
             try {
@@ -978,7 +1018,7 @@ public class ServerConnection implements DataConnectInterface {
      */
     @Override
     public void addStaff(Staff s) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDSTAFF", s));
+        obOut.writeObject(ConnectionData.create("ADDSTAFF", s));
     }
 
     /**
@@ -997,7 +1037,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("REMOVESTAFF", id));
+            obOut.writeObject(ConnectionData.create("REMOVESTAFF", id));
 
             String input;
             try {
@@ -1035,7 +1075,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("REMOVESTAFF", s.getId()));
+            obOut.writeObject(ConnectionData.create("REMOVESTAFF", s.getId()));
 
             String input;
             try {
@@ -1082,7 +1122,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETSTAFF", id));
+            obOut.writeObject(ConnectionData.create("GETSTAFF", id));
 
             Object o;
             try {
@@ -1120,7 +1160,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLSTAFF"));
+            obOut.writeObject(ConnectionData.create("GETALLSTAFF"));
 
             Object o;
             try {
@@ -1150,7 +1190,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATESTAFF", s));
+            obOut.writeObject(ConnectionData.create("UPDATESTAFF", s));
 
             Object o;
             try {
@@ -1181,7 +1221,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("STAFFCOUNT"));
+        obOut.writeObject(ConnectionData.create("STAFFCOUNT"));
         String input = "";
         try {
             input = (String) obIn.readObject();
@@ -1218,7 +1258,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("LOGIN", username, password));
+            obOut.writeObject(ConnectionData.create("LOGIN", username, password));
 
             Object o;
             try {
@@ -1258,7 +1298,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("TILLLOGIN", id));
+            obOut.writeObject(ConnectionData.create("TILLLOGIN", id));
 
             Object o;
             try {
@@ -1284,18 +1324,18 @@ public class ServerConnection implements DataConnectInterface {
     /**
      * Method to log a member of staff out the system.
      *
-     * @param id the id to log out.
+     * @param s the staff to log out.
      * @throws IOException if there was a server communication error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
     @Override
-    public void logout(int id) throws IOException, StaffNotFoundException {
+    public void logout(Staff s) throws IOException, StaffNotFoundException {
         try {
             sem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("LOGOUT", id));
+        obOut.writeObject(ConnectionData.create("LOGOUT", s));
 
         String input = "";
         try {
@@ -1309,25 +1349,25 @@ public class ServerConnection implements DataConnectInterface {
         }
 
         if (input.equals("FAIL")) {
-            throw new StaffNotFoundException(id + "");
+            throw new StaffNotFoundException(s.getId() + "");
         }
     }
 
     /**
      * Method to log a member of staff out a till.
      *
-     * @param id the id to log out.
+     * @param s the staff to log out.
      * @throws IOException if there was a server communication error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
     @Override
-    public void tillLogout(int id) throws IOException, StaffNotFoundException {
+    public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
         try {
             sem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("TILLLOGOUT", id));
+        obOut.writeObject(ConnectionData.create("TILLLOGOUT", s));
 
         String input = "";
         try {
@@ -1341,13 +1381,13 @@ public class ServerConnection implements DataConnectInterface {
         }
 
         if (input.equals("FAIL")) {
-            throw new StaffNotFoundException(id + "");
+            throw new StaffNotFoundException(s.getId() + "");
         }
     }
 
     @Override
     public void addCategory(Category c) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDCATEGORY", c));
+        obOut.writeObject(ConnectionData.create("ADDCATEGORY", c));
     }
 
     @Override
@@ -1358,7 +1398,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATECATEGORY", c));
+            obOut.writeObject(ConnectionData.create("UPDATECATEGORY", c));
 
             Object o;
             try {
@@ -1389,7 +1429,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVECATEGORY", c.getID()));
+        obOut.writeObject(ConnectionData.create("REMOVECATEGORY", c.getID()));
         String input = "";
         try {
             input = (String) obIn.readObject();
@@ -1418,7 +1458,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVECATEGORY", id));
+        obOut.writeObject(ConnectionData.create("REMOVECATEGORY", id));
         String input = "";
         try {
             input = (String) obIn.readObject();
@@ -1448,7 +1488,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETCATEGORY", id));
+            obOut.writeObject(ConnectionData.create("GETCATEGORY", id));
 
             Object o;
             try {
@@ -1480,7 +1520,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLCATEGORYS"));
+            obOut.writeObject(ConnectionData.create("GETALLCATEGORYS"));
 
             Object o;
             try {
@@ -1510,7 +1550,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETPRODUCTSINCATEGORY"));
+            obOut.writeObject(ConnectionData.create("GETPRODUCTSINCATEGORY"));
 
             Object o;
             try {
@@ -1536,7 +1576,7 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addDiscount(Discount d) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDDISCOUNT", d));
+        obOut.writeObject(ConnectionData.create("ADDDISCOUNT", d));
     }
 
     @Override
@@ -1547,7 +1587,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATEDISCOUNT", d));
+            obOut.writeObject(ConnectionData.create("UPDATEDISCOUNT", d));
 
             Object o;
             try {
@@ -1578,7 +1618,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVEDISCOUNT", d.getId()));
+        obOut.writeObject(ConnectionData.create("REMOVEDISCOUNT", d.getId()));
 
         String input = "";
         try {
@@ -1608,7 +1648,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVEDISCOUNT", id));
+        obOut.writeObject(ConnectionData.create("REMOVEDISCOUNT", id));
 
         String input = "";
         try {
@@ -1639,7 +1679,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETDISCOUNT", id));
+            obOut.writeObject(ConnectionData.create("GETDISCOUNT", id));
 
             Object o;
             try {
@@ -1671,7 +1711,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLDISCOUNTS"));
+            obOut.writeObject(ConnectionData.create("GETALLDISCOUNTS"));
 
             Object o;
             try {
@@ -1695,7 +1735,7 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addTax(Tax t) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDTAX", t));
+        obOut.writeObject(ConnectionData.create("ADDTAX", t));
     }
 
     @Override
@@ -1705,7 +1745,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVETAX", t.getId()));
+        obOut.writeObject(ConnectionData.create("REMOVETAX", t.getId()));
 
         String input = "";
         try {
@@ -1735,7 +1775,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVETAX", id));
+        obOut.writeObject(ConnectionData.create("REMOVETAX", id));
 
         String input = "";
         try {
@@ -1766,7 +1806,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETTAX", id));
+            obOut.writeObject(ConnectionData.create("GETTAX", id));
 
             Object o;
             try {
@@ -1798,7 +1838,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATETAX", t));
+            obOut.writeObject(ConnectionData.create("UPDATETAX", t));
 
             Object o;
             try {
@@ -1830,7 +1870,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLTAX"));
+            obOut.writeObject(ConnectionData.create("GETALLTAX"));
 
             Object o;
             try {
@@ -1854,7 +1894,7 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addVoucher(Voucher v) throws IOException {
-        obOut.writeObject(new ConnectionData("ADDVOUCHER", v));
+        obOut.writeObject(ConnectionData.create("ADDVOUCHER", v));
     }
 
     @Override
@@ -1864,7 +1904,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVEVOUCHER", v.getId()));
+        obOut.writeObject(ConnectionData.create("REMOVEVOUCHER", v.getId()));
 
         String input = "";
         try {
@@ -1894,7 +1934,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVEVOUCHER", id));
+        obOut.writeObject(ConnectionData.create("REMOVEVOUCHER", id));
 
         String input = "";
         try {
@@ -1925,7 +1965,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETVOUCHER", id));
+            obOut.writeObject(ConnectionData.create("GETVOUCHER", id));
 
             Object o;
             try {
@@ -1957,7 +1997,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATEVOUCHER", v));
+            obOut.writeObject(ConnectionData.create("UPDATEVOUCHER", v));
 
             Object o;
             try {
@@ -1989,7 +2029,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLVOUCHERS"));
+            obOut.writeObject(ConnectionData.create("GETALLVOUCHERS"));
 
             Object o;
             try {
@@ -2017,7 +2057,7 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void close() {
         try {
-            obOut.writeObject(new ConnectionData("CONNTERM"));
+            obOut.writeObject(ConnectionData.create("CONNTERM"));
             isConnected = false;
         } catch (IOException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
@@ -2031,12 +2071,12 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void addScreen(Screen s) throws IOException, SQLException {
-        obOut.writeObject(new ConnectionData("ADDSCREEN", s));
+        obOut.writeObject(ConnectionData.create("ADDSCREEN", s));
     }
 
     @Override
     public void addButton(Button b) throws IOException, SQLException {
-        obOut.writeObject(new ConnectionData("ADDBUTTON", b));
+        obOut.writeObject(ConnectionData.create("ADDBUTTON", b));
     }
 
     @Override
@@ -2046,7 +2086,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVESCREEN", s));
+        obOut.writeObject(ConnectionData.create("REMOVESCREEN", s));
         try {
             if (((String) obIn.readObject()).equals("FAIL")) {
                 throw new ScreenNotFoundException("Screen " + s + " could not be found");
@@ -2067,7 +2107,7 @@ public class ServerConnection implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        obOut.writeObject(new ConnectionData("REMOVEBUTTON", b));
+        obOut.writeObject(ConnectionData.create("REMOVEBUTTON", b));
         try {
             if (((String) obIn.readObject()).equals("FAIL")) {
                 throw new ButtonNotFoundException("Button " + b + " could not be found");
@@ -2089,7 +2129,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETSCREEN", s));
+            obOut.writeObject(ConnectionData.create("GETSCREEN", s));
             Object o;
             try {
                 o = obIn.readObject();
@@ -2119,7 +2159,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETBUTTON", b));
+            obOut.writeObject(ConnectionData.create("GETBUTTON", b));
             Object o;
             try {
                 o = obIn.readObject();
@@ -2149,7 +2189,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATESCREEN", s));
+            obOut.writeObject(ConnectionData.create("UPDATESCREEN", s));
             Object o;
             try {
                 o = obIn.readObject();
@@ -2179,7 +2219,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("UPDATEBUTTON", b));
+            obOut.writeObject(ConnectionData.create("UPDATEBUTTON", b));
             Object o;
             try {
                 o = obIn.readObject();
@@ -2209,7 +2249,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLSCREENS"));
+            obOut.writeObject(ConnectionData.create("GETALLSCREENS"));
             Object o;
             try {
                 o = obIn.readObject();
@@ -2237,7 +2277,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETALLBUTTONS"));
+            obOut.writeObject(ConnectionData.create("GETALLBUTTONS"));
             Object o;
             try {
                 o = obIn.readObject();
@@ -2265,7 +2305,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(new ConnectionData("GETBUTTONSONSCREEN", s));
+            obOut.writeObject(ConnectionData.create("GETBUTTONSONSCREEN", s));
             Object o;
             try {
                 o = obIn.readObject();
@@ -2289,7 +2329,7 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void deleteAllScreensAndButtons() throws IOException, SQLException {
-        obOut.writeObject(new ConnectionData("DROPSCREENSANDBUTTONS"));
+        obOut.writeObject(ConnectionData.create("DROPSCREENSANDBUTTONS"));
     }
 
     @Override

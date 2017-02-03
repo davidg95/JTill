@@ -20,6 +20,16 @@ public interface DataConnectInterface {
 
     public void setGUI(GUIInterface g);
 
+    public java.awt.Image getImage() throws IOException;
+
+    public void setImage(java.awt.Image image) throws IOException;
+
+    public javafx.scene.image.Image getFXImage() throws IOException;
+
+    public void setFXImage(javafx.scene.image.Image image) throws IOException;
+
+    public void setImagePath(String path) throws IOException;
+
     //Product
     public void addProduct(Product p) throws IOException, SQLException;
 
@@ -94,9 +104,9 @@ public interface DataConnectInterface {
 
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException;
 
-    public void logout(int id) throws IOException, StaffNotFoundException;
+    public void logout(Staff s) throws IOException, StaffNotFoundException;
 
-    public void tillLogout(int id) throws IOException, StaffNotFoundException;
+    public void tillLogout(Staff s) throws IOException, StaffNotFoundException;
 
     //Category
     public void addCategory(Category c) throws IOException, SQLException;
