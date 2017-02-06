@@ -1015,6 +1015,34 @@ public class DBConnect implements DataConnectInterface {
         return customers.size();
     }
 
+    @Override
+    public List<Customer> customerLookup(String terms) throws IOException, SQLException {
+        String query = "SELECT * FROM CUSTOMERS";
+        Statement stmt = con.createStatement();
+        try {
+            customerSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ResultSet res;
+        try {
+            res = stmt.executeQuery(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            customerSem.release();
+        }
+
+        List<Customer> customers = getCustomersFromResultSet(res);
+        List<Customer> newList = new ArrayList<>();
+
+        customers.stream().filter((c) -> (c.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((c) -> {
+            newList.add(c);
+        });
+
+        return newList;
+    }
+
     //Staff Methods
     @Override
     public List<Staff> getAllStaff() throws SQLException {

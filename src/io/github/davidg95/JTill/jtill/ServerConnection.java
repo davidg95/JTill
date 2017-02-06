@@ -875,6 +875,36 @@ public class ServerConnection implements DataConnectInterface {
         return null;
     }
 
+    @Override
+    public List<Customer> customerLookup(String terms) throws IOException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("CUSTOMERLOOKUP", terms));
+
+            Object o;
+            try {
+                o = obIn.readObject();
+            } catch (IOException ex) {
+                throw ex;
+            } finally {
+                sem.release();
+            }
+
+            if (o instanceof SQLException) {
+                throw (SQLException) o;
+            }
+
+            return (List<Customer>) o;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return new ArrayList<>();
+    }
+
     /**
      * Method to send a sale to the server.
      *

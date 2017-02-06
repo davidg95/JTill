@@ -74,6 +74,8 @@ public interface DataConnectInterface {
 
     public Customer updateCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
 
+    public List<Customer> customerLookup(String terms) throws IOException, SQLException;
+
     //Sale
     public void addSale(Sale s) throws IOException, SQLException;
 

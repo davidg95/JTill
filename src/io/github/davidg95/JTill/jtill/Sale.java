@@ -208,6 +208,37 @@ public class Sale implements Serializable {
         }
     }
 
+    /**
+     * This method will half the price of a sale item. If a sale item has a
+     * quantity greater than 1, then all the times will be half priced. This
+     * will also update the total price of the sale.
+     *
+     * @param item the item of half price.
+     */
+    public void halfPriceItem(SaleItem item) {
+        for (SaleItem i : saleItems) {
+            if (i.getProduct().getProductCode() == item.getProduct().getProductCode()) {
+                if (i.getProduct().getPrice().compareTo(new BigDecimal("0.01")) != 0) {
+                    if (i.getProduct().isOpen()) {
+                        if (i.getProduct().getPrice().compareTo(item.getProduct().getPrice()) == 0) {
+                            BigDecimal val = i.getPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);
+                            i.setPrice(val);
+                            updateTotal();
+                            return;
+                        }
+                    } else {
+                        BigDecimal val = i.getPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);
+                        i.setPrice(val);
+                        updateTotal();
+                        return;
+                    }
+                } else {
+                    return;
+                }
+            }
+        }
+    }
+
     public SaleItem getLastAdded() {
         return lastAdded;
     }
