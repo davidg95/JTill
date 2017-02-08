@@ -14,4 +14,6 @@ public interface GUIInterface {
     public void log(Object o);
 
     public void setClientLabel(String text);
+
+    public void showMessage(String title, String message);
 }

@@ -2742,4 +2742,9 @@ public class DBConnect implements DataConnectInterface {
         suspendSem.release();
         return sale;
     }
+
+    @Override
+    public void assisstance(String message) throws IOException {
+        g.showMessage("Assisstance", message);
+    }
 }

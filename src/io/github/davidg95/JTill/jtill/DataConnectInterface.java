@@ -30,6 +30,8 @@ public interface DataConnectInterface {
 
     public void setImagePath(String path) throws IOException;
 
+    public void assisstance(String message) throws IOException;
+
     //Product
     public void addProduct(Product p) throws IOException, SQLException;
 

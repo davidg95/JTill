@@ -122,6 +122,11 @@ public class ServerConnection implements DataConnectInterface {
         return null;
     }
 
+    @Override
+    public void assisstance(String message) throws IOException {
+        obOut.writeObject(ConnectionData.create("ASSISSTANCE", message));
+    }
+
     public class IncomingThread extends Thread {
 
         private final GUIInterface g;
