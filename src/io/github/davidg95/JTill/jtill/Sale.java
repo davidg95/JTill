@@ -257,7 +257,7 @@ public class Sale implements Serializable {
         return lastAdded;
     }
 
-    private void updateTotal() {
+    public void updateTotal() {
         total = new BigDecimal("0");
         for (SaleItem item : saleItems) {
             total = total.add(item.getPrice());

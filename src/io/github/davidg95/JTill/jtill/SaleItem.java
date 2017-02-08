@@ -66,6 +66,7 @@ public class SaleItem implements Serializable {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+        this.price = this.product.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
     }
 
     public BigDecimal getPrice() {
