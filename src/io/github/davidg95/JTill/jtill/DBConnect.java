@@ -157,6 +157,7 @@ public class DBConnect implements DataConnectInterface {
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "     PRICE DOUBLE,\n"
                 + "     CUSTOMER int,\n"
+                + "     DISCOUNT int,\n"
                 + "     TIMESTAMP TIME,\n"
                 + "     CHARGE_ACCOUNT boolean\n"
                 + ")";
@@ -1806,9 +1807,16 @@ public class DBConnect implements DataConnectInterface {
                         Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
+                int discountid = set.getInt("DISCOUNT");
+                Discount discount = null;
+                try {
+                    discount = getDiscount(discountid);
+                } catch (DiscountNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 Time time = set.getTime("TIMESTAMP");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
+                Sale s = new Sale(id, price, customer, discount, time.getTime(), chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1831,9 +1839,16 @@ public class DBConnect implements DataConnectInterface {
             } catch (CustomerNotFoundException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
+            int discountid = set.getInt("DISCOUNT");
+            Discount discount = null;
+            try {
+                discount = getDiscount(discountid);
+            } catch (DiscountNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             Time time = set.getTime("TIMESTAMP");
             boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-            Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
+            Sale s = new Sale(id, price, customer, discount, time.getTime(), chargeAccount);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1842,7 +1857,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addSale(Sale s) throws SQLException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, DISCOUNT, TIMESTAMP, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
         try {
             saleSem.acquire();
@@ -1909,9 +1924,16 @@ public class DBConnect implements DataConnectInterface {
                     customer = getCustomer(customerid);
                 } catch (CustomerNotFoundException ex) {
                 }
+                int discountid = set.getInt("DISCOUNT");
+                Discount discount = null;
+                try {
+                    discount = getDiscount(discountid);
+                } catch (DiscountNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 Time time = set.getTime("TIMESTAMP");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
+                Sale s = new Sale(id, price, customer, discount, time.getTime(), chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
