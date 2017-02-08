@@ -26,6 +26,7 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
@@ -75,6 +76,8 @@ public class DBConnect implements DataConnectInterface {
 
     private GUIInterface g;
 
+    private HashMap<Staff, Sale> suspendedSales;
+
     public DBConnect() {
         productSem = new Semaphore(1);
         customerSem = new Semaphore(1);
@@ -85,6 +88,7 @@ public class DBConnect implements DataConnectInterface {
         saleSem = new Semaphore(1);
         voucherSem = new Semaphore(1);
         screensSem = new Semaphore(1);
+        suspendedSales = new HashMap<>();
     }
 
     /**
@@ -2711,5 +2715,15 @@ public class DBConnect implements DataConnectInterface {
     @Override
     public void setImagePath(String path) {
         imageURL = path;
+    }
+
+    @Override
+    public void suspendSale(Sale sale, Staff staff) throws IOException {
+        suspendedSales.put(staff, sale);
+    }
+
+    @Override
+    public Sale resumeSale(Staff s) throws IOException {
+        return suspendedSales.get(s);
     }
 }

@@ -104,6 +104,24 @@ public class ServerConnection implements DataConnectInterface {
         obOut.writeObject(ConnectionData.create("SETIMAGEPATH", path));
     }
 
+    @Override
+    public void suspendSale(Sale sale, Staff staff) throws IOException {
+        obOut.writeObject(ConnectionData.create("SUSPENDSALE", sale, staff));
+    }
+
+    @Override
+    public Sale resumeSale(Staff s) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("RESUMESALE", s));
+
+            Sale sale = (Sale) obIn.readObject();
+            return sale;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
     public class IncomingThread extends Thread {
 
         private final GUIInterface g;

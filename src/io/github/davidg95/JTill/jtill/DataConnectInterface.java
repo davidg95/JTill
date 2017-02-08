@@ -87,6 +87,10 @@ public interface DataConnectInterface {
 
     public Sale updateSale(Sale s) throws IOException, SQLException, SaleNotFoundException;
 
+    public void suspendSale(Sale sale, Staff staff) throws IOException;
+
+    public Sale resumeSale(Staff s) throws IOException;
+
     //Staff
     public void addStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
