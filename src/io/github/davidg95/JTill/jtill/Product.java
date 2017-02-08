@@ -322,6 +322,7 @@ public class Product implements Serializable, Cloneable {
 
     @Override
     public String toString() {
-        return "Code: " + this.productCode + "\nName: " + this.name + "\nPrice: £" + this.price + "\nStock: " + this.stock;
+        //return "Code: " + this.productCode + "\nName: " + this.name + "\nPrice: £" + this.price + "\nStock: " + this.stock;
+        return this.shortName;
     }
 }
