@@ -2738,6 +2738,7 @@ public class DBConnect implements DataConnectInterface {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         Sale sale = suspendedSales.get(s);
+        suspendedSales.remove(s);
         suspendSem.release();
         return sale;
     }
