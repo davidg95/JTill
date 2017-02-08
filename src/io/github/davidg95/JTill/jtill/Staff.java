@@ -150,6 +150,23 @@ public class Staff implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (o instanceof Staff) {
+            Staff s = (Staff) o;
+            return (this.id == s.getId());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 37 * hash + this.id;
+        return hash;
+    }
+
+    @Override
     public String toString() {
         return "ID: " + this.id + "\nName: " + this.name + "\nUsername: " + this.username + "\nPosition: " + this.position.toString();
     }

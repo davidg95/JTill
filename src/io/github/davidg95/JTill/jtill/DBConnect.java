@@ -58,6 +58,7 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore taxSem;
     private final Semaphore categorySem;
     private final Semaphore saleSem;
+    private final Semaphore suspendSem;
     private final Semaphore voucherSem;
     private final Semaphore screensSem;
 
@@ -76,7 +77,7 @@ public class DBConnect implements DataConnectInterface {
 
     private GUIInterface g;
 
-    private HashMap<Staff, Sale> suspendedSales;
+    private volatile HashMap<Staff, Sale> suspendedSales;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -86,6 +87,7 @@ public class DBConnect implements DataConnectInterface {
         taxSem = new Semaphore(1);
         categorySem = new Semaphore(1);
         saleSem = new Semaphore(1);
+        suspendSem = new Semaphore(1);
         voucherSem = new Semaphore(1);
         screensSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
@@ -2719,11 +2721,24 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void suspendSale(Sale sale, Staff staff) throws IOException {
+        try {
+            suspendSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
         suspendedSales.put(staff, sale);
+        suspendSem.release();
     }
 
     @Override
     public Sale resumeSale(Staff s) throws IOException {
-        return suspendedSales.get(s);
+        try {
+            suspendSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Sale sale = suspendedSales.get(s);
+        suspendSem.release();
+        return sale;
     }
 }
