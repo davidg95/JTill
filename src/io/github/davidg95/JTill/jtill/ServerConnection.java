@@ -9,11 +9,12 @@ import java.awt.Image;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -125,6 +126,11 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void assisstance(String message) throws IOException {
         obOut.writeObject(ConnectionData.create("ASSISSTANCE", message));
+    }
+
+    @Override
+    public BigDecimal getTillTakings(String terminal) {
+        return new BigDecimal("0");
     }
 
     public class IncomingThread extends Thread {
@@ -1034,7 +1040,7 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public List<Sale> getSalesInRange(Date start, Date end) throws IOException, SQLException {
+    public List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException {
         try {
             try {
                 sem.acquire();

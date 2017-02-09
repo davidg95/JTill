@@ -6,8 +6,9 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.Date;
+import java.sql.Time;
 import java.util.List;
 
 /**
@@ -31,6 +32,8 @@ public interface DataConnectInterface {
     public void setImagePath(String path) throws IOException;
 
     public void assisstance(String message) throws IOException;
+
+    public BigDecimal getTillTakings(String terminal);
 
     //Product
     public void addProduct(Product p) throws IOException, SQLException;
@@ -85,7 +88,7 @@ public interface DataConnectInterface {
 
     public Sale getSale(int id) throws IOException, SQLException, SaleNotFoundException;
 
-    public List<Sale> getSalesInRange(Date start, Date end) throws IOException, SQLException;
+    public List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException;
 
     public Sale updateSale(Sale s) throws IOException, SQLException, SaleNotFoundException;
 

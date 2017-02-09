@@ -21,35 +21,39 @@ public class Sale implements Serializable {
     private List<SaleItem> saleItems;
     private BigDecimal total;
     private Customer customer;
-    private long time;
+    private Time time;
+    private String terminal;
     private boolean chargeAccount;
 
     private SaleItem lastAdded;
 
-    public Sale() {
+    public Sale(String terminal) {
         saleItems = new ArrayList<>();
         customer = null;
         total = new BigDecimal("0.00");
+        this.terminal = terminal;
         chargeAccount = false;
     }
 
-    public Sale(Customer c, boolean chargeAccount) {
+    public Sale(Customer c, boolean chargeAccount, String terminal) {
         saleItems = new ArrayList<>();
         this.customer = c;
         this.chargeAccount = chargeAccount;
+        this.terminal = terminal;
         total = new BigDecimal("0.00");
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, long time, boolean chargeAccount, List<SaleItem> saleItems) {
-        this(code, total, customer, time, chargeAccount);
+    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean chargeAccount, List<SaleItem> saleItems) {
+        this(code, total, customer, time, terminal, chargeAccount);
         this.saleItems = saleItems;
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, long time, boolean chargeAccount) {
+    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean chargeAccount) {
         this.code = code;
         this.total = total;
         this.customer = customer;
         this.time = time;
+        this.terminal = terminal;
         this.chargeAccount = chargeAccount;
     }
 
@@ -146,11 +150,11 @@ public class Sale implements Serializable {
         return count;
     }
 
-    public void setTime(long time) {
+    public void setTime(Time time) {
         this.time = time;
     }
 
-    public long getTime() {
+    public Time getTime() {
         return time;
     }
 
@@ -160,6 +164,14 @@ public class Sale implements Serializable {
 
     public void setChargeAccount(boolean chargeAccount) {
         this.chargeAccount = chargeAccount;
+    }
+
+    public String getTerminal() {
+        return terminal;
+    }
+
+    public void setTerminal(String terminal) {
+        this.terminal = terminal;
     }
 
     /**
@@ -256,12 +268,14 @@ public class Sale implements Serializable {
         if (this.customer == null) { //If no customer was assigned then set the customer ID to -1
             return this.total
                     + ",-1"
-                    + ",'" + new Time(this.time).toString()
+                    + ",'" + this.time.toString()
+                    + "','" + this.terminal
                     + "'," + this.chargeAccount;
         } else {
             return this.total
                     + "," + this.customer.getId()
-                    + ",'" + new Time(this.time).toString()
+                    + ",'" + this.time.toString()
+                    + "','" + this.terminal
                     + "'," + this.chargeAccount;
         }
     }
@@ -271,14 +285,16 @@ public class Sale implements Serializable {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", SET CUSTOMER=" + this.customer.getId()
-                    + ", TIMESTAMP='" + new Time(this.time).toString()
+                    + ", TIMESTAMP='" + this.time.toString()
+                    + "', TERMINAL='" + this.terminal
                     + "', CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.code;
         } else {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", SET CUSTOMER=-1"
-                    + ", TIMESTAMP='" + new Time(this.time).toString()
+                    + ", TIMESTAMP='" + this.time.toString()
+                    + "', TERMINAL='" + this.terminal
                     + "', CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.code;
         }

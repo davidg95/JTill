@@ -166,6 +166,7 @@ public class DBConnect implements DataConnectInterface {
                 + "     CUSTOMER int,\n"
                 + "     DISCOUNT int,\n"
                 + "     TIMESTAMP TIME,\n"
+                + "     TERMINAL VARCHAR(20),\n"
                 + "     CHARGE_ACCOUNT boolean\n"
                 + ")";
         String saleItems = "create table APP.SALEITEMS\n"
@@ -1814,8 +1815,9 @@ public class DBConnect implements DataConnectInterface {
                     }
                 }
                 Time time = set.getTime("TIMESTAMP");
+                String terminal = set.getString("TERMINAL");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
+                Sale s = new Sale(id, price, customer, time, terminal, chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1839,8 +1841,9 @@ public class DBConnect implements DataConnectInterface {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
             Time time = set.getTime("TIMESTAMP");
+            String terminal = set.getString("TERMINAL");
             boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-            Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
+            Sale s = new Sale(id, price, customer, time, terminal, chargeAccount);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1849,7 +1852,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addSale(Sale s) throws SQLException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
         try {
             saleSem.acquire();
@@ -1917,8 +1920,9 @@ public class DBConnect implements DataConnectInterface {
                 } catch (CustomerNotFoundException ex) {
                 }
                 Time time = set.getTime("TIMESTAMP");
+                String terminal = set.getString("TERMINAL");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
+                Sale s = new Sale(id, price, customer, time, terminal, chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -2024,14 +2028,14 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public List<Sale> getSalesInRange(Date start, Date end) throws SQLException, IllegalArgumentException {
+    public List<Sale> getSalesInRange(Time start, Time end) throws SQLException, IllegalArgumentException {
         if (start.after(end)) {
             throw new IllegalArgumentException("Start date needs to be before end date");
         }
         List<Sale> s = getAllSales();
         List<Sale> sales = new ArrayList<>();
 
-        s.stream().filter((sale) -> (sale.getTime() >= start.getTime() && sale.getTime() <= start.getTime())).forEachOrdered((sale) -> {
+        s.stream().filter((sale) -> (sale.getTime().after(start) && sale.getTime().before(start))).forEachOrdered((sale) -> {
             sales.add(sale);
         });
 
@@ -2763,5 +2767,10 @@ public class DBConnect implements DataConnectInterface {
     public void assisstance(String message) throws IOException {
         g.showMessage("Assisstance", message);
         g.log(message);
+    }
+
+    @Override
+    public BigDecimal getTillTakings(String terminal) {
+        return new BigDecimal("0");
     }
 }
