@@ -139,7 +139,8 @@ public class DBConnect implements DataConnectInterface {
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "	NAME VARCHAR(20) not null,\n"
-                + "	PERCENTAGE DOUBLE not null\n"
+                + "	PERCENTAGE DOUBLE not null,\n"
+                + "	PRICE DOUBLE not null\n"
                 + ")";
         String tax = "create table \"APP\".TAX\n"
                 + "(\n"
@@ -173,6 +174,7 @@ public class DBConnect implements DataConnectInterface {
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "     PRODUCT_ID INT not null references PRODUCTS(ID),\n"
+                + "	TYPE VARCHAR(15),\n"
                 + "     QUANTITY INT not null,\n"
                 + "     PRICE double not null,\n"
                 + "     SALE_ID INT not null references SALES(ID)\n"
@@ -213,8 +215,7 @@ public class DBConnect implements DataConnectInterface {
                 + "	TAX_ID INT not null references TAX(ID),\n"
                 + "	COST_PRICE DOUBLE,\n"
                 + "	MIN_PRODUCT_LEVEL INTEGER,\n"
-                + "	MAX_PRODUCT_LEVEL INTEGER,\n"
-                + "	DISCOUNT_ID INT not null references DISCOUNTS(ID)\n"
+                + "	MAX_PRODUCT_LEVEL INTEGER\n"
                 + ")";
         String staff = "create table \"APP\".STAFF\n"
                 + "(\n"
@@ -317,10 +318,10 @@ public class DBConnect implements DataConnectInterface {
 
         String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
-        String addDiscount = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES ('NONE',0.0)";
+//        String addDiscount = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES ('NONE',0.0)";
         stmt.executeUpdate(addCategory);
         stmt.executeUpdate(addTax);
-        stmt.executeUpdate(addDiscount);
+//        stmt.executeUpdate(addDiscount);
     }
 
     private void error(SQLException ex) {
@@ -390,9 +391,8 @@ public class DBConnect implements DataConnectInterface {
                 BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
                 int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                 int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
-                int discountID = set.getInt("DISCOUNT_ID");
 
-                Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+                Product p = new Product(name, shortName, categoryID, comments, taxID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
                 products.add(p);
             }
@@ -421,9 +421,8 @@ public class DBConnect implements DataConnectInterface {
             BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
-            int discountID = set.getInt("DISCOUNT_ID");
 
-            Product p = new Product(name, shortName, categoryID, comments, taxID, discountID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+            Product p = new Product(name, shortName, categoryID, comments, taxID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
             products.add(p);
         }
@@ -440,7 +439,7 @@ public class DBConnect implements DataConnectInterface {
      */
     @Override
     public void addProduct(Product p) throws SQLException {
-        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL, DISCOUNT_ID) VALUES (" + p.getSQLInsertString() + ")";
+        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
             try {
                 productSem.acquire();
@@ -475,7 +474,7 @@ public class DBConnect implements DataConnectInterface {
             productSem.release();
         }
         if (value == 0) {
-            throw new ProductNotFoundException(p.getProductCode() + "");
+            throw new ProductNotFoundException(p.getId() + "");
         }
         return p;
     }
@@ -520,7 +519,7 @@ public class DBConnect implements DataConnectInterface {
      */
     @Override
     public void removeProduct(Product p) throws SQLException, ProductNotFoundException {
-        String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode();
+        String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getId();
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
@@ -536,7 +535,7 @@ public class DBConnect implements DataConnectInterface {
             productSem.release();
         }
         if (value == 0) {
-            throw new ProductNotFoundException(p.getProductCode() + "");
+            throw new ProductNotFoundException(p.getId() + "");
         }
     }
 
@@ -713,7 +712,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public List<Discount> getProductsDiscount(Product p) throws SQLException {
-        String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getProductCode() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
+        String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getId() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
@@ -778,7 +777,7 @@ public class DBConnect implements DataConnectInterface {
         List<Product> products = getProductsFromResultSet(res);
         List<Product> newList = new ArrayList<>();
 
-        products.stream().filter((p) -> (p.getName().toLowerCase().contains(terms.toLowerCase()) || p.getShortName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((p) -> {
+        products.stream().filter((p) -> (p.getLongName().toLowerCase().contains(terms.toLowerCase()) || p.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((p) -> {
             newList.add(p);
         });
 
@@ -1311,8 +1310,9 @@ public class DBConnect implements DataConnectInterface {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
                 double percentage = set.getDouble("PERCENTAGE");
+                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
 
-                Discount d = new Discount(id, name, percentage);
+                Discount d = new Discount(id, name, percentage, price);
 
                 discounts.add(d);
             }
@@ -1331,8 +1331,9 @@ public class DBConnect implements DataConnectInterface {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
             double percentage = set.getDouble("PERCENTAGE");
+            BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
 
-            Discount d = new Discount(id, name, percentage);
+            Discount d = new Discount(id, name, percentage, price);
 
             discounts.add(d);
         }
@@ -1342,7 +1343,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addDiscount(Discount d) throws SQLException {
-        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES (" + d.getSQLInsertString() + ")";
+        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE) VALUES (" + d.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             discountSem.acquire();
@@ -1813,16 +1814,9 @@ public class DBConnect implements DataConnectInterface {
                         Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                int discountid = set.getInt("DISCOUNT");
-                Discount discount = null;
-                try {
-                    discount = getDiscount(discountid);
-                } catch (DiscountNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-                }
                 Time time = set.getTime("TIMESTAMP");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, discount, time.getTime(), chargeAccount);
+                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1845,16 +1839,9 @@ public class DBConnect implements DataConnectInterface {
             } catch (CustomerNotFoundException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
-            int discountid = set.getInt("DISCOUNT");
-            Discount discount = null;
-            try {
-                discount = getDiscount(discountid);
-            } catch (DiscountNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-            }
             Time time = set.getTime("TIMESTAMP");
             boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-            Sale s = new Sale(id, price, customer, discount, time.getTime(), chargeAccount);
+            Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1863,7 +1850,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addSale(Sale s) throws SQLException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, DISCOUNT, TIMESTAMP, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
         try {
             saleSem.acquire();
@@ -1930,16 +1917,9 @@ public class DBConnect implements DataConnectInterface {
                     customer = getCustomer(customerid);
                 } catch (CustomerNotFoundException ex) {
                 }
-                int discountid = set.getInt("DISCOUNT");
-                Discount discount = null;
-                try {
-                    discount = getDiscount(discountid);
-                } catch (DiscountNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-                }
                 Time time = set.getTime("TIMESTAMP");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, discount, time.getTime(), chargeAccount);
+                Sale s = new Sale(id, price, customer, time.getTime(), chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1954,7 +1934,7 @@ public class DBConnect implements DataConnectInterface {
 
     private void addSaleItem(Sale s, SaleItem p) throws SQLException {
         p.setSale(s);
-        String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
+        String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
         Statement sstmt = con.createStatement();
         sstmt.executeUpdate(secondQuery);
     }
@@ -1972,15 +1952,24 @@ public class DBConnect implements DataConnectInterface {
         List<SaleItem> sales = new ArrayList<>();
         while (set.next()) {
             int id = set.getInt("ID");
-            Product product = null;
-            try {
-                product = getProduct(set.getInt("PRODUCT_ID"));
-            } catch (ProductNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            Item item = null;
+            String type = set.getString("TYPE");
+            if (type.equals("product")) {
+                try {
+                    item = getProduct(set.getInt("PRODUCT_ID"));
+                } catch (ProductNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else {
+                try {
+                    item = getDiscount(set.getInt("PRODUCT_ID"));
+                } catch (DiscountNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             int quantity = set.getInt("QUANTITY");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            SaleItem s = new SaleItem(sale, product, quantity, id, price);
+            SaleItem s = new SaleItem(sale, item, quantity, id, price);
             sales.add(s);
         }
         return sales;
@@ -2746,5 +2735,6 @@ public class DBConnect implements DataConnectInterface {
     @Override
     public void assisstance(String message) throws IOException {
         g.showMessage("Assisstance", message);
+        g.log(message);
     }
 }

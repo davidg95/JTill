@@ -93,7 +93,7 @@ public class Button implements Serializable {
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.order
-                + "," + this.product.getProductCode()
+                + "," + this.product.getId()
                 + "," + this.color
                 + "," + this.screen.getId();
     }
@@ -102,7 +102,7 @@ public class Button implements Serializable {
         return "UPDATE BUTTONS"
                 + " SET NAME='" + this.getName()
                 + "', POSITION=" + this.getOrder()
-                + ", PRODUCT=" + this.getProduct().getProductCode()
+                + ", PRODUCT=" + this.getProduct().getId()
                 + ", COLOR=" + this.getColorValue()
                 + ", SCREEN_ID=" + this.getScreen().getId()
                 + " WHERE BUTTONS.ID=" + this.getId();

@@ -246,7 +246,7 @@ public class ServerConnection implements DataConnectInterface {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(ConnectionData.create("REMOVEPRODUCT", p.getProductCode()));
+            obOut.writeObject(ConnectionData.create("REMOVEPRODUCT", p.getId()));
 
             String input;
             try {

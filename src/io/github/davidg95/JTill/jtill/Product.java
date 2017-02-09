@@ -14,7 +14,7 @@ import java.math.BigDecimal;
  *
  * @author 1301480
  */
-public class Product implements Serializable, Cloneable {
+public class Product implements Serializable, Cloneable, Item {
 
     private int productCode;
     private String barcode;
@@ -28,7 +28,6 @@ public class Product implements Serializable, Cloneable {
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
-    private int discountID;
     private String comments;
 
     /**
@@ -47,16 +46,14 @@ public class Product implements Serializable, Cloneable {
      * @param categoryID the category this will belong to.
      * @param comments the comments.
      * @param taxID the tax class for this product.
-     * @param discountID the discount ID for the product.
      * @param open if the price is open.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open) {
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open) {
         this.name = name;
         this.shortName = shortName;
         this.categoryID = categoryID;
         this.comments = comments;
         this.taxID = taxID;
-        this.discountID = discountID;
         this.open = open;
     }
 
@@ -69,12 +66,11 @@ public class Product implements Serializable, Cloneable {
      * @param categoryID the category this will belong to.
      * @param comments the comments.
      * @param taxID the tax class for this product.
-     * @param discountID the discount ID for this product.
      * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, discountID, open);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open, int productCode) {
+        this(name, shortName, categoryID, comments, taxID, open);
         this.productCode = productCode;
     }
 
@@ -86,7 +82,6 @@ public class Product implements Serializable, Cloneable {
      * @param categoryID the category this will belong to.
      * @param price the price for the product.
      * @param taxID the tax class for this product.
-     * @param discountID the discount ID for this product.
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
@@ -95,8 +90,8 @@ public class Product implements Serializable, Cloneable {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode) {
-        this(name, shortName, categoryID, comments, taxID, discountID, open);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode) {
+        this(name, shortName, categoryID, comments, taxID, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -113,7 +108,6 @@ public class Product implements Serializable, Cloneable {
      * @param categoryID the category this will belong to.
      * @param price the price for the product.
      * @param taxID the tax class for this product.
-     * @param discountID the discount ID for the product.
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
@@ -123,8 +117,8 @@ public class Product implements Serializable, Cloneable {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, int discountID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, discountID, open, price, costPrice, stock, minStock, maxStock, barcode);
+    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
+        this(name, shortName, categoryID, comments, taxID, open, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
 
@@ -160,26 +154,30 @@ public class Product implements Serializable, Cloneable {
         }
     }
 
-    public int getProductCode() {
+    @Override
+    public int getId() {
         return productCode;
     }
 
-    public void setProductCode(int productCode) {
+    @Override
+    public void setId(int productCode) {
         this.productCode = productCode;
     }
 
-    public String getName() {
+    public String getLongName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setLongName(String name) {
         this.name = name;
     }
 
+    @Override
     public BigDecimal getPrice() {
         return price;
     }
 
+    @Override
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
@@ -208,11 +206,13 @@ public class Product implements Serializable, Cloneable {
         this.comments = comments;
     }
 
-    public String getShortName() {
+    @Override
+    public String getName() {
         return shortName;
     }
 
-    public void setShortName(String shortName) {
+    @Override
+    public void setName(String shortName) {
         this.shortName = shortName;
     }
 
@@ -256,18 +256,12 @@ public class Product implements Serializable, Cloneable {
         this.maxStockLevel = maxStockLevel;
     }
 
-    public int getDiscountID() {
-        return discountID;
-    }
-
-    public void setDiscountID(int discountID) {
-        this.discountID = discountID;
-    }
-
+    @Override
     public boolean isOpen() {
         return open;
     }
 
+    @Override
     public void setOpen(boolean open) {
         this.open = open;
     }
@@ -284,8 +278,7 @@ public class Product implements Serializable, Cloneable {
                 + "," + this.taxID
                 + "," + this.costPrice
                 + "," + this.minStockLevel
-                + "," + this.maxStockLevel
-                + "," + this.discountID;
+                + "," + this.maxStockLevel;
     }
 
     public String getSQlUpdateString() {
@@ -296,18 +289,28 @@ public class Product implements Serializable, Cloneable {
                 + ", PRODUCTS.PRICE=" + this.getPrice()
                 + ", PRODUCTS.STOCK=" + this.getStock()
                 + ", PRODUCTS.COMMENTS='" + this.getComments()
-                + "', PRODUCTS.SHORT_NAME='" + this.getShortName()
+                + "', PRODUCTS.SHORT_NAME='" + this.getName()
                 + "', PRODUCTS.CATEGORY_ID=" + this.getCategoryID()
                 + ", PRODUCTS.TAX_ID=" + this.getTaxID()
                 + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
-                + ", PRODUCTS.DISCOUNT_ID=" + this.getDiscountID()
-                + " WHERE PRODUCTS.ID=" + this.getProductCode();
+                + " WHERE PRODUCTS.ID=" + this.getId();
     }
 
-    public boolean equals(Product p) {
-        return this.productCode == p.productCode;
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Product) {
+            return this.productCode == ((Product) o).getId();
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 97 * hash + this.productCode;
+        return hash;
     }
 
     @Override

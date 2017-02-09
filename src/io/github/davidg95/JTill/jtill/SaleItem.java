@@ -16,22 +16,22 @@ import java.text.DecimalFormat;
 public class SaleItem implements Serializable {
 
     private int id;
-    private Product product;
+    private Item item;
     private int quantity;
     private BigDecimal price;
     private Sale sale;
 
-    public SaleItem(Sale sale, Product product, int quantity, int id, BigDecimal price) {
-        this(sale, product, quantity);
+    public SaleItem(Sale sale, Item item, int quantity, int id, BigDecimal price) {
+        this(sale, item, quantity);
         this.id = id;
         this.price = price;
     }
 
-    public SaleItem(Sale sale, Product product, int quantity) {
+    public SaleItem(Sale sale, Item item, int quantity) {
         this.sale = sale;
-        this.product = product;
+        this.item = item;
         this.quantity = quantity;
-        this.price = product.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
+        this.price = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
     }
 
     public SaleItem(Sale sale, Product product) {
@@ -40,24 +40,24 @@ public class SaleItem implements Serializable {
 
     public BigDecimal increaseQuantity(int quantity) {
         this.quantity += quantity;
-        BigDecimal inc = product.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
+        BigDecimal inc = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
         this.price = this.price.add(inc);
         return inc;
     }
 
     public BigDecimal decreaseQuantity(int quantity) {
         this.quantity -= quantity;
-        BigDecimal dec = product.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
+        BigDecimal dec = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
         this.price = this.price.subtract(dec);
         return dec;
     }
 
-    public Product getProduct() {
-        return product;
+    public Item getItem() {
+        return item;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public int getQuantity() {
@@ -66,7 +66,7 @@ public class SaleItem implements Serializable {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-        this.price = this.product.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
+        this.price = this.item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
     }
 
     public BigDecimal getPrice() {
@@ -94,8 +94,13 @@ public class SaleItem implements Serializable {
     }
 
     public String getSQLInsertStatement() {
-        return this.product.getProductCode()
-                + "," + this.quantity
+        String type = "product";
+        if (this.item instanceof Discount) {
+            type = "discount";
+        }
+        return this.item.getId()
+                + ",'" + type
+                + "'," + this.quantity
                 + "," + this.price.doubleValue()
                 + "," + this.sale.getCode();
     }
@@ -103,15 +108,15 @@ public class SaleItem implements Serializable {
     @Override
     public String toString() {
         DecimalFormat df;
-        if (product.getPrice().compareTo(BigDecimal.ZERO) > 1) {
+        if (item.getPrice().compareTo(BigDecimal.ZERO) > 1) {
             df = new DecimalFormat("#.00");
         } else {
             df = new DecimalFormat("0.00");
         }
-        if (this.getProduct().getShortName().length() < 4) {
-            return "Qty. " + this.getQuantity() + "\t" + this.getProduct().getShortName() + "\t\t\t£" + df.format(this.getPrice());
+        if (this.getItem().getName().length() < 4) {
+            return "Qty. " + this.getQuantity() + "\t" + this.getItem().getName() + "\t\t\t£" + df.format(this.getPrice());
         } else {
-            return "Qty. " + this.getQuantity() + "\t" + this.getProduct().getShortName() + "\t£" + df.format(this.getPrice());
+            return "Qty. " + this.getQuantity() + "\t" + this.getItem().getName() + "\t£" + df.format(this.getPrice());
         }
     }
 }
