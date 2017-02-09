@@ -258,8 +258,7 @@ public class DBConnect implements DataConnectInterface {
                 + "         GENERATED ALWAYS AS IDENTITY\n"
                 + "         (START WITH 1, INCREMENT BY 1),\n"
                 + "     NAME VARCHAR(50) not null,\n"
-                + "     POSITION INTEGER,\n"
-                + "     PRODUCT INT not null references PRODUCTS(ID),\n"
+                + "     PRODUCT INT not null,\n"
                 + "     COLOR INT,\n"
                 + "     SCREEN_ID INT not null references SCREENS(ID)\n"
                 + ")";
@@ -2330,12 +2329,11 @@ public class DBConnect implements DataConnectInterface {
         return screens;
     }
 
-    private List<Button> getButtonsFromResultSet(ResultSet set) throws SQLException {
-        List<Button> buttons = new ArrayList<>();
+    private List<TillButton> getButtonsFromResultSet(ResultSet set) throws SQLException {
+        List<TillButton> buttons = new ArrayList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            int order = set.getInt("POSITION");
             Product p = null;
             try {
                 p = getProduct(set.getInt("PRODUCT"));
@@ -2349,7 +2347,7 @@ public class DBConnect implements DataConnectInterface {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
             int color = set.getInt("COLOR");
-            Button b = new Button(name, p, order, s, color, id);
+            TillButton b = new TillButton(name, p, s, color, id);
 
             buttons.add(b);
         }
@@ -2368,6 +2366,7 @@ public class DBConnect implements DataConnectInterface {
         }
         try {
             stmt.executeUpdate(query);
+            s.setId(getLastScreenID());
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -2375,9 +2374,14 @@ public class DBConnect implements DataConnectInterface {
         }
     }
 
+    private int getLastScreenID() throws SQLException {
+        List<Screen> screens = getAllScreensNoSem();
+        return screens.get(screens.size() - 1).getId();
+    }
+
     @Override
-    public void addButton(Button b) throws SQLException {
-        String query = "INSERT INTO BUTTONS (NAME, POSITION, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
+    public void addButton(TillButton b) throws SQLException {
+        String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             screensSem.acquire();
@@ -2418,7 +2422,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void removeButton(Button b) throws SQLException, ButtonNotFoundException {
+    public void removeButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = "DELETE FROM BUTTONS WHERE BUTTONS.ID = " + b.getId();
         Statement stmt = con.createStatement();
         try {
@@ -2487,7 +2491,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public Button getButton(int b) throws SQLException, ButtonNotFoundException {
+    public TillButton getButton(int b) throws SQLException, ButtonNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE BUTTONS.ID = " + b;
         Statement stmt = con.createStatement();
         try {
@@ -2495,7 +2499,7 @@ public class DBConnect implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
-        List<Button> buttons;
+        List<TillButton> buttons;
         try {
             ResultSet set = stmt.executeQuery(query);
 
@@ -2537,7 +2541,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public Button updateButton(Button b) throws SQLException, ButtonNotFoundException {
+    public TillButton updateButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = b.getSQLUpdateString();
         Statement stmt = con.createStatement();
         try {
@@ -2590,8 +2594,31 @@ public class DBConnect implements DataConnectInterface {
         return screens;
     }
 
+    public List<Screen> getAllScreensNoSem() throws SQLException {
+        String query = "SELECT * FROM SCREENS";
+        Statement stmt = con.createStatement();
+        List<Screen> screens;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            screens = new ArrayList<>();
+            while (set.next()) {
+                int id = set.getInt("ID");
+                String name = set.getString("NAME");
+                int order = set.getInt("POSITION");
+                int color = set.getInt("COLOR");
+                Screen s = new Screen(name, order, color, id);
+
+                screens.add(s);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        }
+
+        return screens;
+    }
+
     @Override
-    public List<Button> getAllButtons() throws SQLException {
+    public List<TillButton> getAllButtons() throws SQLException {
         String query = "SELECT * FROM BUTTONS";
         Statement stmt = con.createStatement();
         try {
@@ -2599,14 +2626,13 @@ public class DBConnect implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
-        List<Button> buttons;
+        List<TillButton> buttons;
         try {
             ResultSet set = stmt.executeQuery(query);
             buttons = new ArrayList<>();
             while (set.next()) {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
-                int order = set.getInt("POSITION");
                 Product p = null;
                 try {
                     p = getProduct(set.getInt("PRODUCT"));
@@ -2620,7 +2646,7 @@ public class DBConnect implements DataConnectInterface {
                 } catch (ScreenNotFoundException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                Button b = new Button(name, p, order, s, color, id);
+                TillButton b = new TillButton(name, p, s, color, id);
 
                 buttons.add(b);
             }
@@ -2634,7 +2660,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
+    public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM BUTTONS WHERE BUTTONS.SCREEN_ID=" + s.getId();
         Statement stmt = con.createStatement();
         try {
@@ -2642,22 +2668,23 @@ public class DBConnect implements DataConnectInterface {
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
-        List<Button> buttons;
+        List<TillButton> buttons;
         try {
             ResultSet set = stmt.executeQuery(query);
             buttons = new ArrayList<>();
             while (set.next()) {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
-                int order = set.getInt("POSITION");
                 Product p = null;
-                try {
-                    p = getProduct(set.getInt("PRODUCT"));
-                } catch (ProductNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                if (!name.equals("[SPACE]")) {
+                    try {
+                        p = getProduct(set.getInt("PRODUCT"));
+                    } catch (ProductNotFoundException ex) {
+                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
                 int color = set.getInt("COLOR");
-                Button b = new Button(name, p, order, s, color, id);
+                TillButton b = new TillButton(name, p, s, color, id);
 
                 buttons.add(b);
             }

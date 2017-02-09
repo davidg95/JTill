@@ -175,25 +175,25 @@ public interface DataConnectInterface {
     //Screens
     public void addScreen(Screen s) throws IOException, SQLException;
 
-    public void addButton(Button b) throws IOException, SQLException;
+    public void addButton(TillButton b) throws IOException, SQLException;
 
     public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
-    public void removeButton(Button b) throws IOException, SQLException, ButtonNotFoundException;
+    public void removeButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException;
 
     public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException;
 
-    public Button getButton(int b) throws IOException, SQLException, ButtonNotFoundException;
+    public TillButton getButton(int b) throws IOException, SQLException, ButtonNotFoundException;
 
     public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
-    public Button updateButton(Button b) throws IOException, SQLException, ButtonNotFoundException;
+    public TillButton updateButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException;
 
     public List<Screen> getAllScreens() throws IOException, SQLException;
 
-    public List<Button> getAllButtons() throws IOException, SQLException;
+    public List<TillButton> getAllButtons() throws IOException, SQLException;
 
-    public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
+    public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
     public void deleteAllScreensAndButtons() throws IOException, SQLException;
 }

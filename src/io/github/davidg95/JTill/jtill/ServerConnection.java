@@ -2128,7 +2128,7 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void addButton(Button b) throws IOException, SQLException {
+    public void addButton(TillButton b) throws IOException, SQLException {
         obOut.writeObject(ConnectionData.create("ADDBUTTON", b));
     }
 
@@ -2154,7 +2154,7 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void removeButton(Button b) throws IOException, SQLException, ButtonNotFoundException {
+    public void removeButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException {
         try {
             sem.acquire();
         } catch (InterruptedException ex) {
@@ -2205,7 +2205,7 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public Button getButton(int b) throws IOException, SQLException, ButtonNotFoundException {
+    public TillButton getButton(int b) throws IOException, SQLException, ButtonNotFoundException {
         try {
             try {
                 sem.acquire();
@@ -2221,8 +2221,8 @@ public class ServerConnection implements DataConnectInterface {
             } finally {
                 sem.release();
             }
-            if (o instanceof Button) {
-                return (Button) o;
+            if (o instanceof TillButton) {
+                return (TillButton) o;
             } else if (o instanceof SQLException) {
                 throw (SQLException) o;
             } else {
@@ -2265,7 +2265,7 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public Button updateButton(Button b) throws IOException, SQLException, ButtonNotFoundException {
+    public TillButton updateButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException {
         try {
             try {
                 sem.acquire();
@@ -2281,8 +2281,8 @@ public class ServerConnection implements DataConnectInterface {
             } finally {
                 sem.release();
             }
-            if (o instanceof Button) {
-                return (Button) o;
+            if (o instanceof TillButton) {
+                return (TillButton) o;
             } else if (o instanceof SQLException) {
                 throw (SQLException) o;
             } else {
@@ -2323,7 +2323,7 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public List<Button> getAllButtons() throws IOException, SQLException {
+    public List<TillButton> getAllButtons() throws IOException, SQLException {
         try {
             try {
                 sem.acquire();
@@ -2340,7 +2340,7 @@ public class ServerConnection implements DataConnectInterface {
                 sem.release();
             }
             if (o instanceof List) {
-                return (List<Button>) o;
+                return (List<TillButton>) o;
             } else {
                 throw (SQLException) o;
             }
@@ -2351,7 +2351,7 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public List<Button> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
+    public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
             try {
                 sem.acquire();
@@ -2368,7 +2368,7 @@ public class ServerConnection implements DataConnectInterface {
                 sem.release();
             }
             if (o instanceof List) {
-                return (List<Button>) o;
+                return (List<TillButton>) o;
             } else if (o instanceof SQLException) {
                 throw (SQLException) o;
             } else if (o instanceof ScreenNotFoundException) {

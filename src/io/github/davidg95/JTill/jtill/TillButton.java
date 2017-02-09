@@ -12,25 +12,23 @@ import java.io.Serializable;
  *
  * @author David
  */
-public class Button implements Serializable {
+public class TillButton implements Serializable {
 
     private int id;
     private String name;
-    private int order;
     private Product product;
     private Screen screen;
     private int color;
 
-    public Button(String name, Product product, int order, Screen screen, int color) {
+    public TillButton(String name, Product product, Screen screen, int color) {
         this.name = name;
         this.product = product;
-        this.order = order;
         this.screen = screen;
         this.color = color;
     }
 
-    public Button(String name, Product product, int order, Screen screen, int color, int id) {
-        this(name, product, order, screen, color);
+    public TillButton(String name, Product product, Screen screen, int color, int id) {
+        this(name, product, screen, color);
         this.id = id;
     }
 
@@ -56,14 +54,7 @@ public class Button implements Serializable {
 
     public void setProduct(Product product) {
         this.product = product;
-    }
-
-    public int getOrder() {
-        return order;
-    }
-
-    public void setOrder(int order) {
-        this.order = order;
+        this.name = product.getName();
     }
 
     public Screen getScreen() {
@@ -91,18 +82,28 @@ public class Button implements Serializable {
     }
 
     public String getSQLInsertString() {
+        int pId;
+        if (this.product == null) {
+            pId = -1;
+        } else {
+            pId = this.product.getId();
+        }
         return "'" + this.name
-                + "'," + this.order
-                + "," + this.product.getId()
+                + "'," + pId
                 + "," + this.color
                 + "," + this.screen.getId();
     }
 
     public String getSQLUpdateString() {
+        int pId;
+        if (this.product == null) {
+            pId = -1;
+        } else {
+            pId = this.product.getId();
+        }
         return "UPDATE BUTTONS"
                 + " SET NAME='" + this.getName()
-                + "', POSITION=" + this.getOrder()
-                + ", PRODUCT=" + this.getProduct().getId()
+                + "', PRODUCT=" + pId
                 + ", COLOR=" + this.getColorValue()
                 + ", SCREEN_ID=" + this.getScreen().getId()
                 + " WHERE BUTTONS.ID=" + this.getId();
