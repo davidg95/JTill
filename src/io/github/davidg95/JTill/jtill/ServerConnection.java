@@ -129,8 +129,21 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public BigDecimal getTillTakings(String terminal) {
-        return new BigDecimal("0");
+    public BigDecimal getTillTakings(String terminal) throws IOException, SQLException {
+        try {
+            obOut.writeObject(ConnectionData.create("TAKINGS", site));
+
+            Object o = obIn.readObject();
+
+            if (o instanceof SQLException) {
+                throw (SQLException) o;
+            }
+
+            return (BigDecimal) o;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public class IncomingThread extends Thread {

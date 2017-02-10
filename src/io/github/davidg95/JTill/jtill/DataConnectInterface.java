@@ -33,7 +33,7 @@ public interface DataConnectInterface {
 
     public void assisstance(String message) throws IOException;
 
-    public BigDecimal getTillTakings(String terminal);
+    public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
 
     //Product
     public void addProduct(Product p) throws IOException, SQLException;

@@ -23,6 +23,7 @@ public class Sale implements Serializable {
     private Customer customer;
     private Time time;
     private String terminal;
+    private boolean cashed;
     private boolean chargeAccount;
 
     private SaleItem lastAdded;
@@ -32,6 +33,7 @@ public class Sale implements Serializable {
         customer = null;
         total = new BigDecimal("0.00");
         this.terminal = terminal;
+        this.cashed = false;
         chargeAccount = false;
     }
 
@@ -40,15 +42,16 @@ public class Sale implements Serializable {
         this.customer = c;
         this.chargeAccount = chargeAccount;
         this.terminal = terminal;
+        this.cashed = false;
         total = new BigDecimal("0.00");
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean chargeAccount, List<SaleItem> saleItems) {
-        this(code, total, customer, time, terminal, chargeAccount);
+    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount, List<SaleItem> saleItems) {
+        this(code, total, customer, time, terminal, cashed, chargeAccount);
         this.saleItems = saleItems;
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean chargeAccount) {
+    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount) {
         this.code = code;
         this.total = total;
         this.customer = customer;
@@ -174,6 +177,14 @@ public class Sale implements Serializable {
         this.terminal = terminal;
     }
 
+    public boolean isCashed() {
+        return cashed;
+    }
+
+    public void setCashed(boolean cashed) {
+        this.cashed = cashed;
+    }
+
     /**
      * Method to void an item from the sale. It will first check though the list
      * looking for the item. If the quantity of the item in the last is greater
@@ -270,13 +281,15 @@ public class Sale implements Serializable {
                     + ",-1"
                     + ",'" + this.time.toString()
                     + "','" + this.terminal
-                    + "'," + this.chargeAccount;
+                    + "'," + this.cashed
+                    + "," + this.chargeAccount;
         } else {
             return this.total
                     + "," + this.customer.getId()
                     + ",'" + this.time.toString()
                     + "','" + this.terminal
-                    + "'," + this.chargeAccount;
+                    + "'," + this.cashed
+                    + "," + this.chargeAccount;
         }
     }
 
@@ -284,20 +297,39 @@ public class Sale implements Serializable {
         if (this.customer == null) {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
-                    + ", SET CUSTOMER=" + this.customer.getId()
+                    + ", CUSTOMER=-1"
                     + ", TIMESTAMP='" + this.time.toString()
                     + "', TERMINAL='" + this.terminal
-                    + "', CHARGE_ACCOUNT=" + this.chargeAccount
+                    + "', CASHED=" + this.cashed
+                    + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.code;
         } else {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
-                    + ", SET CUSTOMER=-1"
+                    + ", CUSTOMER=" + this.customer.getId()
                     + ", TIMESTAMP='" + this.time.toString()
                     + "', TERMINAL='" + this.terminal
-                    + "', CHARGE_ACCOUNT=" + this.chargeAccount
+                    + "', CASHED=" + this.cashed
+                    + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.code;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof Sale) {
+            if (this.getCode() == ((Sale) o).getCode()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 29 * hash + this.code;
+        return hash;
     }
 
     @Override

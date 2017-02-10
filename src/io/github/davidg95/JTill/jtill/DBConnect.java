@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
@@ -167,6 +166,7 @@ public class DBConnect implements DataConnectInterface {
                 + "     DISCOUNT int,\n"
                 + "     TIMESTAMP TIME,\n"
                 + "     TERMINAL VARCHAR(20),\n"
+                + "     CASHED boolean not null,\n"
                 + "     CHARGE_ACCOUNT boolean\n"
                 + ")";
         String saleItems = "create table APP.SALEITEMS\n"
@@ -1816,8 +1816,9 @@ public class DBConnect implements DataConnectInterface {
                 }
                 Time time = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
+                boolean cashed = set.getBoolean("CASHED");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, chargeAccount);
+                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1842,8 +1843,9 @@ public class DBConnect implements DataConnectInterface {
             }
             Time time = set.getTime("TIMESTAMP");
             String terminal = set.getString("TERMINAL");
+            boolean cashed = set.getBoolean("CASHED");
             boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-            Sale s = new Sale(id, price, customer, time, terminal, chargeAccount);
+            Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1852,7 +1854,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addSale(Sale s) throws SQLException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
         try {
             saleSem.acquire();
@@ -1921,8 +1923,9 @@ public class DBConnect implements DataConnectInterface {
                 }
                 Time time = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
+                boolean cashed = set.getBoolean("CASHED");
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, chargeAccount);
+                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1933,6 +1936,51 @@ public class DBConnect implements DataConnectInterface {
         }
 
         return sales;
+    }
+
+    @Override
+    public BigDecimal getTillTakings(String t) throws SQLException {
+        String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = '" + t + "'";
+        Statement stmt = con.createStatement();
+        try {
+            saleSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        BigDecimal result = new BigDecimal("0");
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            while (set.next()) {
+                int id = set.getInt("ID");
+                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                int customerid = set.getInt("CUSTOMER");
+                Customer customer = null;
+                try {
+                    customer = getCustomer(customerid);
+                } catch (CustomerNotFoundException ex) {
+                }
+                Time time = set.getTime("TIMESTAMP");
+                String terminal = set.getString("TERMINAL");
+                boolean cashed = set.getBoolean("CASHED");
+                boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
+                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
+                s.setProducts(getItemsInSale(s));
+                if (!s.isCashed()) {
+                    result = result.add(s.getTotal());
+                    s.setCashed(true);
+                    try {
+                        updateSaleNoSem(s);
+                    } catch (SaleNotFoundException ex) {
+                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            saleSem.release();
+        }
+        return result;
     }
 
     private void addSaleItem(Sale s, SaleItem p) throws SQLException {
@@ -2020,6 +2068,21 @@ public class DBConnect implements DataConnectInterface {
             throw ex;
         } finally {
             saleSem.release();
+        }
+        if (value == 0) {
+            throw new SaleNotFoundException(s.getCode() + "");
+        }
+        return s;
+    }
+
+    public Sale updateSaleNoSem(Sale s) throws SQLException, SaleNotFoundException {
+        String query = s.getSQLUpdateStatement();
+        Statement stmt = con.createStatement();
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
         }
         if (value == 0) {
             throw new SaleNotFoundException(s.getCode() + "");
@@ -2767,10 +2830,5 @@ public class DBConnect implements DataConnectInterface {
     public void assisstance(String message) throws IOException {
         g.showMessage("Assisstance", message);
         g.log(message);
-    }
-
-    @Override
-    public BigDecimal getTillTakings(String terminal) {
-        return new BigDecimal("0");
     }
 }
