@@ -146,6 +146,11 @@ public class ServerConnection implements DataConnectInterface {
         return null;
     }
 
+    @Override
+    public void sendEmail(String message) throws IOException {
+        obOut.writeObject(ConnectionData.create("EMAIL", message));
+    }
+
     public class IncomingThread extends Thread {
 
         private final GUIInterface g;

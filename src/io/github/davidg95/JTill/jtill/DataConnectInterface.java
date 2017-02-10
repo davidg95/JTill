@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.util.List;
+import javax.mail.internet.MimeMessage;
 
 /**
  *
@@ -34,6 +35,8 @@ public interface DataConnectInterface {
     public void assisstance(String message) throws IOException;
 
     public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
+    
+    public void sendEmail(String message) throws IOException;
 
     //Product
     public void addProduct(Product p) throws IOException, SQLException;

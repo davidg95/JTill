@@ -31,6 +31,15 @@ import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.swing.JOptionPane;
 import org.apache.derby.jdbc.EmbeddedDriver;
 
@@ -73,6 +82,8 @@ public class DBConnect implements DataConnectInterface {
     public static final String DEFAULT_ADDRESS = "jdbc:derby:TillEmbedded;";
     public static final String DEFAULT_USERNAME = "APP";
     public static final String DEFAULT_PASSWORD = "App";
+    public static String MAIL_SERVER;
+    public static String MAIL_ADDRESS;
 
     private GUIInterface g;
 
@@ -2345,6 +2356,8 @@ public class DBConnect implements DataConnectInterface {
             DB_USERNAME = properties.getProperty("db_username", "APP");
             DB_PASSWORD = properties.getProperty("db_password", "App");
             imageURL = properties.getProperty("imageURL", "NONE");
+            MAIL_SERVER = properties.getProperty("mail.smtp.host");
+            MAIL_ADDRESS = properties.getProperty("MAIL_ADDRESS");
 
             in.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
@@ -2373,6 +2386,9 @@ public class DBConnect implements DataConnectInterface {
             properties.setProperty("db_username", DB_USERNAME);
             properties.setProperty("db_password", DB_PASSWORD);
             properties.setProperty("imageURL", imageURL);
+            properties.put("mail.smtp.host", MAIL_SERVER);
+            properties.put("mail.smtp.auth", "true");
+            properties.put("MAIL_ADDRESS", MAIL_ADDRESS);
 
             properties.store(out, null);
             out.close();
@@ -2830,5 +2846,33 @@ public class DBConnect implements DataConnectInterface {
     public void assisstance(String message) throws IOException {
         g.showMessage("Assisstance", message);
         g.log(message);
+    }
+
+    @Override
+    public void sendEmail(String email) throws IOException {
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "jggcomputers.ddns.net");
+        props.put("mail.smtp.auth", "true");
+        Authenticator auth = new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication("david", "thoksmountain");
+            }
+        };
+        Session session = Session.getDefaultInstance(props, auth);
+
+        MimeMessage message = new MimeMessage(session);
+
+        try {
+            message.setFrom(new InternetAddress("davidgrant@jggcomputers.ddns.net"));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(MAIL_ADDRESS));
+            message.setSubject("TILL REPORT");
+            message.setText(email);
+            Transport.send(message);
+        } catch (AddressException ex) {
+            ex.printStackTrace();
+        } catch (MessagingException ex) {
+            ex.printStackTrace();
+        }
     }
 }
