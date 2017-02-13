@@ -67,6 +67,7 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore suspendSem;
     private final Semaphore voucherSem;
     private final Semaphore screensSem;
+    private final Semaphore tillSem;
 
     private static Properties properties;
     public static int PORT = 600;
@@ -98,6 +99,7 @@ public class DBConnect implements DataConnectInterface {
         suspendSem = new Semaphore(1);
         voucherSem = new Semaphore(1);
         screensSem = new Semaphore(1);
+        tillSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
     }
 
@@ -130,6 +132,14 @@ public class DBConnect implements DataConnectInterface {
     }
 
     private void createTables() throws SQLException {
+        String tills = "create table APP.TILLS\n"
+                + "(\n"
+                + "	ID INT not null primary key\n"
+                + "        GENERATED ALWAYS AS IDENTITY\n"
+                + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "	NAME VARCHAR(20) not null,\n"
+                + "     UNCASHED DOUBLE not null\n"
+                + ")";
         String categorys = "create table APP.CATEGORYS\n"
                 + "(\n"
                 + "	ID INT not null primary key\n"
@@ -274,6 +284,10 @@ public class DBConnect implements DataConnectInterface {
                 + ")";
 
         Statement stmt = con.createStatement();
+        try {
+            stmt.execute(tills);
+        } catch (SQLException ex) {
+        }
         try {
             stmt.execute(tax);
         } catch (SQLException ex) {
@@ -2018,6 +2032,28 @@ public class DBConnect implements DataConnectInterface {
         return result;
     }
 
+    @Override
+    public List<Sale> getUncashedSales(String t) throws SQLException {
+        String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = '" + t + "'";
+        Statement stmt = con.createStatement();
+        try {
+            saleSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Sale> sales;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            sales = getSalesFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            saleSem.release();
+        }
+
+        return sales;
+    }
+
     private void addSaleItem(Sale s, SaleItem p) throws SQLException {
         p.setSale(s);
         String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
@@ -2413,6 +2449,9 @@ public class DBConnect implements DataConnectInterface {
             properties.put("OUTGOING_MAIL_ADDRESS", OUTGOING_MAIL_ADDRESS);
             properties.put("mail.smtp.auth", "true");
             properties.put("MAIL_ADDRESS", MAIL_ADDRESS);
+            properties.put("mail.smtp.starttls.enable", "false");
+            properties.put("mail.smtp.host", "jggcomputers.ddns.net");
+            properties.put("mail.smtp.port", "25");
 
             properties.store(out, null);
             out.close();
@@ -2910,5 +2949,165 @@ public class DBConnect implements DataConnectInterface {
         } catch (MessagingException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private List<Till> getTillsFromResultSet(ResultSet set) throws SQLException {
+        List<Till> tills = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String name = set.getString("NAME");
+            double d = set.getDouble("UNCASHED");
+            BigDecimal uncashed = new BigDecimal(Double.toString(d));
+
+            Till t = new Till(name, uncashed, id);
+
+            tills.add(t);
+        }
+
+        return tills;
+    }
+
+    @Override
+    public void addTill(Till t) throws IOException, SQLException {
+        String query = "INSERT INTO TILLS (NAME, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
+        Statement stmt = con.createStatement();
+        try {
+            tillSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            tillSem.release();
+        }
+    }
+
+    @Override
+    public void removeTill(int id) throws IOException, SQLException, TillNotFoundException {
+        String query = "DELETE FROM TILLS WHERE TILLS.ID = " + id;
+        Statement stmt = con.createStatement();
+        try {
+            tillSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            tillSem.release();
+        }
+        if (value == 0) {
+            throw new TillNotFoundException(id + " could not be found");
+        }
+    }
+
+    @Override
+    public Till getTill(int id) throws IOException, SQLException, TillNotFoundException {
+        String query = "SELECT * FROM TILLS WHERE TILLS.ID = " + id;
+
+        Statement stmt = con.createStatement();
+
+        try {
+            tillSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        List<Till> tills;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            tills = getTillsFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            tillSem.release();
+        }
+
+        if (tills.isEmpty()) {
+            throw new TillNotFoundException(id + " could not be found");
+        }
+
+        return tills.get(0);
+    }
+
+    @Override
+    public List<Till> getAllTills() throws SQLException {
+        String query = "SELECT * FROM TILLS";
+        Statement stmt = con.createStatement();
+        try {
+            tillSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Till> tills;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            tills = getTillsFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            tillSem.release();
+        }
+
+        return tills;
+    }
+
+    @Override
+    public boolean connectTill(String t) {
+        try {
+            Till till = this.getTillByName(t);
+            g.addTill(till);
+            return true;
+        } catch (SQLException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (TillNotFoundException ex) {
+            boolean result = g.showYesNoMessage("New Till", "Allow till " + t + " to connect?");
+
+            if (result) {
+                Till newTill = new Till(t);
+                try {
+                    addTill(newTill);
+                } catch (IOException | SQLException ex1) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex1);
+                }
+                g.addTill(newTill);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Till getTillByName(String t) throws SQLException, TillNotFoundException {
+        String query = "SELECT * FROM TILLS WHERE TILLS.NAME = '" + t + "'";
+
+        Statement stmt = con.createStatement();
+
+        try {
+            tillSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        List<Till> tills;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            tills = getTillsFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            tillSem.release();
+        }
+
+        if (tills.isEmpty()) {
+            throw new TillNotFoundException(t + " could not be found");
+        }
+
+        return tills.get(0);
     }
 }

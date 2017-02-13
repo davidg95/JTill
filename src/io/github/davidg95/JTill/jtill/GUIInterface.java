@@ -16,4 +16,12 @@ public interface GUIInterface {
     public void setClientLabel(String text);
 
     public void showMessage(String title, String message);
+
+    public boolean showYesNoMessage(String title, String message);
+
+    public void showModalMessage(String title, String message);
+
+    public void hideModalMessage();
+
+    public void addTill(Till t);
 }

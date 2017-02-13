@@ -57,16 +57,29 @@ public class ServerConnection implements DataConnectInterface {
      * @throws IOException if there was an error connection.
      */
     public void connect(String IP, int PORT) throws IOException {
-        socket = new Socket();
+        try {
+            socket = new Socket();
 
-        socket.connect(new InetSocketAddress(IP, PORT), 2000);
-        obOut = new ObjectOutputStream(socket.getOutputStream());
-        obOut.flush();
-        obIn = new ObjectInputStream(socket.getInputStream());
-        obOut.writeObject(site);
-        isConnected = true;
+            socket.connect(new InetSocketAddress(IP, PORT), 2000);
+            obOut = new ObjectOutputStream(socket.getOutputStream());
+            obOut.flush();
+            obIn = new ObjectInputStream(socket.getInputStream());
+            obOut.writeObject(site);
+            g.showModalMessage("Server", "Waing for confirmation");
+            Object o = obIn.readObject();
+            ConnectionData data = (ConnectionData) o;
+            if (data.getFlag().equals("DISALLOW")) {
+                g.hideModalMessage();
+                g.showMessage("Not Allowed", "The server has not allowed this terminal to join");
+            } else {
+                g.hideModalMessage();
+            }
+            isConnected = true;
 //        in = new IncomingThread(g, obIn, obOut);
 //        in.start();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -118,6 +131,78 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void emailReceipt(String email, Sale sale) throws IOException {
         obOut.writeObject(ConnectionData.create("EMAILRECEIPT", email, sale));
+    }
+
+    @Override
+    public void addTill(Till t) throws IOException {
+        obOut.writeObject(ConnectionData.create("ADDTILL", t));
+    }
+
+    @Override
+    public void removeTill(int id) throws IOException {
+        obOut.writeObject(ConnectionData.create("REMOVETILL", id));
+    }
+
+    @Override
+    public Till getTill(int id) throws IOException, SQLException, TillNotFoundException {
+        try {
+            obOut.writeObject(ConnectionData.create("GETTILL", id));
+
+            Object o = obIn.readObject();
+
+            if (o instanceof Till) {
+                return (Till) o;
+            } else if (o instanceof TillNotFoundException) {
+                throw (TillNotFoundException) o;
+            } else {
+                throw (SQLException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public List<Till> getAllTills() throws IOException, SQLException {
+        try {
+            obOut.writeObject(ConnectionData.create("GETALLTILLS"));
+
+            Object o = obIn.readObject();
+
+            if (o instanceof List) {
+                return (List<Till>) o;
+            } else {
+                throw (SQLException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean connectTill(String t) throws IOException {
+        obOut.writeObject(ConnectionData.create("CONNECTTILL", t));
+        return obIn.readBoolean();
+    }
+
+    @Override
+    public List<Sale> getUncashedSales(String t) throws IOException, SQLException {
+        try {
+            obOut.writeObject(ConnectionData.create("UNCASHEDSALES", t));
+
+            Object o = obIn.readObject();
+
+            if (o instanceof List) {
+                return (List<Sale>) o;
+            } else {
+                throw (SQLException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     public class IncomingThread extends Thread {

@@ -90,6 +90,8 @@ public interface DataConnectInterface {
 
     public Sale resumeSale(Staff s) throws IOException;
 
+    public List<Sale> getUncashedSales(String t) throws IOException, SQLException;
+
     //Staff
     public void addStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
@@ -193,4 +195,15 @@ public interface DataConnectInterface {
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
     public void deleteAllScreensAndButtons() throws IOException, SQLException;
+
+    //Tills
+    public void addTill(Till t) throws IOException, SQLException;
+
+    public void removeTill(int id) throws IOException, SQLException, TillNotFoundException;
+
+    public Till getTill(int id) throws IOException, SQLException, TillNotFoundException;
+
+    public List<Till> getAllTills() throws IOException, SQLException;
+
+    public boolean connectTill(String t) throws IOException;
 }
