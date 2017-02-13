@@ -20,7 +20,6 @@ public class Customer implements Serializable {
     private String phone;
     private String mobile;
     private String email;
-    private int discount_id;
     private int loyaltyPoints;
     private String notes;
 
@@ -37,12 +36,11 @@ public class Customer implements Serializable {
 
     }
 
-    public Customer(String name, String phone, String mobile, String email, int discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyalty, BigDecimal moneyDue) {
+    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyalty, BigDecimal moneyDue) {
         this.name = name;
         this.phone = phone;
         this.mobile = mobile;
         this.email = email;
-        this.discount_id = discount;
         this.addressLine1 = addressLine1;
         this.addressLine2 = addressLine2;
         this.town = town;
@@ -54,8 +52,8 @@ public class Customer implements Serializable {
         this.moneyDue = moneyDue;
     }
 
-    public Customer(String name, String phone, String mobile, String email, int discount, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, int id) {
-        this(name, phone, mobile, email, discount, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
+    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, int id) {
+        this(name, phone, mobile, email, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
         this.id = id;
     }
 
@@ -97,14 +95,6 @@ public class Customer implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public int getDiscountID() {
-        return discount_id;
-    }
-
-    public void setDiscountID(int discount) {
-        this.discount_id = discount;
     }
 
     public int getLoyaltyPoints() {
@@ -171,14 +161,6 @@ public class Customer implements Serializable {
         this.postcode = postcode;
     }
 
-    public int getDiscount_id() {
-        return discount_id;
-    }
-
-    public void setDiscount_id(int discount_id) {
-        this.discount_id = discount_id;
-    }
-
     public BigDecimal getMoneyDue() {
         return moneyDue;
     }
@@ -199,8 +181,7 @@ public class Customer implements Serializable {
                 + "','" + this.country
                 + "','" + this.postcode
                 + "','" + this.notes
-                + "'," + this.discount_id
-                + "," + this.loyaltyPoints
+                + "'," + this.loyaltyPoints
                 + "," + this.moneyDue.doubleValue();
     }
 
@@ -217,8 +198,7 @@ public class Customer implements Serializable {
                 + "', COUNTRY='" + this.getCountry()
                 + "', POSTCODE='" + this.getPostcode()
                 + "', NOTES='" + this.getNotes()
-                + "', DISCOUNT_ID=" + this.getDiscountID()
-                + ", LOYALTY_POINTS=" + this.getLoyaltyPoints()
+                + "', LOYALTY_POINTS=" + this.getLoyaltyPoints()
                 + ", MONEY_DUE=" + this.getMoneyDue().doubleValue()
                 + " WHERE CUSTOMERS.ID=" + this.getId();
     }

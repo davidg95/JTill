@@ -5,7 +5,6 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import java.awt.Image;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -71,41 +70,6 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public Image getImage() throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("GETIMAGE"));
-            return (java.awt.Image) obIn.readObject();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    public javafx.scene.image.Image getFXImage() throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("GETFXIMAGE"));
-            return (javafx.scene.image.Image) obIn.readObject();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    public void setImage(Image image) throws IOException {
-    }
-
-    @Override
-    public void setFXImage(javafx.scene.image.Image image) throws IOException {
-    }
-
-    @Override
-    public void setImagePath(String path) throws IOException {
-        obOut.writeObject(ConnectionData.create("SETIMAGEPATH", path));
-    }
-
-    @Override
     public void suspendSale(Sale sale, Staff staff) throws IOException {
         obOut.writeObject(ConnectionData.create("SUSPENDSALE", sale, staff));
     }
@@ -149,6 +113,11 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void sendEmail(String message) throws IOException {
         obOut.writeObject(ConnectionData.create("EMAIL", message));
+    }
+
+    @Override
+    public void emailReceipt(String email, Sale sale) throws IOException {
+        obOut.writeObject(ConnectionData.create("EMAILRECEIPT", email, sale));
     }
 
     public class IncomingThread extends Thread {

@@ -6,8 +6,6 @@
 package io.github.davidg95.JTill.jtill;
 
 import io.github.davidg95.JTill.jtill.Staff.Position;
-import java.awt.Image;
-import java.awt.Toolkit;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -71,7 +69,6 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore screensSem;
 
     private static Properties properties;
-    private static String imageURL;
     public static int PORT = 600;
     public static int MAX_CONNECTIONS = 10;
     public static int MAX_QUEUE = 10;
@@ -82,8 +79,9 @@ public class DBConnect implements DataConnectInterface {
     public static final String DEFAULT_ADDRESS = "jdbc:derby:TillEmbedded;";
     public static final String DEFAULT_USERNAME = "APP";
     public static final String DEFAULT_PASSWORD = "App";
-    public static String MAIL_SERVER;
-    public static String MAIL_ADDRESS;
+    public static String MAIL_SERVER = "";
+    public static String OUTGOING_MAIL_ADDRESS = "";
+    public static String MAIL_ADDRESS = "";
 
     private GUIInterface g;
 
@@ -178,6 +176,7 @@ public class DBConnect implements DataConnectInterface {
                 + "     TIMESTAMP TIME,\n"
                 + "     TERMINAL VARCHAR(20),\n"
                 + "     CASHED boolean not null,\n"
+                + "     STAFF int,\n"
                 + "     CHARGE_ACCOUNT boolean\n"
                 + ")";
         String saleItems = "create table APP.SALEITEMS\n"
@@ -207,7 +206,6 @@ public class DBConnect implements DataConnectInterface {
                 + "	COUNTRY VARCHAR(50),\n"
                 + "	POSTCODE VARCHAR(20),\n"
                 + "	NOTES VARCHAR(200),\n"
-                + "	DISCOUNT_ID INT references DISCOUNTS(ID),\n"
                 + "	LOYALTY_POINTS INTEGER not null,\n"
                 + "     MONEY_DUE DOUBLE not null\n"
                 + ")";
@@ -822,10 +820,9 @@ public class DBConnect implements DataConnectInterface {
                 String country = set.getString("COUNTRY");
                 String postcode = set.getString("POSTCODE");
                 String notes = set.getString("NOTES");
-                int discount = set.getInt("DISCOUNT_ID");
                 int loyaltyPoints = set.getInt("LOYALTY_POINTS");
                 BigDecimal moneyDue = new BigDecimal(Double.toString(set.getDouble("MONEY_DUE")));
-                Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
+                Customer c = new Customer(name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
 
                 customers.add(c);
             }
@@ -853,11 +850,10 @@ public class DBConnect implements DataConnectInterface {
             String country = set.getString("COUNTRY");
             String postcode = set.getString("POSTCODE");
             String notes = set.getString("NOTES");
-            int discount = set.getInt("DISCOUNT_ID");
             int loyaltyPoints = set.getInt("LOYALTY_POINTS");
             BigDecimal moneyDue = new BigDecimal(set.getDouble("MONEY_DUE"));
 
-            Customer c = new Customer(name, phone, mobile, email, discount, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
+            Customer c = new Customer(name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
 
             customers.add(c);
         }
@@ -874,7 +870,7 @@ public class DBConnect implements DataConnectInterface {
      */
     @Override
     public void addCustomer(Customer c) throws SQLException {
-        String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, DISCOUNT_ID, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
+        String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
             customerSem.acquire();
@@ -1828,8 +1824,15 @@ public class DBConnect implements DataConnectInterface {
                 Time time = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
+                int sId = set.getInt("STAFF");
+                Staff staff = null;
+                try {
+                    staff = getStaff(sId);
+                } catch (StaffNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
+                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1855,8 +1858,15 @@ public class DBConnect implements DataConnectInterface {
             Time time = set.getTime("TIMESTAMP");
             String terminal = set.getString("TERMINAL");
             boolean cashed = set.getBoolean("CASHED");
+            int sId = set.getInt("STAFF");
+            Staff staff = null;
+            try {
+                staff = getStaff(id);
+            } catch (StaffNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-            Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
+            Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1865,7 +1875,7 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void addSale(Sale s) throws SQLException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
         try {
             saleSem.acquire();
@@ -1935,8 +1945,15 @@ public class DBConnect implements DataConnectInterface {
                 Time time = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
+                int sId = set.getInt("STAFF");
+                Staff staff = null;
+                try {
+                    staff = getStaff(sId);
+                } catch (StaffNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
+                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1973,8 +1990,15 @@ public class DBConnect implements DataConnectInterface {
                 Time time = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
+                int sId = set.getInt("STAFF");
+                Staff staff = null;
+                try {
+                    staff = getStaff(sId);
+                } catch (StaffNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount);
+                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
                 s.setProducts(getItemsInSale(s));
                 if (!s.isCashed()) {
                     result = result.add(s.getTotal());
@@ -2355,8 +2379,8 @@ public class DBConnect implements DataConnectInterface {
             DB_ADDRESS = properties.getProperty("db_address", "jdbc:derby:TillEmbedded;");
             DB_USERNAME = properties.getProperty("db_username", "APP");
             DB_PASSWORD = properties.getProperty("db_password", "App");
-            imageURL = properties.getProperty("imageURL", "NONE");
             MAIL_SERVER = properties.getProperty("mail.smtp.host");
+            OUTGOING_MAIL_ADDRESS = properties.getProperty("OUTGOING_MAIL_ADDRESS");
             MAIL_ADDRESS = properties.getProperty("MAIL_ADDRESS");
 
             in.close();
@@ -2385,8 +2409,8 @@ public class DBConnect implements DataConnectInterface {
             properties.setProperty("db_address", DB_ADDRESS);
             properties.setProperty("db_username", DB_USERNAME);
             properties.setProperty("db_password", DB_PASSWORD);
-            properties.setProperty("imageURL", imageURL);
             properties.put("mail.smtp.host", MAIL_SERVER);
+            properties.put("OUTGOING_MAIL_ADDRESS", OUTGOING_MAIL_ADDRESS);
             properties.put("mail.smtp.auth", "true");
             properties.put("MAIL_ADDRESS", MAIL_ADDRESS);
 
@@ -2796,29 +2820,6 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public java.awt.Image getImage() {
-        return Toolkit.getDefaultToolkit().getImage(imageURL);
-    }
-
-    @Override
-    public javafx.scene.image.Image getFXImage() {
-        return new javafx.scene.image.Image(imageURL);
-    }
-
-    @Override
-    public void setImage(Image image) throws IOException {
-    }
-
-    @Override
-    public void setFXImage(javafx.scene.image.Image image) throws IOException {
-    }
-
-    @Override
-    public void setImagePath(String path) {
-        imageURL = path;
-    }
-
-    @Override
     public void suspendSale(Sale sale, Staff staff) throws IOException {
         try {
             suspendSem.acquire();
@@ -2850,24 +2851,59 @@ public class DBConnect implements DataConnectInterface {
 
     @Override
     public void sendEmail(String email) throws IOException {
-        Properties props = new Properties();
-        props.put("mail.smtp.host", "jggcomputers.ddns.net");
-        props.put("mail.smtp.auth", "true");
         Authenticator auth = new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication("david", "thoksmountain");
+                return new PasswordAuthentication("jtill", "honorsproject");
             }
         };
-        Session session = Session.getDefaultInstance(props, auth);
+        Session session = Session.getDefaultInstance(properties, auth);
 
         MimeMessage message = new MimeMessage(session);
 
         try {
-            message.setFrom(new InternetAddress("davidgrant@jggcomputers.ddns.net"));
+            message.setFrom(new InternetAddress(DBConnect.OUTGOING_MAIL_ADDRESS));
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(MAIL_ADDRESS));
             message.setSubject("TILL REPORT");
             message.setText(email);
+            Transport.send(message);
+        } catch (AddressException ex) {
+            ex.printStackTrace();
+        } catch (MessagingException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public void emailReceipt(String email, Sale sale) throws IOException {
+        Authenticator auth = new Authenticator() {
+            @Override
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication("jtill", "honorsproject");
+            }
+        };
+        Session session = Session.getDefaultInstance(properties, auth);
+
+        MimeMessage message = new MimeMessage(session);
+
+        String text = "";
+
+        text += "Here is your receipt from your recent purchase\n";
+        text += "Sale ID: " + sale.getCode() + "\n";
+        text += "Time: " + sale.getTime().toString() + "\n";
+        for (SaleItem i : sale.getSaleItems()) {
+            text += i.getItem().getName() + "\t" + i.getQuantity() + "\t£" + i.getPrice() + "\n";
+        }
+
+        text += "Total: £" + sale.getTotal() + "\n";
+        text += "You were served by " + sale.getStaff().getName() + "\n";
+        text += "Thank you for your custom";
+
+        try {
+            message.setFrom(new InternetAddress(DBConnect.OUTGOING_MAIL_ADDRESS));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            message.setSubject("Receipt for sale " + sale.getCode());
+            message.setText(text);
             Transport.send(message);
         } catch (AddressException ex) {
             ex.printStackTrace();

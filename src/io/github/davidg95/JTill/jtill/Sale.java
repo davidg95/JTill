@@ -24,40 +24,44 @@ public class Sale implements Serializable {
     private Time time;
     private String terminal;
     private boolean cashed;
+    private Staff staff;
     private boolean chargeAccount;
 
     private SaleItem lastAdded;
 
-    public Sale(String terminal) {
+    public Sale(String terminal, Staff s) {
         saleItems = new ArrayList<>();
         customer = null;
         total = new BigDecimal("0.00");
         this.terminal = terminal;
         this.cashed = false;
         chargeAccount = false;
+        this.staff = s;
     }
 
-    public Sale(Customer c, boolean chargeAccount, String terminal) {
+    public Sale(Customer c, boolean chargeAccount, String terminal, Staff s) {
         saleItems = new ArrayList<>();
         this.customer = c;
         this.chargeAccount = chargeAccount;
         this.terminal = terminal;
         this.cashed = false;
         total = new BigDecimal("0.00");
+        this.staff = s;
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount, List<SaleItem> saleItems) {
-        this(code, total, customer, time, terminal, cashed, chargeAccount);
+    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount, Staff s, List<SaleItem> saleItems) {
+        this(code, total, customer, time, terminal, cashed, chargeAccount, s);
         this.saleItems = saleItems;
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount) {
+    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount, Staff s) {
         this.code = code;
         this.total = total;
         this.customer = customer;
         this.time = time;
         this.terminal = terminal;
         this.chargeAccount = chargeAccount;
+        this.staff = s;
     }
 
     /**
@@ -185,6 +189,14 @@ public class Sale implements Serializable {
         this.cashed = cashed;
     }
 
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
     /**
      * Method to void an item from the sale. It will first check though the list
      * looking for the item. If the quantity of the item in the last is greater
@@ -282,6 +294,7 @@ public class Sale implements Serializable {
                     + ",'" + this.time.toString()
                     + "','" + this.terminal
                     + "'," + this.cashed
+                    + "," + this.staff.getId()
                     + "," + this.chargeAccount;
         } else {
             return this.total
@@ -301,6 +314,7 @@ public class Sale implements Serializable {
                     + ", TIMESTAMP='" + this.time.toString()
                     + "', TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
+                    + ", STAFF=" + this.staff.getId()
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.code;
         } else {
@@ -310,6 +324,7 @@ public class Sale implements Serializable {
                     + ", TIMESTAMP='" + this.time.toString()
                     + "', TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
+                    + ", STAFF=" + this.staff.getId()
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.code;
         }

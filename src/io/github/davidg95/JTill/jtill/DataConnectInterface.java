@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.util.List;
-import javax.mail.internet.MimeMessage;
 
 /**
  *
@@ -22,21 +21,13 @@ public interface DataConnectInterface {
 
     public void setGUI(GUIInterface g);
 
-    public java.awt.Image getImage() throws IOException;
-
-    public void setImage(java.awt.Image image) throws IOException;
-
-    public javafx.scene.image.Image getFXImage() throws IOException;
-
-    public void setFXImage(javafx.scene.image.Image image) throws IOException;
-
-    public void setImagePath(String path) throws IOException;
-
     public void assisstance(String message) throws IOException;
 
     public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
-    
+
     public void sendEmail(String message) throws IOException;
+
+    public void emailReceipt(String email, Sale sale) throws IOException;
 
     //Product
     public void addProduct(Product p) throws IOException, SQLException;
