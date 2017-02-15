@@ -70,7 +70,7 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore tillSem;
 
     private static Properties properties;
-    public static int PORT = 600;
+    public static int PORT = 52341;
     public static int MAX_CONNECTIONS = 10;
     public static int MAX_QUEUE = 10;
     public static String hostName;
@@ -883,7 +883,7 @@ public class DBConnect implements DataConnectInterface {
      * database.
      */
     @Override
-    public void addCustomer(Customer c) throws SQLException {
+    public Customer addCustomer(Customer c) throws SQLException {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -898,6 +898,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             customerSem.release();
         }
+        return c;
     }
 
     @Override
@@ -1146,7 +1147,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addStaff(Staff s) throws SQLException {
+    public Staff addStaff(Staff s) throws SQLException {
         String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -1161,6 +1162,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             staffSem.release();
         }
+        return s;
     }
 
     @Override
@@ -1363,7 +1365,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addDiscount(Discount d) throws SQLException {
+    public Discount addDiscount(Discount d) throws SQLException {
         String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE) VALUES (" + d.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -1378,6 +1380,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             discountSem.release();
         }
+        return d;
     }
 
     @Override
@@ -1520,7 +1523,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addTax(Tax t) throws SQLException {
+    public Tax addTax(Tax t) throws SQLException {
         String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -1535,6 +1538,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             taxSem.release();
         }
+        return t;
     }
 
     @Override
@@ -1680,7 +1684,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addCategory(Category c) throws SQLException {
+    public Category addCategory(Category c) throws SQLException {
         String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -1695,6 +1699,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             categorySem.release();
         }
+        return c;
     }
 
     @Override
@@ -1888,7 +1893,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addSale(Sale s) throws SQLException {
+    public Sale addSale(Sale s) throws SQLException {
         String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -1918,6 +1923,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             saleSem.release();
         }
+        return s;
     }
 
     private void chargeCustomerAccount(Customer c, BigDecimal amount) {
@@ -2237,7 +2243,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addVoucher(Voucher v) throws SQLException {
+    public Voucher addVoucher(Voucher v) throws SQLException {
         String query = "INSERT INTO VOUCHERS (NAME, TYPE) VALUES (" + v.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -2252,6 +2258,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             voucherSem.release();
         }
+        return v;
     }
 
     @Override
@@ -2502,7 +2509,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addScreen(Screen s) throws SQLException {
+    public Screen addScreen(Screen s) throws SQLException {
         String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR) VALUES (" + s.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -2518,6 +2525,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             screensSem.release();
         }
+        return s;
     }
 
     private int getLastScreenID() throws SQLException {
@@ -2526,7 +2534,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addButton(TillButton b) throws SQLException {
+    public TillButton addButton(TillButton b) throws SQLException {
         String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -2541,6 +2549,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             screensSem.release();
         }
+        return b;
     }
 
     @Override
@@ -2968,7 +2977,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     @Override
-    public void addTill(Till t) throws IOException, SQLException {
+    public Till addTill(Till t) throws IOException, SQLException {
         String query = "INSERT INTO TILLS (NAME, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
         Statement stmt = con.createStatement();
         try {
@@ -2983,6 +2992,7 @@ public class DBConnect implements DataConnectInterface {
         } finally {
             tillSem.release();
         }
+        return t;
     }
 
     @Override

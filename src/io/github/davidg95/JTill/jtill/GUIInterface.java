@@ -24,4 +24,8 @@ public interface GUIInterface {
     public void hideModalMessage();
 
     public void addTill(Till t);
+
+    public void allow();
+
+    public void disallow();
 }

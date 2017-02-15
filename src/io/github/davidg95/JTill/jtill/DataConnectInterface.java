@@ -57,7 +57,7 @@ public interface DataConnectInterface {
     public List<Product> productLookup(String terms) throws IOException, SQLException;
 
     //Customer
-    public void addCustomer(Customer customer) throws IOException, SQLException;
+    public Customer addCustomer(Customer customer) throws IOException, SQLException;
 
     public void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
 
@@ -76,7 +76,7 @@ public interface DataConnectInterface {
     public List<Customer> customerLookup(String terms) throws IOException, SQLException;
 
     //Sale
-    public void addSale(Sale s) throws IOException, SQLException;
+    public Sale addSale(Sale s) throws IOException, SQLException;
 
     public List<Sale> getAllSales() throws IOException, SQLException;
 
@@ -93,7 +93,7 @@ public interface DataConnectInterface {
     public List<Sale> getUncashedSales(String t) throws IOException, SQLException;
 
     //Staff
-    public void addStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    public Staff addStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
     public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException;
 
@@ -116,7 +116,7 @@ public interface DataConnectInterface {
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException;
 
     //Category
-    public void addCategory(Category c) throws IOException, SQLException;
+    public Category addCategory(Category c) throws IOException, SQLException;
 
     public Category updateCategory(Category c) throws IOException, SQLException, CategoryNotFoundException;
 
@@ -131,7 +131,7 @@ public interface DataConnectInterface {
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
 
     //Discount
-    public void addDiscount(Discount d) throws IOException, SQLException;
+    public Discount addDiscount(Discount d) throws IOException, SQLException;
 
     public Discount updateDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException;
 
@@ -144,7 +144,7 @@ public interface DataConnectInterface {
     public List<Discount> getAllDiscounts() throws IOException, SQLException;
 
     //Tax
-    public void addTax(Tax t) throws IOException, SQLException;
+    public Tax addTax(Tax t) throws IOException, SQLException;
 
     public void removeTax(Tax t) throws IOException, SQLException, TaxNotFoundException;
 
@@ -157,7 +157,7 @@ public interface DataConnectInterface {
     public List<Tax> getAllTax() throws IOException, SQLException;
 
     //Voucher
-    public void addVoucher(Voucher v) throws IOException, SQLException;
+    public Voucher addVoucher(Voucher v) throws IOException, SQLException;
 
     public void removeVoucher(Voucher v) throws IOException, SQLException, VoucherNotFoundException;
 
@@ -172,9 +172,9 @@ public interface DataConnectInterface {
     public void close();
 
     //Screens
-    public void addScreen(Screen s) throws IOException, SQLException;
+    public Screen addScreen(Screen s) throws IOException, SQLException;
 
-    public void addButton(TillButton b) throws IOException, SQLException;
+    public TillButton addButton(TillButton b) throws IOException, SQLException;
 
     public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
@@ -197,7 +197,7 @@ public interface DataConnectInterface {
     public void deleteAllScreensAndButtons() throws IOException, SQLException;
 
     //Tills
-    public void addTill(Till t) throws IOException, SQLException;
+    public Till addTill(Till t) throws IOException, SQLException;
 
     public void removeTill(int id) throws IOException, SQLException, TillNotFoundException;
 

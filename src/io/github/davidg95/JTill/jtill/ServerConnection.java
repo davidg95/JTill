@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigDecimal;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.sql.SQLException;
@@ -31,7 +32,7 @@ public class ServerConnection implements DataConnectInterface {
     private ObjectOutputStream obOut;
 
     private boolean isConnected;
-    private final String site;
+    private String site;
 
     private GUIInterface g;
     private IncomingThread in;
@@ -45,7 +46,6 @@ public class ServerConnection implements DataConnectInterface {
      */
     public ServerConnection(String site) {
         isConnected = false;
-        this.site = site;
         sem = new Semaphore(1);
     }
 
@@ -56,8 +56,9 @@ public class ServerConnection implements DataConnectInterface {
      * @param PORT the server port number.
      * @throws IOException if there was an error connection.
      */
-    public void connect(String IP, int PORT) throws IOException {
+    public void connect(String IP, int PORT, String site) throws IOException, ConnectException {
         try {
+            this.site = site;
             socket = new Socket();
 
             socket.connect(new InetSocketAddress(IP, PORT), 2000);
@@ -68,11 +69,11 @@ public class ServerConnection implements DataConnectInterface {
             g.showModalMessage("Server", "Waing for confirmation");
             Object o = obIn.readObject();
             ConnectionData data = (ConnectionData) o;
+            g.hideModalMessage();
             if (data.getFlag().equals("DISALLOW")) {
-                g.hideModalMessage();
-                g.showMessage("Not Allowed", "The server has not allowed this terminal to join");
+                g.disallow();
             } else {
-                g.hideModalMessage();
+                g.allow();
             }
             isConnected = true;
 //        in = new IncomingThread(g, obIn, obOut);
@@ -134,8 +135,15 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void addTill(Till t) throws IOException {
-        obOut.writeObject(ConnectionData.create("ADDTILL", t));
+    public Till addTill(Till t) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDTILL", t));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Till) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
@@ -718,11 +726,19 @@ public class ServerConnection implements DataConnectInterface {
      * Method to add a new customer to the server.
      *
      * @param customer the new customer to add.
+     * @return the Customer that was added.
      * @throws IOException if there was an error connecting.
      */
     @Override
-    public void addCustomer(Customer customer) throws IOException {
-        obOut.writeObject(ConnectionData.create("NEWCUSTOMER", customer));
+    public Customer addCustomer(Customer customer) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("NEWCUSTOMER", customer));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Customer) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     /**
@@ -1010,11 +1026,19 @@ public class ServerConnection implements DataConnectInterface {
      * Method to send a sale to the server.
      *
      * @param s the sale to send.
+     * @return the Sale that was added.
      * @throws IOException if there was an error connecting.
      */
     @Override
-    public void addSale(Sale s) throws IOException {
-        obOut.writeObject(ConnectionData.create("ADDSALE", s));
+    public Sale addSale(Sale s) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDSALE", s));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Sale) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
@@ -1145,11 +1169,19 @@ public class ServerConnection implements DataConnectInterface {
      * Method to add a new member of staff to the system.
      *
      * @param s the new member of staff to add.
+     * @return the Staff that is being added.
      * @throws IOException if there was a server communication error.
      */
     @Override
-    public void addStaff(Staff s) throws IOException {
-        obOut.writeObject(ConnectionData.create("ADDSTAFF", s));
+    public Staff addStaff(Staff s) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDSTAFF", s));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Staff) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     /**
@@ -1517,8 +1549,15 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void addCategory(Category c) throws IOException {
-        obOut.writeObject(ConnectionData.create("ADDCATEGORY", c));
+    public Category addCategory(Category c) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDCATEGORY", c));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Category) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
@@ -1706,8 +1745,15 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void addDiscount(Discount d) throws IOException {
-        obOut.writeObject(ConnectionData.create("ADDDISCOUNT", d));
+    public Discount addDiscount(Discount d) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDDISCOUNT", d));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Discount) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
@@ -1865,8 +1911,15 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void addTax(Tax t) throws IOException {
-        obOut.writeObject(ConnectionData.create("ADDTAX", t));
+    public Tax addTax(Tax t) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDTAX", t));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Tax) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
@@ -2024,8 +2077,15 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void addVoucher(Voucher v) throws IOException {
-        obOut.writeObject(ConnectionData.create("ADDVOUCHER", v));
+    public Voucher addVoucher(Voucher v) throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDVOUCHER", v));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Voucher) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
@@ -2201,13 +2261,27 @@ public class ServerConnection implements DataConnectInterface {
     }
 
     @Override
-    public void addScreen(Screen s) throws IOException, SQLException {
-        obOut.writeObject(ConnectionData.create("ADDSCREEN", s));
+    public Screen addScreen(Screen s) throws IOException, SQLException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDSCREEN", s));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (Screen) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
-    public void addButton(TillButton b) throws IOException, SQLException {
-        obOut.writeObject(ConnectionData.create("ADDBUTTON", b));
+    public TillButton addButton(TillButton b) throws IOException, SQLException {
+        try {
+            obOut.writeObject(ConnectionData.create("ADDBUTTON", b));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            return (TillButton) data.getData();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
     @Override
