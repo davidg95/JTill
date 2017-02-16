@@ -461,7 +461,7 @@ public class DBConnect implements DataConnectInterface {
      * database.
      */
     @Override
-    public void addProduct(Product p) throws SQLException {
+    public Product addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
             try {
@@ -477,6 +477,7 @@ public class DBConnect implements DataConnectInterface {
                 productSem.release();
             }
         }
+        return p;
     }
 
     @Override

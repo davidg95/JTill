@@ -30,7 +30,7 @@ public interface DataConnectInterface {
     public void emailReceipt(String email, Sale sale) throws IOException;
 
     //Product
-    public void addProduct(Product p) throws IOException, SQLException;
+    public Product addProduct(Product p) throws IOException, SQLException;
 
     public void removeProduct(int code) throws IOException, ProductNotFoundException, SQLException;
 
