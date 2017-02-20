@@ -410,12 +410,24 @@ public class DBConnect implements DataConnectInterface {
                 String comments = set.getString("COMMENTS");
                 String shortName = set.getString("SHORT_NAME");
                 int categoryID = set.getInt("CATEGORY_ID");
+                Category category = null;
+                try {
+                    category = getCategory(categoryID);
+                } catch (CategoryNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 int taxID = set.getInt("TAX_ID");
+                Tax tax = null;
+                try {
+                    tax = getTax(taxID);
+                } catch (TaxNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
                 int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                 int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-                Product p = new Product(name, shortName, categoryID, comments, taxID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+                Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
                 products.add(p);
             }
@@ -440,12 +452,24 @@ public class DBConnect implements DataConnectInterface {
             String comments = set.getString("COMMENTS");
             String shortName = set.getString("SHORT_NAME");
             int categoryID = set.getInt("CATEGORY_ID");
+            Category category = null;
+            try {
+                category = getCategory(categoryID);
+            } catch (CategoryNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             int taxID = set.getInt("TAX_ID");
+            Tax tax = null;
+            try {
+                tax = this.getTax(taxID);
+            } catch (TaxNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-            Product p = new Product(name, shortName, categoryID, comments, taxID, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+            Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, barcode, code);
 
             products.add(p);
         }

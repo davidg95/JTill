@@ -20,8 +20,8 @@ public class Product implements Serializable, Cloneable, Item {
     private String barcode;
     private String name;
     private String shortName;
-    private int categoryID;
-    private int taxID;
+    private Category category;
+    private Tax tax;
     private boolean open;
     private BigDecimal price;
     private BigDecimal costPrice;
@@ -43,17 +43,17 @@ public class Product implements Serializable, Cloneable, Item {
      *
      * @param name the name of the product.
      * @param shortName the shortened name of the product.
-     * @param categoryID the category this will belong to.
+     * @param category the category this will belong to.
      * @param comments the comments.
-     * @param taxID the tax class for this product.
+     * @param tax the tax class for this product.
      * @param open if the price is open.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open) {
+    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open) {
         this.name = name;
         this.shortName = shortName;
-        this.categoryID = categoryID;
+        this.category = category;
         this.comments = comments;
-        this.taxID = taxID;
+        this.tax = tax;
         this.open = open;
     }
 
@@ -63,14 +63,14 @@ public class Product implements Serializable, Cloneable, Item {
      *
      * @param name the name of the product.
      * @param shortName the shortened name of the product.
-     * @param categoryID the category this will belong to.
+     * @param category the category this will belong to.
      * @param comments the comments.
-     * @param taxID the tax class for this product.
+     * @param tax the tax class for this product.
      * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, open);
+    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, int productCode) {
+        this(name, shortName, category, comments, tax, open);
         this.productCode = productCode;
     }
 
@@ -79,9 +79,9 @@ public class Product implements Serializable, Cloneable, Item {
      *
      * @param name the name for the product.
      * @param shortName the shortened name of the product.
-     * @param categoryID the category this will belong to.
+     * @param category the category this will belong to.
      * @param price the price for the product.
-     * @param taxID the tax class for this product.
+     * @param tax the tax class for this product.
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
@@ -90,8 +90,8 @@ public class Product implements Serializable, Cloneable, Item {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode) {
-        this(name, shortName, categoryID, comments, taxID, open);
+    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode) {
+        this(name, shortName, category, comments, tax, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -105,9 +105,9 @@ public class Product implements Serializable, Cloneable, Item {
      *
      * @param name the name for the product.
      * @param shortName the shortened name of the product.
-     * @param categoryID the category this will belong to.
+     * @param category the category this will belong to.
      * @param price the price for the product.
-     * @param taxID the tax class for this product.
+     * @param tax the tax class for this product.
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
@@ -117,8 +117,8 @@ public class Product implements Serializable, Cloneable, Item {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int categoryID, String comments, int taxID, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
-        this(name, shortName, categoryID, comments, taxID, open, price, costPrice, stock, minStock, maxStock, barcode);
+    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
+        this(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, barcode);
         this.productCode = productCode;
     }
 
@@ -216,20 +216,20 @@ public class Product implements Serializable, Cloneable, Item {
         this.shortName = shortName;
     }
 
-    public int getCategoryID() {
-        return categoryID;
+    public Category getCategory() {
+        return category;
     }
 
-    public void setCategoryID(int categoryID) {
-        this.categoryID = categoryID;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
-    public int getTaxID() {
-        return taxID;
+    public Tax getTax() {
+        return tax;
     }
 
-    public void setTaxID(int taxID) {
-        this.taxID = taxID;
+    public void setTax(Tax tax) {
+        this.tax = tax;
     }
 
     public BigDecimal getCostPrice() {
@@ -274,8 +274,8 @@ public class Product implements Serializable, Cloneable, Item {
                 + "," + this.stock
                 + ",'" + this.comments
                 + "','" + this.shortName
-                + "'," + this.categoryID
-                + "," + this.taxID
+                + "'," + this.category.getID()
+                + "," + this.tax.getId()
                 + "," + this.costPrice
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel;
@@ -290,8 +290,8 @@ public class Product implements Serializable, Cloneable, Item {
                 + ", PRODUCTS.STOCK=" + this.getStock()
                 + ", PRODUCTS.COMMENTS='" + this.getComments()
                 + "', PRODUCTS.SHORT_NAME='" + this.getName()
-                + "', PRODUCTS.CATEGORY_ID=" + this.getCategoryID()
-                + ", PRODUCTS.TAX_ID=" + this.getTaxID()
+                + "', PRODUCTS.CATEGORY_ID=" + this.getCategory().getID()
+                + ", PRODUCTS.TAX_ID=" + this.getTax().getId()
                 + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
