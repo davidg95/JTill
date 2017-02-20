@@ -29,6 +29,10 @@ public interface DataConnectInterface {
 
     public void emailReceipt(String email, Sale sale) throws IOException;
 
+    public void setSetting(String key, String value) throws IOException;
+
+    public String getSettings(String key) throws IOException;
+
     //Product
     public Product addProduct(Product p) throws IOException, SQLException;
 

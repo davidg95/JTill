@@ -24,8 +24,11 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,6 +90,7 @@ public class DBConnect implements DataConnectInterface {
     private GUIInterface g;
 
     private volatile HashMap<Staff, Sale> suspendedSales;
+    private final Settings systemSettings;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -101,6 +105,7 @@ public class DBConnect implements DataConnectInterface {
         screensSem = new Semaphore(1);
         tillSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
+        systemSettings = new Settings();
     }
 
     /**
@@ -2436,20 +2441,24 @@ public class DBConnect implements DataConnectInterface {
             in = new FileInputStream("server.properties");
 
             properties.load(in);
+            Set<Object> keySet = properties.keySet();
+            Iterator<Object> keySetIterator = keySet.iterator();
+            while (keySetIterator.hasNext()) {
+                String key = (String) keySetIterator.next();
+                String value = properties.getProperty(key);
+                systemSettings.setSetting(key, value);
+            }
 
-            hostName = properties.getProperty("host");
-            PORT = Integer.parseInt(properties.getProperty("port", Integer.toString(PORT)));
-            MAX_CONNECTIONS = Integer.parseInt(properties.getProperty("max_conn", Integer.toString(MAX_CONNECTIONS)));
-            MAX_QUEUE = Integer.parseInt(properties.getProperty("max_queue", Integer.toString(MAX_QUEUE)));
-            TillInitData.initData.autoLogout = Boolean.parseBoolean(properties.getProperty("autoLogout", "false"));
-            TillInitData.initData.logoutTimeout = Integer.parseInt(properties.getProperty("logoutTimeout", "30"));
-            TillInitData.initData.logonScreenMessage = properties.getProperty("logonMessage");
-            DB_ADDRESS = properties.getProperty("db_address", "jdbc:derby:TillEmbedded;");
-            DB_USERNAME = properties.getProperty("db_username", "APP");
-            DB_PASSWORD = properties.getProperty("db_password", "App");
-            MAIL_SERVER = properties.getProperty("mail.smtp.host");
-            OUTGOING_MAIL_ADDRESS = properties.getProperty("OUTGOING_MAIL_ADDRESS");
-            MAIL_ADDRESS = properties.getProperty("MAIL_ADDRESS");
+            hostName = systemSettings.getSetting("host");
+            PORT = Integer.parseInt(systemSettings.getSetting("port", Integer.toString(PORT)));
+            MAX_CONNECTIONS = Integer.parseInt(systemSettings.getSetting("max_conn", Integer.toString(MAX_CONNECTIONS)));
+            MAX_QUEUE = Integer.parseInt(systemSettings.getSetting("max_queue", Integer.toString(MAX_QUEUE)));
+            DB_ADDRESS = systemSettings.getSetting("db_address", "jdbc:derby:TillEmbedded;");
+            DB_USERNAME = systemSettings.getSetting("db_username", "APP");
+            DB_PASSWORD = systemSettings.getSetting("db_password", "App");
+            MAIL_SERVER = systemSettings.getSetting("mail.smtp.host");
+            OUTGOING_MAIL_ADDRESS = systemSettings.getSetting("OUTGOING_MAIL_ADDRESS");
+            MAIL_ADDRESS = systemSettings.getSetting("MAIL_ADDRESS");
 
             in.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
@@ -2466,24 +2475,13 @@ public class DBConnect implements DataConnectInterface {
             out = new FileOutputStream("server.properties");
 
             hostName = InetAddress.getLocalHost().getHostName();
-
-            properties.setProperty("host", hostName);
-            properties.setProperty("port", Integer.toString(PORT));
-            properties.setProperty("max_conn", Integer.toString(MAX_CONNECTIONS));
-            properties.setProperty("max_queue", Integer.toString(MAX_QUEUE));
-            properties.setProperty("autoLogout", Boolean.toString(TillInitData.initData.autoLogout));
-            properties.setProperty("logoutTimeout", Integer.toString(TillInitData.initData.logoutTimeout));
-            properties.setProperty("logonMessage", TillInitData.initData.logonScreenMessage);
-            properties.setProperty("db_address", DB_ADDRESS);
-            properties.setProperty("db_username", DB_USERNAME);
-            properties.setProperty("db_password", DB_PASSWORD);
-            properties.put("mail.smtp.host", MAIL_SERVER);
-            properties.put("OUTGOING_MAIL_ADDRESS", OUTGOING_MAIL_ADDRESS);
-            properties.put("mail.smtp.auth", "true");
-            properties.put("MAIL_ADDRESS", MAIL_ADDRESS);
-            properties.put("mail.smtp.starttls.enable", "false");
-            properties.put("mail.smtp.host", "jggcomputers.ddns.net");
-            properties.put("mail.smtp.port", "25");
+            Set<String> keySet = systemSettings.getMap().keySet();
+            Iterator<String> keySetIterator = keySet.iterator();
+            while (keySetIterator.hasNext()) {
+                String key = keySetIterator.next();
+                String value = systemSettings.getSetting(key);
+                properties.put(key, value);
+            }
 
             properties.store(out, null);
             out.close();
@@ -3144,5 +3142,15 @@ public class DBConnect implements DataConnectInterface {
         }
 
         return tills.get(0);
+    }
+
+    @Override
+    public void setSetting(String key, String value) {
+        systemSettings.setSetting(key, value);
+    }
+
+    @Override
+    public String getSettings(String key) {
+        return systemSettings.getSetting(key);
     }
 }

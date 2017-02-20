@@ -301,6 +301,51 @@ public class ServerConnection implements DataConnectInterface {
         return null;
     }
 
+    @Override
+    public void setSetting(String key, String value) throws IOException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("SETSETTING", key, value));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+    }
+
+    @Override
+    public String getSettings(String key) throws IOException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("GETSETTING", key));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (String) data.getData();
+            } else {
+                throw new IOException(data.getData().toString());
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        return null;
+    }
+
     public class IncomingThread extends Thread {
 
         private final GUIInterface g;
