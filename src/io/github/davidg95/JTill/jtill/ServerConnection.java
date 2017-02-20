@@ -2231,11 +2231,27 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public Screen addScreen(Screen s) throws IOException, SQLException {
         try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
             obOut.writeObject(ConnectionData.create("ADDSCREEN", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
-            return (Screen) data.getData();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (Screen) data.getData();
+            } else {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2243,11 +2259,27 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public TillButton addButton(TillButton b) throws IOException, SQLException {
         try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
             obOut.writeObject(ConnectionData.create("ADDBUTTON", b));
             ConnectionData data = (ConnectionData) obIn.readObject();
-            return (TillButton) data.getData();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (TillButton) data.getData();
+            } else {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2255,19 +2287,25 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            sem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        obOut.writeObject(ConnectionData.create("REMOVESCREEN", s));
-        try {
-            if (((String) obIn.readObject()).equals("FAIL")) {
-                throw new ScreenNotFoundException("Screen " + s + " could not be found");
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("REMOVESCREEN", s));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ScreenNotFoundException) {
+                    throw (ScreenNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            throw ex;
         } finally {
             sem.release();
         }
@@ -2276,19 +2314,25 @@ public class ServerConnection implements DataConnectInterface {
     @Override
     public void removeButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException {
         try {
-            sem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        obOut.writeObject(ConnectionData.create("REMOVEBUTTON", b));
-        try {
-            if (((String) obIn.readObject()).equals("FAIL")) {
-                throw new ButtonNotFoundException("Button " + b + " could not be found");
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("REMOVEBUTTON", b));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ButtonNotFoundException) {
+                    throw (ButtonNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            throw ex;
         } finally {
             sem.release();
         }
@@ -2303,23 +2347,23 @@ public class ServerConnection implements DataConnectInterface {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
             obOut.writeObject(ConnectionData.create("GETSCREEN", s));
-            Object o;
-            try {
-                o = obIn.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            } finally {
-                sem.release();
-            }
-            if (o instanceof Screen) {
-                return (Screen) o;
-            } else if (o instanceof SQLException) {
-                throw (SQLException) o;
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (Screen) data.getData();
             } else {
-                throw (ScreenNotFoundException) o;
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ScreenNotFoundException) {
+                    throw (ScreenNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2333,23 +2377,23 @@ public class ServerConnection implements DataConnectInterface {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
             obOut.writeObject(ConnectionData.create("GETBUTTON", b));
-            Object o;
-            try {
-                o = obIn.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            } finally {
-                sem.release();
-            }
-            if (o instanceof TillButton) {
-                return (TillButton) o;
-            } else if (o instanceof SQLException) {
-                throw (SQLException) o;
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (TillButton) data.getData();
             } else {
-                throw (ButtonNotFoundException) o;
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ButtonNotFoundException) {
+                    throw (ButtonNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2363,23 +2407,23 @@ public class ServerConnection implements DataConnectInterface {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
             obOut.writeObject(ConnectionData.create("UPDATESCREEN", s));
-            Object o;
-            try {
-                o = obIn.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            } finally {
-                sem.release();
-            }
-            if (o instanceof Screen) {
-                return (Screen) o;
-            } else if (o instanceof SQLException) {
-                throw (SQLException) o;
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (Screen) data.getData();
             } else {
-                throw (ScreenNotFoundException) o;
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ScreenNotFoundException) {
+                    throw (ScreenNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2393,23 +2437,23 @@ public class ServerConnection implements DataConnectInterface {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
             obOut.writeObject(ConnectionData.create("UPDATEBUTTON", b));
-            Object o;
-            try {
-                o = obIn.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            } finally {
-                sem.release();
-            }
-            if (o instanceof TillButton) {
-                return (TillButton) o;
-            } else if (o instanceof SQLException) {
-                throw (SQLException) o;
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (TillButton) data.getData();
             } else {
-                throw (ButtonNotFoundException) o;
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ButtonNotFoundException) {
+                    throw (ButtonNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2479,23 +2523,23 @@ public class ServerConnection implements DataConnectInterface {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
             obOut.writeObject(ConnectionData.create("GETBUTTONSONSCREEN", s));
-            Object o;
-            try {
-                o = obIn.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            } finally {
-                sem.release();
-            }
-            if (o instanceof List) {
-                return (List<TillButton>) o;
-            } else if (o instanceof SQLException) {
-                throw (SQLException) o;
-            } else if (o instanceof ScreenNotFoundException) {
-                throw (ScreenNotFoundException) o;
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (List) data.getData();
+            } else {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ScreenNotFoundException) {
+                    throw (ScreenNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
