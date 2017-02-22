@@ -120,16 +120,7 @@ public class ServerConnection implements DataConnectInterface {
 
     @Override
     public void assisstance(String message) throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("ASSISSTANCE", message));
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("FAIL")) {
-                throw new IOException(data.getData().toString());
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        obOut.writeObject(ConnectionData.create("ASSISSTANCE", message));
     }
 
     @Override
