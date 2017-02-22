@@ -35,16 +35,13 @@ public class ServerConnection implements DataConnectInterface {
     private String site;
 
     private GUIInterface g;
-    private IncomingThread in;
 
     private final Semaphore sem;
 
     /**
      * Blank constructor.
-     *
-     * @param site the name of this site to send to the server.
      */
-    public ServerConnection(String site) {
+    public ServerConnection() {
         isConnected = false;
         sem = new Semaphore(1);
     }
@@ -54,15 +51,14 @@ public class ServerConnection implements DataConnectInterface {
      *
      * @param IP the server IP address.
      * @param PORT the server port number.
-     * @param site the till name.
+     * @param site the name of the terminal.
      * @throws IOException if there was an error connecting.
      * @throws java.net.ConnectException if there was an error connecting.
      */
     public void connect(String IP, int PORT, String site) throws IOException, ConnectException {
         try {
-            this.site = site;
             socket = new Socket();
-
+            this.site = site;
             socket.connect(new InetSocketAddress(IP, PORT), 2000);
             obOut = new ObjectOutputStream(socket.getOutputStream());
             obOut.flush();
@@ -78,11 +74,28 @@ public class ServerConnection implements DataConnectInterface {
                 g.allow();
             }
             isConnected = true;
-//        in = new IncomingThread(g, obIn, obOut);
-//        in.start();
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    /**
+     * Makes a connection but doesn't wait for server confirmation
+     *
+     * @param IP the server IP address.
+     * @param PORT the server port number.
+     * @throws IOException if there was an error connecting.
+     * @throws java.net.ConnectException if there was an error connecting.
+     */
+    public void connectNoPermission(String IP, int PORT) throws IOException, ConnectException {
+        socket = new Socket();
+
+        socket.connect(new InetSocketAddress(IP, PORT), 2000);
+        obOut = new ObjectOutputStream(socket.getOutputStream());
+        obOut.flush();
+        obOut.writeObject("NOPERM");
+        obIn = new ObjectInputStream(socket.getInputStream());;
+        isConnected = true;
     }
 
     @Override
@@ -335,49 +348,6 @@ public class ServerConnection implements DataConnectInterface {
             sem.release();
         }
         return null;
-    }
-
-    public class IncomingThread extends Thread {
-
-        private final GUIInterface g;
-        private final ObjectInputStream obIn;
-        private final ObjectOutputStream obOut;
-
-        private boolean running = true;
-
-        private ConnectionData data;
-
-        public IncomingThread(GUIInterface g, ObjectInputStream obIn, ObjectOutputStream obOut) {
-            super("Incoming Thread");
-            this.g = g;
-            this.obIn = obIn;
-            this.obOut = obOut;
-        }
-
-        @Override
-        public void run() {
-            while (running) {
-                try {
-                    data = (ConnectionData) obIn.readObject();
-                    String flag = data.getFlag();
-
-                    switch (flag) {
-                        case "LOG":
-                            g.log((String) data.getData());
-                            break;
-                        case "CONN":
-                            g.setClientLabel((String) data.getData());
-                            break;
-                    }
-                } catch (IOException | ClassNotFoundException ex) {
-                    Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }
-
-        public void stopRun() {
-            running = false;
-        }
     }
 
     /**

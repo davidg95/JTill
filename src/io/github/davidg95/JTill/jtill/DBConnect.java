@@ -485,6 +485,7 @@ public class DBConnect implements DataConnectInterface {
      * Method to add a new product to the database.
      *
      * @param p the new product to add.
+     * @return 
      * @throws SQLException if there was an error adding the product to the
      * database.
      */
@@ -908,6 +909,7 @@ public class DBConnect implements DataConnectInterface {
      * Method to add a new product to the database.
      *
      * @param c the new customer to add.
+     * @return 
      * @throws SQLException if there was an error adding the customer to the
      * database.
      */
@@ -2938,9 +2940,9 @@ public class DBConnect implements DataConnectInterface {
             message.setText(email);
             Transport.send(message);
         } catch (AddressException ex) {
-            ex.printStackTrace();
+            System.out.println(ex);
         } catch (MessagingException ex) {
-            ex.printStackTrace();
+            System.out.println(ex);
         }
     }
 
@@ -2966,6 +2968,9 @@ public class DBConnect implements DataConnectInterface {
         }
 
         text += "Total: £" + sale.getTotal() + "\n";
+        if(sale.isChargeAccount()){
+            text += "You will be invoiced for this sale\n";
+        }
         text += "You were served by " + sale.getStaff().getName() + "\n";
         text += "Thank you for your custom";
 

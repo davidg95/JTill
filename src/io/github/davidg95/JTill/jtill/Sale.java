@@ -302,6 +302,7 @@ public class Sale implements Serializable {
                     + ",'" + this.time.toString()
                     + "','" + this.terminal
                     + "'," + this.cashed
+                    + "," + this.staff.getId()
                     + "," + this.chargeAccount;
         }
     }
