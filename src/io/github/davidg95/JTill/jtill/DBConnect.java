@@ -2981,9 +2981,9 @@ public class DBConnect implements DataConnectInterface {
             message.setText(text);
             Transport.send(message);
         } catch (AddressException ex) {
-            ex.printStackTrace();
+            System.out.println(ex);
         } catch (MessagingException ex) {
-            ex.printStackTrace();
+            System.out.println(ex);
         }
     }
 
