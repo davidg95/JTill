@@ -111,4 +111,8 @@ public class Settings implements Serializable {
         } catch (IOException ex) {
         }
     }
+    
+    public Properties getProperties(){
+        return this.properties;
+    }
 }

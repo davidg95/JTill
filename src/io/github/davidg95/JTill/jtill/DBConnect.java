@@ -61,8 +61,7 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore voucherSem;
     private final Semaphore screensSem;
     private final Semaphore tillSem;
-
-    private static Properties properties;
+    
     public static String hostName;
     public static String DB_ADDRESS = "jdbc:derby:TillEmbedded;";
     public static String DB_USERNAME = "APP";
@@ -2860,7 +2859,7 @@ public class DBConnect implements DataConnectInterface {
                 return new PasswordAuthentication("jtill", "honorsproject");
             }
         };
-        Session session = Session.getDefaultInstance(properties, auth);
+        Session session = Session.getDefaultInstance(systemSettings.getProperties(), auth);
 
         MimeMessage message = new MimeMessage(session);
 
@@ -2885,7 +2884,7 @@ public class DBConnect implements DataConnectInterface {
                 return new PasswordAuthentication("jtill", "honorsproject");
             }
         };
-        Session session = Session.getDefaultInstance(properties, auth);
+        Session session = Session.getDefaultInstance(systemSettings.getProperties(), auth);
 
         MimeMessage message = new MimeMessage(session);
 
