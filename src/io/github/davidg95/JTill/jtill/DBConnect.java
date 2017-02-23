@@ -6,15 +6,8 @@
 package io.github.davidg95.JTill.jtill;
 
 import io.github.davidg95.JTill.jtill.Staff.Position;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigDecimal;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -24,10 +17,8 @@ import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -72,9 +63,6 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore tillSem;
 
     private static Properties properties;
-    public static int PORT = 52341;
-    public static int MAX_CONNECTIONS = 10;
-    public static int MAX_QUEUE = 10;
     public static String hostName;
     public static String DB_ADDRESS = "jdbc:derby:TillEmbedded;";
     public static String DB_USERNAME = "APP";
@@ -91,7 +79,7 @@ public class DBConnect implements DataConnectInterface {
     private volatile HashMap<Staff, Sale> suspendedSales;
     private final Settings systemSettings;
 
-    public DBConnect() {
+    public DBConnect(Settings settings) {
         productSem = new Semaphore(1);
         customerSem = new Semaphore(1);
         staffSem = new Semaphore(1);
@@ -104,7 +92,7 @@ public class DBConnect implements DataConnectInterface {
         screensSem = new Semaphore(1);
         tillSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
-        systemSettings = new Settings();
+        systemSettings = settings;
     }
 
     /**
@@ -485,7 +473,7 @@ public class DBConnect implements DataConnectInterface {
      * Method to add a new product to the database.
      *
      * @param p the new product to add.
-     * @return 
+     * @return
      * @throws SQLException if there was an error adding the product to the
      * database.
      */
@@ -909,7 +897,7 @@ public class DBConnect implements DataConnectInterface {
      * Method to add a new product to the database.
      *
      * @param c the new customer to add.
-     * @return 
+     * @return
      * @throws SQLException if there was an error adding the customer to the
      * database.
      */
@@ -2434,63 +2422,6 @@ public class DBConnect implements DataConnectInterface {
 
     }
 
-    public void loadProperties() {
-        properties = new Properties();
-        InputStream in;
-
-        try {
-            in = new FileInputStream("server.properties");
-
-            properties.load(in);
-            Set<Object> keySet = properties.keySet();
-            Iterator<Object> keySetIterator = keySet.iterator();
-            while (keySetIterator.hasNext()) {
-                String key = (String) keySetIterator.next();
-                String value = properties.getProperty(key);
-                systemSettings.setSetting(key, value);
-            }
-
-            hostName = systemSettings.getSetting("host");
-            PORT = Integer.parseInt(systemSettings.getSetting("port", Integer.toString(PORT)));
-            MAX_CONNECTIONS = Integer.parseInt(systemSettings.getSetting("max_conn", Integer.toString(MAX_CONNECTIONS)));
-            MAX_QUEUE = Integer.parseInt(systemSettings.getSetting("max_queue", Integer.toString(MAX_QUEUE)));
-            DB_ADDRESS = systemSettings.getSetting("db_address", "jdbc:derby:TillEmbedded;");
-            DB_USERNAME = systemSettings.getSetting("db_username", "APP");
-            DB_PASSWORD = systemSettings.getSetting("db_password", "App");
-            MAIL_SERVER = systemSettings.getSetting("mail.smtp.host");
-            OUTGOING_MAIL_ADDRESS = systemSettings.getSetting("OUTGOING_MAIL_ADDRESS");
-            MAIL_ADDRESS = systemSettings.getSetting("MAIL_ADDRESS");
-
-            in.close();
-        } catch (FileNotFoundException | UnknownHostException ex) {
-            saveProperties();
-        } catch (IOException ex) {
-        }
-    }
-
-    public void saveProperties() {
-        properties = new Properties();
-        OutputStream out;
-
-        try {
-            out = new FileOutputStream("server.properties");
-
-            hostName = InetAddress.getLocalHost().getHostName();
-            Set<String> keySet = systemSettings.getMap().keySet();
-            Iterator<String> keySetIterator = keySet.iterator();
-            while (keySetIterator.hasNext()) {
-                String key = keySetIterator.next();
-                String value = systemSettings.getSetting(key);
-                properties.put(key, value);
-            }
-
-            properties.store(out, null);
-            out.close();
-        } catch (FileNotFoundException | UnknownHostException ex) {
-        } catch (IOException ex) {
-        }
-    }
-
     private List<Screen> getScreensFromResultSet(ResultSet set) throws SQLException {
         List<Screen> screens = new ArrayList<>();
         while (set.next()) {
@@ -2968,7 +2899,7 @@ public class DBConnect implements DataConnectInterface {
         }
 
         text += "Total: £" + sale.getTotal() + "\n";
-        if(sale.isChargeAccount()){
+        if (sale.isChargeAccount()) {
             text += "You will be invoiced for this sale\n";
         }
         text += "You were served by " + sale.getStaff().getName() + "\n";
