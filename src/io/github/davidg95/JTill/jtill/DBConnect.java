@@ -78,7 +78,7 @@ public class DBConnect implements DataConnectInterface {
     private volatile HashMap<Staff, Sale> suspendedSales;
     private final Settings systemSettings;
 
-    public DBConnect(Settings settings) {
+    public DBConnect() {
         productSem = new Semaphore(1);
         customerSem = new Semaphore(1);
         staffSem = new Semaphore(1);
@@ -91,7 +91,7 @@ public class DBConnect implements DataConnectInterface {
         screensSem = new Semaphore(1);
         tillSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
-        systemSettings = settings;
+        systemSettings = Settings.getInstance();
     }
 
     /**
