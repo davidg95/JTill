@@ -51,6 +51,15 @@ public class Staff implements Serializable {
      */
     public static final int AREA_MANAGER = 4;
 
+    /**
+     * Constructor for the Staff class which takes in all values but id and
+     * logged in values.
+     *
+     * @param name the name of the staff member.
+     * @param position the position they have.
+     * @param username their username.
+     * @param password their password.
+     */
     public Staff(String name, int position, String username, String password) {
         this.name = name;
         this.position = position;
@@ -58,6 +67,16 @@ public class Staff implements Serializable {
         this.password = password;
     }
 
+    /**
+     * Constructor for the Staff class which takes in all values but logged in
+     * values.
+     *
+     * @param id their id.
+     * @param name the name of the staff member.
+     * @param position the position they have.
+     * @param username their username.
+     * @param password their password.
+     */
     public Staff(int id, String name, int position, String username, String password) {
         this(name, position, username, password);
         this.id = id;

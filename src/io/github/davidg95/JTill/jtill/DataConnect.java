@@ -55,26 +55,99 @@ public interface DataConnect {
      */
     public void removeProduct(int code) throws ProductNotFoundException, IOException, SQLException;
 
+    /**
+     * Remove a product from the system
+     *
+     * @param p the product to remove.
+     * @throws ProductNotFoundException if the product was not found.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public void removeProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
 
+    /**
+     * Method to purchase a product and reduce its stock level by 1.
+     *
+     * @param code the code of the product to purchase.
+     * @param amount the amount of the product to purchase.
+     * @return the new stock level.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was an error purchasing the product.
+     * @throws OutOfStockException if the product is out of stock.
+     * @throws ProductNotFoundException if the product was not found.
+     */
     public int purchaseProduct(int code, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
 
+    /**
+     * Method to get a product by its code.
+     *
+     * @param code the product to get.
+     * @return the Product that matches the code.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was an error getting the product.
+     * @throws ProductNotFoundException if the product could not be found.
+     */
     public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException;
 
-    public int getProductCount() throws IOException, SQLException;
-
+    /**
+     * Method to get all the products on the system.
+     *
+     * @return a List of all products.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Product> getAllProducts() throws IOException, SQLException;
 
+    /**
+     * Method to update a product.
+     *
+     * @param p the product to update.
+     * @return the product after getting updated.
+     * @throws IOException if there was a network error.
+     * @throws ProductNotFoundException if the product could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public Product updateProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
 
+    /**
+     * Method to check if a barcode is already in use.
+     *
+     * @param barcode the barcode to check
+     * @return true if it is getting used, false otherwise.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public boolean checkBarcode(String barcode) throws IOException, SQLException;
 
+    /**
+     * Method to get a product by its barcode.
+     *
+     * @param barcode the barcode to search.
+     * @return the product that matches the barcode.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was an error getting the product.
+     * @throws ProductNotFoundException if the product could not be found.
+     */
     public Product getProductByBarcode(String barcode) throws IOException, ProductNotFoundException, SQLException;
 
-    public void setStock(int code, int stock) throws IOException, ProductNotFoundException, SQLException;
-
+    /**
+     * Method to get the discount for a product.
+     *
+     * @param p the product to get the discount for.
+     * @return a List of discounts the product has.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was an error getting the product.
+     */
     public List<Discount> getProductsDiscount(Product p) throws IOException, SQLException;
 
+    /**
+     * Method to search for a product.
+     *
+     * @param terms the search terms.
+     * @return a List of products matching the terms.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was an error getting the product.
+     */
     public List<Product> productLookup(String terms) throws IOException, SQLException;
 
     //Customer

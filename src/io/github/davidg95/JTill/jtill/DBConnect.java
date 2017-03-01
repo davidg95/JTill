@@ -715,40 +715,6 @@ public class DBConnect implements DataConnect {
         return products.get(0);
     }
 
-    /**
-     * Method to set the stock level of a product.
-     *
-     * @param code the product to set.
-     * @param stock the new stock level.
-     * @throws SQLException if there was an error setting the stock.
-     * @throws ProductNotFoundException if the product could not be found.
-     */
-    @Override
-    public void setStock(int code, int stock) throws SQLException, ProductNotFoundException {
-        String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + code;
-        Statement stmt = con.createStatement();
-        try {
-            productSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            ResultSet res = stmt.executeQuery(query);
-            while (res.next()) {
-                res.close();
-                String update = "UPDATE PRODUCTS SET STOCK=" + stock + " WHERE PRODUCTS.ID='" + code + "'";
-                stmt = con.createStatement();
-                stmt.executeUpdate(update);
-                return;
-            }
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            productSem.release();
-        }
-        throw new ProductNotFoundException(code + "");
-    }
-
     @Override
     public List<Discount> getProductsDiscount(Product p) throws SQLException {
         String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getId() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
@@ -770,29 +736,6 @@ public class DBConnect implements DataConnect {
             discountSem.release();
         }
         return discounts;
-    }
-
-    @Override
-    public int getProductCount() throws SQLException {
-        String query = "SELECT * FROM PRODUCTS";
-        Statement stmt = con.createStatement();
-        try {
-            productSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        ResultSet res;
-        try {
-            res = stmt.executeQuery(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            productSem.release();
-        }
-
-        List<Product> products = getProductsFromResultSet(res);
-
-        return products.size();
     }
 
     @Override

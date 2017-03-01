@@ -613,34 +613,6 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public void setStock(int code, int stock) throws IOException, ProductNotFoundException, SQLException {
-        try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            obOut.writeObject(ConnectionData.create("SETSTOCK", code + "," + stock));
-
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("FAIL")) {
-                if (data.getData() instanceof SQLException) {
-                    throw (SQLException) data.getData();
-                } else if (data.getData() instanceof ProductNotFoundException) {
-                    throw (ProductNotFoundException) data.getData();
-                } else {
-                    throw new IOException(data.getData().toString());
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            sem.release();
-        }
-    }
-
-    @Override
     public List<Discount> getProductsDiscount(Product p) throws IOException, SQLException {
         List<Discount> discounts = null;
         try {
@@ -668,35 +640,6 @@ public class ServerConnection implements DataConnect {
             sem.release();
         }
         return discounts;
-    }
-
-    /**
-     * Method to get the total number of products on the server.
-     *
-     * @return int value representing how many products are on the server.
-     * @throws IOException if there was an error connecting.
-     */
-    @Override
-    public int getProductCount() throws IOException {
-        try {
-            sem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        obOut.writeObject(ConnectionData.create("GETPRODUCTCOUNT"));
-
-        String input = "";
-        try {
-            input = (String) obIn.readObject();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            throw ex;
-        } finally {
-            sem.release();
-        }
-
-        return Integer.parseInt(input);
     }
 
     /**
