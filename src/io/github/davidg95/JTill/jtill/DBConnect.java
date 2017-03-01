@@ -173,7 +173,7 @@ public class DBConnect implements DataConnect {
                 + "     PRICE DOUBLE,\n"
                 + "     CUSTOMER int,\n"
                 + "     DISCOUNT int,\n"
-                + "     TIMESTAMP TIME,\n"
+                + "     TIMESTAMP bigint,\n"
                 + "     TERMINAL VARCHAR(20),\n"
                 + "     CASHED boolean not null,\n"
                 + "     STAFF int,\n"
@@ -471,7 +471,7 @@ public class DBConnect implements DataConnect {
      * Method to add a new product to the database.
      *
      * @param p the new product to add.
-     * @return
+     * @return the product that was added.
      * @throws SQLException if there was an error adding the product to the
      * database.
      */
@@ -895,7 +895,7 @@ public class DBConnect implements DataConnect {
      * Method to add a new product to the database.
      *
      * @param c the new customer to add.
-     * @return
+     * @return the customer that was added.
      * @throws SQLException if there was an error adding the customer to the
      * database.
      */
@@ -1833,7 +1833,7 @@ public class DBConnect implements DataConnect {
                         Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                Date date = set.getTime("TIMESTAMP");
+                Date date = new Date(set.getLong("TIMESTAMP"));
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
                 int sId = set.getInt("STAFF");
@@ -1866,7 +1866,7 @@ public class DBConnect implements DataConnect {
             } catch (CustomerNotFoundException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
-            Date date = set.getTime("TIMESTAMP");
+            Date date = new Date(set.getLong("TIMESTAMP"));
             String terminal = set.getString("TERMINAL");
             boolean cashed = set.getBoolean("CASHED");
             int sId = set.getInt("STAFF");
@@ -1953,7 +1953,7 @@ public class DBConnect implements DataConnect {
                     customer = getCustomer(customerid);
                 } catch (CustomerNotFoundException ex) {
                 }
-                Date date = set.getTime("TIMESTAMP");
+                Date date = new Date(set.getLong("TIMESTAMP"));
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
                 int sId = set.getInt("STAFF");

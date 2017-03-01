@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 
 /**
  * Class which models a SaleItem.
+ *
  * @author David
  */
 public class SaleItem implements Serializable {

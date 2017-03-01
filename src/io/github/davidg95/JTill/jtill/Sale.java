@@ -7,7 +7,6 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -97,8 +96,8 @@ public class Sale implements Serializable {
      * products. If it is not open price but exists it will increase the
      * quantity. If it does not exist then it adds a new item.
      *
-     * @param i
-     * @param quantity
+     * @param i the item to add.
+     * @param quantity the quantity to add.
      * @return true if the item was already in the sale and is being re-added,
      * false if it is a new item in the sale.
      */
@@ -319,16 +318,16 @@ public class Sale implements Serializable {
         if (this.customer == null) { //If no customer was assigned then set the customer ID to -1
             return this.total
                     + ",-1"
-                    + ",'" + this.date.toString()
-                    + "','" + this.terminal
+                    + "," + this.date.getTime()
+                    + ",'" + this.terminal
                     + "'," + this.cashed
                     + "," + this.staff.getId()
                     + "," + this.chargeAccount;
         } else {
             return this.total
                     + "," + this.customer.getId()
-                    + ",'" + this.date.toString()
-                    + "','" + this.terminal
+                    + "," + this.date.getTime()
+                    + ",'" + this.terminal
                     + "'," + this.cashed
                     + "," + this.staff.getId()
                     + "," + this.chargeAccount;

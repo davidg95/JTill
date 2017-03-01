@@ -24,8 +24,8 @@ public interface Item {
     public BigDecimal getPrice();
 
     public void setPrice(BigDecimal price);
-    
+
     public boolean isOpen();
-    
+
     public void setOpen(boolean open);
 }
