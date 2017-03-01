@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
+ * Class which models a discount.
  *
  * @author David
  */
@@ -20,11 +21,26 @@ public class Discount implements Serializable, Item {
     private BigDecimal price;
     private boolean open;
 
+    /**
+     * Constructor for discount which takes in all values.
+     *
+     * @param id the discounts id.
+     * @param name the name.
+     * @param percentage the percentage as a double from 0-100.
+     * @param price the price.
+     */
     public Discount(int id, String name, double percentage, BigDecimal price) {
         this(name, percentage, price);
         this.id = id;
     }
 
+    /**
+     * Constructor which takes in all values except id.
+     *
+     * @param name the name.
+     * @param percentage the percentage as a double from 0-100.
+     * @param price the price.
+     */
     public Discount(String name, double percentage, BigDecimal price) {
         this.name = name;
         this.percentage = percentage;

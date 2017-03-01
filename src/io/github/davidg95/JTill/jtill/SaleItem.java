@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 /**
- *
+ * Class which models a SaleItem.
  * @author David
  */
 public class SaleItem implements Serializable {
@@ -40,6 +40,12 @@ public class SaleItem implements Serializable {
         this(sale, product, 1);
     }
 
+    /**
+     * Method to increase the quantity of the item.
+     *
+     * @param quantity the quantity to add.
+     * @return the new quantity.
+     */
     public BigDecimal increaseQuantity(int quantity) {
         this.quantity += quantity;
         BigDecimal inc = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
@@ -47,6 +53,12 @@ public class SaleItem implements Serializable {
         return inc;
     }
 
+    /**
+     * Method to decrease the quantity of the item.
+     *
+     * @param quantity the quantity to remove.
+     * @return the new quantity.
+     */
     public BigDecimal decreaseQuantity(int quantity) {
         this.quantity -= quantity;
         BigDecimal dec = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
@@ -104,7 +116,32 @@ public class SaleItem implements Serializable {
                 + ",'" + type
                 + "'," + this.quantity
                 + "," + this.price.doubleValue()
-                + "," + this.sale.getCode();
+                + "," + this.sale.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 67 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final SaleItem other = (SaleItem) obj;
+        if (this.id != other.id) {
+            return false;
+        }
+        return true;
     }
 
     @Override

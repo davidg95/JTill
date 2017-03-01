@@ -32,11 +32,24 @@ public class Customer implements Serializable {
 
     private BigDecimal moneyDue;
 
-    public Customer() {
-
-    }
-
-    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyalty, BigDecimal moneyDue) {
+    /**
+     * Constructor which takes in all values except for the id.
+     *
+     * @param name the customers name.
+     * @param phone the customers phone number.
+     * @param mobile the customers mobile number.
+     * @param email the customers email.
+     * @param addressLine1 the customers address.
+     * @param addressLine2 the customers address.
+     * @param town the town.
+     * @param county the county.
+     * @param country the country.
+     * @param postcode the postcode.
+     * @param notes any notes.
+     * @param loyaltyPoints how much loyalty points they have.
+     * @param moneyDue how much money they are due.
+     */
+    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue) {
         this.name = name;
         this.phone = phone;
         this.mobile = mobile;
@@ -48,13 +61,64 @@ public class Customer implements Serializable {
         this.country = country;
         this.postcode = postcode;
         this.notes = notes;
-        this.loyaltyPoints = loyalty;
+        this.loyaltyPoints = loyaltyPoints;
         this.moneyDue = moneyDue;
     }
 
-    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, int id) {
+    /**
+     * Constructor which takes in all values.
+     *
+     * @param id the custoemrs ID.
+     * @param name the customers name.
+     * @param phone the customers phone number.
+     * @param mobile the customers mobile number.
+     * @param email the customers email.
+     * @param addressLine1 the customers address.
+     * @param addressLine2 the customers address.
+     * @param town the town.
+     * @param county the county.
+     * @param country the country.
+     * @param postcode the postcode.
+     * @param notes any notes.
+     * @param loyaltyPoints how much loyalty points they have.
+     * @param moneyDue how much money they are due.
+     */
+    public Customer(int id, String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue) {
         this(name, phone, mobile, email, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
         this.id = id;
+    }
+
+    /**
+     * Method to add money to the amount the customer is due.
+     *
+     * @param moneyDue the money to add.
+     * @return the money they are now due.
+     */
+    public BigDecimal addMoneyDue(BigDecimal moneyDue) {
+        this.moneyDue = this.moneyDue.add(moneyDue);
+        return this.moneyDue;
+    }
+
+    /**
+     * Method to remove money from the amount the customer is due.
+     *
+     * @param remove the money to remove.
+     * @return the amount they are now due.
+     * @throws JTillException if the customer owes less than the amount entered.
+     */
+    public BigDecimal removeMoneyDue(BigDecimal remove) throws JTillException {
+        if (this.moneyDue.compareTo(remove) == -1) {
+            throw new JTillException("They do not owe that much!");
+        }
+        this.moneyDue = this.moneyDue.subtract(remove);
+        return this.moneyDue;
+    }
+
+    /**
+     * Method to reset the amount of money the customer is due to zero.
+     */
+    public void resetMoneyDue() {
+        this.moneyDue = BigDecimal.ZERO;
     }
 
     public String getName() {

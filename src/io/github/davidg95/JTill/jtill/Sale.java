@@ -9,19 +9,21 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
+ * Class which models a sale.
  *
  * @author David
  */
 public class Sale implements Serializable {
 
-    private int code;
+    private int id;
     private List<SaleItem> saleItems;
     private BigDecimal total;
     private Customer customer;
-    private Time time;
+    private Date date;
     private String terminal;
     private boolean cashed;
     private Staff staff;
@@ -29,39 +31,62 @@ public class Sale implements Serializable {
 
     private SaleItem lastAdded;
 
+    /**
+     * Constructor which creates a new sale with no items and with the total set
+     * to £0.00.
+     *
+     * @param terminal the name of the terminal the sale is done it.
+     * @param s the staff member the sale is done by.
+     */
     public Sale(String terminal, Staff s) {
         saleItems = new ArrayList<>();
-        customer = null;
         total = new BigDecimal("0.00");
         this.terminal = terminal;
-        this.cashed = false;
-        chargeAccount = false;
         this.staff = s;
     }
 
-    public Sale(Customer c, boolean chargeAccount, String terminal, Staff s) {
-        saleItems = new ArrayList<>();
-        this.customer = c;
-        this.chargeAccount = chargeAccount;
+    /**
+     * Constructor for the sale class. When creating a new sale the Sale(Staff
+     * s) constructor should be used, this one is for loading from the database.
+     *
+     * @param id the sales ID.
+     * @param terminal the terminal the sale was done on.
+     * @param cashed if the sale has been cashed or not.
+     * @param saleItems the items in the sale.
+     * @param customer the customer the sale was for. Can be null.
+     * @param total the total price of the sale.
+     * @param date the data of the sale.
+     * @param staff the staff member the sale was done by.
+     */
+    public Sale(int id, BigDecimal total, Customer customer, Date date, String terminal, boolean cashed, Staff staff, List<SaleItem> saleItems) {
+        this.id = id;
+        this.total = total;
+        this.customer = customer;
+        this.date = date;
         this.terminal = terminal;
-        this.cashed = false;
-        total = new BigDecimal("0.00");
-        this.staff = s;
-    }
-
-    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount, Staff s, List<SaleItem> saleItems) {
-        this(code, total, customer, time, terminal, cashed, chargeAccount, s);
+        this.staff = staff;
         this.saleItems = saleItems;
     }
 
-    public Sale(int code, BigDecimal total, Customer customer, Time time, String terminal, boolean cashed, boolean chargeAccount, Staff s) {
-        this.code = code;
+    /**
+     * Constructor for the sale class. When creating a new sale the Sale(Staff
+     * s) constructor should be used, this one is for loading from the database.
+     *
+     * @param id the sales ID.
+     * @param terminal the terminal the sale was done on.
+     * @param cashed if the sale has been cashed or not.
+     * @param customer the customer the sale was for. Can be null.
+     * @param total the total price of the sale.
+     * @param date the data of the sale.
+     * @param staff the staff member the sale was done by.
+     */
+    public Sale(int id, BigDecimal total, Customer customer, Date date, String terminal, boolean cashed, Staff staff) {
+        this.id = id;
         this.total = total;
         this.customer = customer;
-        this.time = time;
+        this.date = date;
         this.terminal = terminal;
-        this.chargeAccount = chargeAccount;
-        this.staff = s;
+        this.staff = staff;
     }
 
     /**
@@ -109,92 +134,19 @@ public class Sale implements Serializable {
         return false;
     }
 
-    public void complete() {
-
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-    public List<SaleItem> getSaleItems() {
-        return saleItems;
-    }
-
-    public void setProducts(List<SaleItem> saleItems) {
-        this.saleItems = saleItems;
-    }
-
-    public BigDecimal getTotal() {
-        return total;
-    }
-
-    public void setTotal(BigDecimal total) {
-        this.total = total;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
-
-    public int getLineCount() {
-        return saleItems.size();
-    }
-
-    public int getTotalItemCount() {
-        int count = 0;
-        for (SaleItem item : saleItems) {
-            count += item.getQuantity();
+    /**
+     * Method to calculate the change to give back to the customer.
+     *
+     * @param money the money being handed over.
+     * @return the change to give back
+     * @throws JTillException if not enough money was handed over.
+     */
+    public BigDecimal complete(BigDecimal money) throws JTillException {
+        if (total.compareTo(money) > 0) {
+            throw new JTillException("Not enough change");
         }
-        return count;
-    }
-
-    public void setTime(Time time) {
-        this.time = time;
-    }
-
-    public Time getTime() {
-        return time;
-    }
-
-    public boolean isChargeAccount() {
-        return chargeAccount;
-    }
-
-    public void setChargeAccount(boolean chargeAccount) {
-        this.chargeAccount = chargeAccount;
-    }
-
-    public String getTerminal() {
-        return terminal;
-    }
-
-    public void setTerminal(String terminal) {
-        this.terminal = terminal;
-    }
-
-    public boolean isCashed() {
-        return cashed;
-    }
-
-    public void setCashed(boolean cashed) {
-        this.cashed = cashed;
-    }
-
-    public Staff getStaff() {
-        return staff;
-    }
-
-    public void setStaff(Staff staff) {
-        this.staff = staff;
+        BigDecimal change = total.subtract(money);
+        return change.abs();
     }
 
     /**
@@ -204,20 +156,18 @@ public class Sale implements Serializable {
      * is simply reduced. If the quantities are the same then the item is
      * removed from the list.
      *
-     * @param si
+     * @param si the item to remove from the sale.
      */
     public void voidItem(SaleItem si) {
-        for (SaleItem item : saleItems) {
-            if (item.getItem().getId() == si.getItem().getId()) {
-                if (item.getQuantity() > si.getQuantity()) { //If the quantities are different then reduce the quantity.
-                    item.decreaseQuantity(si.getQuantity());
-                    updateTotal();
-                    return;
-                } else if (item.getQuantity() == si.getQuantity()) { //If the quantities are the same then remove the item.
-                    saleItems.remove(si);
-                    updateTotal();
-                    return;
+        for (int i = 0; i < saleItems.size(); i++) {
+            if (saleItems.get(i).equals(si)) {
+                if (saleItems.get(i).getQuantity() > si.getQuantity()) {
+                    saleItems.get(i).decreaseQuantity(si.getQuantity());
+                } else {
+                    saleItems.remove(i);
                 }
+                updateTotal();
+                return;
             }
         }
     }
@@ -230,18 +180,9 @@ public class Sale implements Serializable {
      * removed from the list.
      */
     public void voidLastItem() {
-        for (SaleItem item : saleItems) {
-            if (item.getItem().getId() == lastAdded.getItem().getId()) {
-                if (item.getQuantity() > lastAdded.getQuantity()) { //If the quantities are different then reduce the quantity.
-                    item.decreaseQuantity(lastAdded.getQuantity());
-                    updateTotal();
-                    return;
-                } else if (item.getQuantity() == lastAdded.getQuantity()) { //If the quantities are the same then remove the item.
-                    saleItems.remove(lastAdded);
-                    updateTotal();
-                    return;
-                }
-            }
+        if (lastAdded != null) {
+            voidItem(lastAdded);
+            lastAdded = null;
         }
     }
 
@@ -280,6 +221,9 @@ public class Sale implements Serializable {
         return lastAdded;
     }
 
+    /**
+     * Method to update the total.
+     */
     public void updateTotal() {
         total = new BigDecimal("0");
         for (SaleItem item : saleItems) {
@@ -287,11 +231,95 @@ public class Sale implements Serializable {
         }
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int code) {
+        this.id = code;
+    }
+
+    public List<SaleItem> getSaleItems() {
+        return saleItems;
+    }
+
+    public void setProducts(List<SaleItem> saleItems) {
+        this.saleItems = saleItems;
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal total) {
+        this.total = total;
+    }
+
+    public Customer getCustomer() {
+        return customer;
+    }
+
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
+
+    public int getLineCount() {
+        return saleItems.size();
+    }
+
+    public int getTotalItemCount() {
+        int count = 0;
+        for (SaleItem item : saleItems) {
+            count += item.getQuantity();
+        }
+        return count;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public boolean isChargeAccount() {
+        return chargeAccount;
+    }
+
+    public void setChargeAccount(boolean chargeAccount) {
+        this.chargeAccount = chargeAccount;
+    }
+
+    public String getTerminal() {
+        return terminal;
+    }
+
+    public void setTerminal(String terminal) {
+        this.terminal = terminal;
+    }
+
+    public boolean isCashed() {
+        return cashed;
+    }
+
+    public void setCashed(boolean cashed) {
+        this.cashed = cashed;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
     public String getSQLInsertStatement() {
         if (this.customer == null) { //If no customer was assigned then set the customer ID to -1
             return this.total
                     + ",-1"
-                    + ",'" + this.time.toString()
+                    + ",'" + this.date.toString()
                     + "','" + this.terminal
                     + "'," + this.cashed
                     + "," + this.staff.getId()
@@ -299,7 +327,7 @@ public class Sale implements Serializable {
         } else {
             return this.total
                     + "," + this.customer.getId()
-                    + ",'" + this.time.toString()
+                    + ",'" + this.date.toString()
                     + "','" + this.terminal
                     + "'," + this.cashed
                     + "," + this.staff.getId()
@@ -312,29 +340,29 @@ public class Sale implements Serializable {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=-1"
-                    + ", TIMESTAMP='" + this.time.toString()
+                    + ", TIMESTAMP='" + this.date.toString()
                     + "', TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
                     + ", STAFF=" + this.staff.getId()
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
-                    + " WHERE SALES.ID=" + this.code;
+                    + " WHERE SALES.ID=" + this.date;
         } else {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=" + this.customer.getId()
-                    + ", TIMESTAMP='" + this.time.toString()
+                    + ", TIMESTAMP='" + this.date.toString()
                     + "', TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
                     + ", STAFF=" + this.staff.getId()
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
-                    + " WHERE SALES.ID=" + this.code;
+                    + " WHERE SALES.ID=" + this.id;
         }
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof Sale) {
-            if (this.getCode() == ((Sale) o).getCode()) {
+            if (this.getId() == ((Sale) o).getId()) {
                 return true;
             }
         }
@@ -344,13 +372,13 @@ public class Sale implements Serializable {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 29 * hash + this.code;
+        hash = 29 * hash + this.id;
         return hash;
     }
 
     @Override
     public String toString() {
-        return this.code
+        return this.id
                 + "\n" + this.saleItems.size()
                 + "\n" + this.total.toString();
     }

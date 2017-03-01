@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Semaphore;
@@ -37,7 +38,7 @@ import org.apache.derby.jdbc.EmbeddedDriver;
  *
  * @author David
  */
-public class DBConnect implements DataConnectInterface {
+public class DBConnect implements DataConnect {
 
     private Connection con;
     private Driver embedded;
@@ -851,7 +852,7 @@ public class DBConnect implements DataConnectInterface {
                 String notes = set.getString("NOTES");
                 int loyaltyPoints = set.getInt("LOYALTY_POINTS");
                 BigDecimal moneyDue = new BigDecimal(Double.toString(set.getDouble("MONEY_DUE")));
-                Customer c = new Customer(name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
+                Customer c = new Customer(id, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
 
                 customers.add(c);
             }
@@ -882,7 +883,7 @@ public class DBConnect implements DataConnectInterface {
             int loyaltyPoints = set.getInt("LOYALTY_POINTS");
             BigDecimal moneyDue = new BigDecimal(set.getDouble("MONEY_DUE"));
 
-            Customer c = new Customer(name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, id);
+            Customer c = new Customer(id, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
 
             customers.add(c);
         }
@@ -1108,7 +1109,7 @@ public class DBConnect implements DataConnectInterface {
                 String uname = set.getString("USERNAME");
                 String pword = set.getString("PASSWORD");
 
-                Staff s = new Staff(name, position, uname, pword, id);
+                Staff s = new Staff(id, name, position, uname, pword);
 
                 staff.add(s);
             }
@@ -1130,7 +1131,7 @@ public class DBConnect implements DataConnectInterface {
             String uname = set.getString("USERNAME");
             String pword = set.getString("PASSWORD");
 
-            Staff s = new Staff(name, position, uname, pword, id);
+            Staff s = new Staff(id, name, position, uname, pword);
 
             staff.add(s);
         }
@@ -1832,7 +1833,7 @@ public class DBConnect implements DataConnectInterface {
                         Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-                Time time = set.getTime("TIMESTAMP");
+                Date date = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
                 int sId = set.getInt("STAFF");
@@ -1842,8 +1843,7 @@ public class DBConnect implements DataConnectInterface {
                 } catch (StaffNotFoundException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
+                Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1866,7 +1866,7 @@ public class DBConnect implements DataConnectInterface {
             } catch (CustomerNotFoundException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
-            Time time = set.getTime("TIMESTAMP");
+            Date date = set.getTime("TIMESTAMP");
             String terminal = set.getString("TERMINAL");
             boolean cashed = set.getBoolean("CASHED");
             int sId = set.getInt("STAFF");
@@ -1876,8 +1876,7 @@ public class DBConnect implements DataConnectInterface {
             } catch (StaffNotFoundException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
-            boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-            Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
+            Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1896,7 +1895,7 @@ public class DBConnect implements DataConnectInterface {
         try {
             stmt.executeUpdate(query);
 
-            s.setCode(getLastSaleID());
+            s.setId(getLastSaleID());
 
             for (SaleItem p : s.getSaleItems()) {
                 addSaleItem(s, p);
@@ -1929,7 +1928,7 @@ public class DBConnect implements DataConnectInterface {
 
     private int getLastSaleID() throws SQLException {
         List<Sale> sales = getAllSalesNoSem();
-        return sales.get(sales.size() - 1).getCode();
+        return sales.get(sales.size() - 1).getId();
     }
 
     @Override
@@ -1954,7 +1953,7 @@ public class DBConnect implements DataConnectInterface {
                     customer = getCustomer(customerid);
                 } catch (CustomerNotFoundException ex) {
                 }
-                Time time = set.getTime("TIMESTAMP");
+                Date date = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
                 int sId = set.getInt("STAFF");
@@ -1964,8 +1963,7 @@ public class DBConnect implements DataConnectInterface {
                 } catch (StaffNotFoundException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
+                Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
                 s.setProducts(getItemsInSale(s));
                 sales.add(s);
             }
@@ -1999,7 +1997,7 @@ public class DBConnect implements DataConnectInterface {
                     customer = getCustomer(customerid);
                 } catch (CustomerNotFoundException ex) {
                 }
-                Time time = set.getTime("TIMESTAMP");
+                Date date = set.getTime("TIMESTAMP");
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
                 int sId = set.getInt("STAFF");
@@ -2009,8 +2007,7 @@ public class DBConnect implements DataConnectInterface {
                 } catch (StaffNotFoundException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
-                Sale s = new Sale(id, price, customer, time, terminal, cashed, chargeAccount, staff);
+                Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
                 s.setProducts(getItemsInSale(s));
                 if (!s.isCashed()) {
                     result = result.add(s.getTotal());
@@ -2060,7 +2057,7 @@ public class DBConnect implements DataConnectInterface {
     }
 
     private List<SaleItem> getItemsInSale(Sale sale) throws SQLException {
-        String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getCode();
+        String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getId();
         Statement stmt = con.createStatement();
         List<SaleItem> items;
         ResultSet set = stmt.executeQuery(query);
@@ -2139,7 +2136,7 @@ public class DBConnect implements DataConnectInterface {
             saleSem.release();
         }
         if (value == 0) {
-            throw new SaleNotFoundException(s.getCode() + "");
+            throw new SaleNotFoundException(s.getId() + "");
         }
         return s;
     }
@@ -2154,7 +2151,7 @@ public class DBConnect implements DataConnectInterface {
             throw ex;
         }
         if (value == 0) {
-            throw new SaleNotFoundException(s.getCode() + "");
+            throw new SaleNotFoundException(s.getId() + "");
         }
         return s;
     }
@@ -2167,7 +2164,7 @@ public class DBConnect implements DataConnectInterface {
         List<Sale> s = getAllSales();
         List<Sale> sales = new ArrayList<>();
 
-        s.stream().filter((sale) -> (sale.getTime().after(start) && sale.getTime().before(start))).forEachOrdered((sale) -> {
+        s.stream().filter((sale) -> (sale.getDate().after(start) && sale.getDate().before(start))).forEachOrdered((sale) -> {
             sales.add(sale);
         });
 
@@ -2865,8 +2862,8 @@ public class DBConnect implements DataConnectInterface {
         String text = "";
 
         text += "Here is your receipt from your recent purchase\n";
-        text += "Sale ID: " + sale.getCode() + "\n";
-        text += "Time: " + sale.getTime().toString() + "\n";
+        text += "Sale ID: " + sale.getId() + "\n";
+        text += "Time: " + sale.getDate().toString() + "\n";
         for (SaleItem i : sale.getSaleItems()) {
             text += i.getItem().getName() + "\t" + i.getQuantity() + "\t£" + i.getPrice() + "\n";
         }
@@ -2881,7 +2878,7 @@ public class DBConnect implements DataConnectInterface {
         try {
             message.setFrom(new InternetAddress(DBConnect.OUTGOING_MAIL_ADDRESS));
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
-            message.setSubject("Receipt for sale " + sale.getCode());
+            message.setSubject("Receipt for sale " + sale.getId());
             message.setText(text);
             Transport.send(message);
         } catch (AddressException ex) {

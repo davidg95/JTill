@@ -12,10 +12,11 @@ import java.sql.Time;
 import java.util.List;
 
 /**
+ * Interface for modelling a class which deals with data connections
  *
  * @author David
  */
-public interface DataConnectInterface {
+public interface DataConnect {
 
     public boolean isConnected();
 
@@ -34,9 +35,25 @@ public interface DataConnectInterface {
     public String getSettings(String key) throws IOException;
 
     //Product
+    /**
+     * Add a new product to the system.
+     *
+     * @param p the product to add.
+     * @return the product that was added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Product addProduct(Product p) throws IOException, SQLException;
 
-    public void removeProduct(int code) throws IOException, ProductNotFoundException, SQLException;
+    /**
+     * Remove a product from the system
+     *
+     * @param code the code of the product to remove.
+     * @throws ProductNotFoundException if the product was not found.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public void removeProduct(int code) throws ProductNotFoundException, IOException, SQLException;
 
     public void removeProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
 

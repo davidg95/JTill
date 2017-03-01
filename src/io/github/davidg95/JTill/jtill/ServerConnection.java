@@ -25,7 +25,7 @@ import java.util.logging.Logger;
  *
  * @author David
  */
-public class ServerConnection implements DataConnectInterface {
+public class ServerConnection implements DataConnect {
 
     private Socket socket;
     private ObjectInputStream obIn;

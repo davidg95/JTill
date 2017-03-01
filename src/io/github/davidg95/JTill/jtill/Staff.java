@@ -8,6 +8,7 @@ package io.github.davidg95.JTill.jtill;
 import java.io.Serializable;
 
 /**
+ * Class which models a member of staff.
  *
  * @author David
  */
@@ -19,12 +20,35 @@ public class Staff implements Serializable {
     private String username;
     private String password;
 
-    private boolean tillLogin = false;
-    private boolean login = false;
+    /**
+     * indicates whether they are currently logged into a till.
+     */
+    private boolean tillLogin;
+    /**
+     * Indicated whether they are currently logged in to the system but not a
+     * till.
+     */
+    private boolean login;
 
+    /**
+     * Indicates that the staff member is an assistant, this has the least
+     * permissions set.
+     */
     public static final int ASSISSTANT = 1;
+    /**
+     * Indicates that the staff member is a supervisor, this has more
+     * permissions than an assistant.
+     */
     public static final int SUPERVISOR = 2;
+    /**
+     * Indicates that the staff member is a manger, this has more permissions
+     * than a supervisor.
+     */
     public static final int MANAGER = 3;
+    /**
+     * Indicates that the staff member is an area manager, they have full
+     * access.
+     */
     public static final int AREA_MANAGER = 4;
 
     public Staff(String name, int position, String username, String password) {
@@ -34,7 +58,7 @@ public class Staff implements Serializable {
         this.password = password;
     }
 
-    public Staff(String name, int position, String username, String password, int id) {
+    public Staff(int id, String name, int position, String username, String password) {
         this(name, position, username, password);
         this.id = id;
     }

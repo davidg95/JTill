@@ -6,25 +6,18 @@
 package io.github.davidg95.JTill.jtill;
 
 /**
+ * JTillException which can be throws for general errors.
  *
  * @author David
  */
 public class JTillException extends Exception {
 
-    private final String message;
-
+    /**
+     * Constructor for the exception.
+     *
+     * @param message the reason for the exception.
+     */
     public JTillException(String message) {
-        super();
-        this.message = message;
-    }
-
-    @Override
-    public String getMessage() {
-        return this.message;
-    }
-
-    @Override
-    public String toString() {
-        return this.message;
+        super(message);
     }
 }

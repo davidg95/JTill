@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 /**
+ * Class which models a category.
  *
  * @author David
  */
@@ -23,11 +24,32 @@ public class Category implements Serializable {
     private boolean timeRestrict;
     private int minAge;
 
+    /**
+     * Constructor which takes in all values.
+     *
+     * @param ID the id.
+     * @param name the name.
+     * @param startSell the time which items in this category may be sold.
+     * @param endSell the time which items in this category will not be allowed
+     * to be sold.
+     * @param timeRestrict if the time restrictions should apply.
+     * @param minAge the minimum age for items in the category.
+     */
     public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
         this(name, startSell, endSell, timeRestrict, minAge);
         this.ID = ID;
     }
 
+    /**
+     * Constructor which takes in all values except id.
+     *
+     * @param name the name.
+     * @param startSell the time which items in this category may be sold.
+     * @param endSell the time which items in this category will not be allowed
+     * to be sold.
+     * @param timeRestrict if the time restrictions should apply.
+     * @param minAge the minimum age for items in the category.
+     */
     public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
         this.name = name;
         this.timeRestrict = timeRestrict;
@@ -42,6 +64,17 @@ public class Category implements Serializable {
             }
         }
         this.minAge = minAge;
+    }
+
+    /**
+     * Returns true or false indicating whether the time passed in is within the
+     * selling time of the category.
+     *
+     * @param t the time to compare.
+     * @return true or false.
+     */
+    public boolean isSellTime(Time t) {
+        return t.after(startSell) && t.before(endSell);
     }
 
     public int getID() {

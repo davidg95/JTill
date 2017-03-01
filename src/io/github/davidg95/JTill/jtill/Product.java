@@ -31,13 +31,6 @@ public class Product implements Serializable, Cloneable, Item {
     private String comments;
 
     /**
-     * Blank constructor.
-     */
-    public Product() {
-
-    }
-
-    /**
      * Constructor which takes in only a name and comments. This can be used for
      * open products.
      *
