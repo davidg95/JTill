@@ -26,8 +26,21 @@ public interface DataConnect {
 
     public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
 
+    /**
+     * Send an email to the report email set in the server.
+     *
+     * @param message the message to send.
+     * @throws IOException if there was a network error.
+     */
     public void sendEmail(String message) throws IOException;
 
+    /**
+     * Email a receipt to a customer.
+     *
+     * @param email the email to send the receipt to.
+     * @param sale the sale to generate the receipt from.
+     * @throws IOException if there was a network error.
+     */
     public void emailReceipt(String email, Sale sale) throws IOException;
 
     public void setSetting(String key, String value) throws IOException;
