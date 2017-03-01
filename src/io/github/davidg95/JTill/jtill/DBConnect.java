@@ -5,7 +5,6 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import io.github.davidg95.JTill.jtill.Staff.Position;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -60,7 +59,7 @@ public class DBConnect implements DataConnectInterface {
     private final Semaphore voucherSem;
     private final Semaphore screensSem;
     private final Semaphore tillSem;
-    
+
     public static String hostName;
     public static String DB_ADDRESS = "jdbc:derby:TillEmbedded;";
     public static String DB_USERNAME = "APP";
@@ -233,7 +232,7 @@ public class DBConnect implements DataConnectInterface {
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "	NAME VARCHAR(50) not null,\n"
-                + "	POSITION VARCHAR(20) not null,\n"
+                + "	POSITION INTEGER not null,\n"
                 + "	USERNAME VARCHAR(20) not null,\n"
                 + "	PASSWORD VARCHAR(20) not null\n"
                 + ")";
@@ -1105,23 +1104,11 @@ public class DBConnect implements DataConnectInterface {
             while (set.next()) {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
-                String position = set.getString("POSITION");
+                int position = set.getInt("POSITION");
                 String uname = set.getString("USERNAME");
                 String pword = set.getString("PASSWORD");
 
-                Position enumPosition;
-
-                if (position.equals(Position.ASSISSTANT.toString())) {
-                    enumPosition = Position.ASSISSTANT;
-                } else if (position.equals(Position.SUPERVISOR.toString())) {
-                    enumPosition = Position.SUPERVISOR;
-                } else if (position.equals(Position.MANAGER.toString())) {
-                    enumPosition = Position.MANAGER;
-                } else {
-                    enumPosition = Position.AREA_MANAGER;
-                }
-
-                Staff s = new Staff(name, enumPosition, uname, pword, id);
+                Staff s = new Staff(name, position, uname, pword, id);
 
                 staff.add(s);
             }
@@ -1139,23 +1126,11 @@ public class DBConnect implements DataConnectInterface {
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            String position = set.getString("POSITION");
+            int position = set.getInt("POSITION");
             String uname = set.getString("USERNAME");
             String pword = set.getString("PASSWORD");
 
-            Position enumPosition;
-
-            if (position.equals(Position.ASSISSTANT.toString())) {
-                enumPosition = Position.ASSISSTANT;
-            } else if (position.equals(Position.SUPERVISOR.toString())) {
-                enumPosition = Position.SUPERVISOR;
-            } else if (position.equals(Position.MANAGER.toString())) {
-                enumPosition = Position.MANAGER;
-            } else {
-                enumPosition = Position.AREA_MANAGER;
-            }
-
-            Staff s = new Staff(name, enumPosition, uname, pword, id);
+            Staff s = new Staff(name, position, uname, pword, id);
 
             staff.add(s);
         }

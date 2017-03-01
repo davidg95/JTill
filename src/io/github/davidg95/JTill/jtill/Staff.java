@@ -15,25 +15,26 @@ public class Staff implements Serializable {
 
     private String name;
     private int id;
-    private Position position;
+    private int position;
     private String username;
     private String password;
 
     private boolean tillLogin = false;
     private boolean login = false;
 
-    public enum Position {
-        ASSISSTANT, SUPERVISOR, MANAGER, AREA_MANAGER
-    }
+    public static final int ASSISSTANT = 1;
+    public static final int SUPERVISOR = 2;
+    public static final int MANAGER = 3;
+    public static final int AREA_MANAGER = 4;
 
-    public Staff(String name, Position position, String username, String password) {
+    public Staff(String name, int position, String username, String password) {
         this.name = name;
         this.position = position;
         this.username = username;
         this.password = password;
     }
 
-    public Staff(String name, Position position, String username, String password, int id) {
+    public Staff(String name, int position, String username, String password, int id) {
         this(name, position, username, password);
         this.id = id;
     }
@@ -101,11 +102,11 @@ public class Staff implements Serializable {
         this.id = id;
     }
 
-    public Position getPosition() {
+    public int getPosition() {
         return position;
     }
 
-    public void setPosition(Position position) {
+    public void setPosition(int position) {
         this.position = position;
     }
 
@@ -135,16 +136,16 @@ public class Staff implements Serializable {
 
     public String getSQLInsertString() {
         return "'" + this.name
-                + "','" + this.position.toString()
-                + "','" + this.username.toLowerCase()
+                + "'," + this.position
+                + ",'" + this.username.toLowerCase()
                 + "','" + this.password + "'";
     }
 
     public String getSQLUpdateString() {
         return "UPDATE STAFF"
                 + " SET NAME='" + this.getName()
-                + "', POSITION='" + this.getPosition().toString()
-                + "', USERNAME='" + this.getUsername().toLowerCase()
+                + "', POSITION=" + this.getPosition()
+                + ", USERNAME='" + this.getUsername().toLowerCase()
                 + "', PASSWORD='" + this.getPassword()
                 + "' WHERE STAFF.ID=" + this.getId();
     }
@@ -168,6 +169,6 @@ public class Staff implements Serializable {
 
     @Override
     public String toString() {
-        return "ID: " + this.id + "\nName: " + this.name + "\nUsername: " + this.username + "\nPosition: " + this.position.toString();
+        return "ID: " + this.id + " Name: " + this.name;
     }
 }
