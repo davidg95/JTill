@@ -62,15 +62,6 @@ public class DBConnect implements DataConnect {
     private final Semaphore tillSem;
 
     public static String hostName;
-    public static String DB_ADDRESS = "jdbc:derby:TillEmbedded;";
-    public static String DB_USERNAME = "APP";
-    public static String DB_PASSWORD = "App";
-    public static final String DEFAULT_ADDRESS = "jdbc:derby:TillEmbedded;";
-    public static final String DEFAULT_USERNAME = "APP";
-    public static final String DEFAULT_PASSWORD = "App";
-    public static String MAIL_SERVER = "";
-    public static String OUTGOING_MAIL_ADDRESS = "";
-    public static String MAIL_ADDRESS = "";
 
     private GUIInterface g;
 
@@ -2824,8 +2815,8 @@ public class DBConnect implements DataConnect {
         MimeMessage message = new MimeMessage(session);
 
         try {
-            message.setFrom(new InternetAddress(DBConnect.OUTGOING_MAIL_ADDRESS));
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(MAIL_ADDRESS));
+            message.setFrom(new InternetAddress(systemSettings.getSetting("OUTGOING_MAIL_ADDRESS")));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(systemSettings.getSetting("MAIL_ADDRESS")));
             message.setSubject("TILL REPORT");
             message.setText(email);
             Transport.send(message);
@@ -2864,7 +2855,7 @@ public class DBConnect implements DataConnect {
         text += "You were served by " + sale.getStaff().getName() + "\n";
         text += "Thank you for your custom";
 
-        message.setFrom(new InternetAddress(DBConnect.OUTGOING_MAIL_ADDRESS));
+        message.setFrom(new InternetAddress(systemSettings.getSetting("OUTGOING_MAIL_ADDRESS")));
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
         message.setSubject("Receipt for sale " + sale.getId());
         message.setText(text);
