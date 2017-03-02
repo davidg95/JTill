@@ -2838,7 +2838,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void emailReceipt(String email, Sale sale) throws IOException {
+    public void emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException {
         Authenticator auth = new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -2865,17 +2865,11 @@ public class DBConnect implements DataConnect {
         text += "You were served by " + sale.getStaff().getName() + "\n";
         text += "Thank you for your custom";
 
-        try {
-            message.setFrom(new InternetAddress(DBConnect.OUTGOING_MAIL_ADDRESS));
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
-            message.setSubject("Receipt for sale " + sale.getId());
-            message.setText(text);
-            Transport.send(message);
-        } catch (AddressException ex) {
-            System.out.println(ex);
-        } catch (MessagingException ex) {
-            System.out.println(ex);
-        }
+        message.setFrom(new InternetAddress(DBConnect.OUTGOING_MAIL_ADDRESS));
+        message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+        message.setSubject("Receipt for sale " + sale.getId());
+        message.setText(text);
+        Transport.send(message);
     }
 
     private List<Till> getTillsFromResultSet(ResultSet set) throws SQLException {

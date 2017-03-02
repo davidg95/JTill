@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.util.List;
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
 
 /**
  * Interface for modelling a class which deals with data connections
@@ -40,8 +42,10 @@ public interface DataConnect {
      * @param email the email to send the receipt to.
      * @param sale the sale to generate the receipt from.
      * @throws IOException if there was a network error.
+     * @throws javax.mail.internet.AddressException if there was any errors
+     * sending the email.
      */
-    public void emailReceipt(String email, Sale sale) throws IOException;
+    public void emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException;
 
     public void setSetting(String key, String value) throws IOException;
 
