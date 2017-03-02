@@ -444,14 +444,14 @@ public class DBConnect implements DataConnect {
             int categoryID = set.getInt("CATEGORY_ID");
             Category category = null;
             try {
-                category = getCategory(categoryID);
+                category = getCategoryNoSem(categoryID);
             } catch (CategoryNotFoundException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
             int taxID = set.getInt("TAX_ID");
             Tax tax = null;
             try {
-                tax = this.getTax(taxID);
+                tax = this.getTaxNoSem(taxID);
             } catch (TaxNotFoundException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1502,28 +1502,20 @@ public class DBConnect implements DataConnect {
 
     @Override
     public void removeTax(Tax t) throws SQLException, TaxNotFoundException {
-        String query = "DELETE FROM TAX WHERE TAX.ID = " + t.getId();
-        Statement stmt = con.createStatement();
-        try {
-            taxSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        int value;
-        try {
-            value = stmt.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            taxSem.release();
-        }
-        if (value == 0) {
-            throw new TaxNotFoundException(t.getId() + "");
-        }
+        removeTax(t.getId());
     }
 
     @Override
     public void removeTax(int id) throws SQLException, TaxNotFoundException {
+        List<Product> products = this.getProductsInTax(id);
+        final Tax DEFAULT_TAX = this.getTax(1);
+        for (Product p : products) {
+            p.setTax(DEFAULT_TAX);
+            try {
+                this.updateProduct(p);
+            } catch (ProductNotFoundException ex) {
+            }
+        }
         String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
         try {
@@ -1569,6 +1561,50 @@ public class DBConnect implements DataConnect {
         }
 
         return tax.get(0);
+    }
+
+    private Tax getTaxNoSem(int id) throws SQLException, TaxNotFoundException {
+        String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
+        Statement stmt = con.createStatement();
+        List<Tax> tax;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            tax = getTaxFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        }
+
+        if (tax.isEmpty()) {
+            throw new TaxNotFoundException(id + "");
+        }
+
+        return tax.get(0);
+    }
+
+    @Override
+    public List<Product> getProductsInTax(int id) throws SQLException {
+        String query = "SELECT * FROM PRODUCTS, TAX WHERE TAX.ID = PRODUCTS.TAX_ID AND TAX.ID = " + id;
+        Statement stmt = con.createStatement();
+        try {
+            taxSem.acquire();
+            productSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Product> products;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            products = getProductsFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            taxSem.release();
+            productSem.release();
+        }
+
+        return products;
     }
 
     //Category Methods
@@ -1663,28 +1699,20 @@ public class DBConnect implements DataConnect {
 
     @Override
     public void removeCategory(Category c) throws SQLException, CategoryNotFoundException {
-        String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + c.getID();
-        Statement stmt = con.createStatement();
-        try {
-            categorySem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        int value;
-        try {
-            value = stmt.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            categorySem.release();
-        }
-        if (value == 0) {
-            throw new CategoryNotFoundException(c.getID() + "");
-        }
+        removeCategory(c.getID());
     }
 
     @Override
     public void removeCategory(int id) throws SQLException, CategoryNotFoundException {
+        List<Product> products = getProductsInCategory(id);
+        final Category DEFAULT_CATEGORY = getCategory(1);
+        for (Product p : products) {
+            p.setCategory(DEFAULT_CATEGORY);
+            try {
+                updateProduct(p);
+            } catch (ProductNotFoundException ex) {
+            }
+        }
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
         try {
@@ -1723,6 +1751,25 @@ public class DBConnect implements DataConnect {
             throw ex;
         } finally {
             categorySem.release();
+        }
+
+        if (categorys.isEmpty()) {
+            throw new CategoryNotFoundException(id + "");
+        }
+
+        return categorys.get(0);
+    }
+
+    private Category getCategoryNoSem(int id) throws SQLException, CategoryNotFoundException {
+        String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
+        Statement stmt = con.createStatement();
+        List<Category> categorys;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            categorys = getCategorysFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
         }
 
         if (categorys.isEmpty()) {

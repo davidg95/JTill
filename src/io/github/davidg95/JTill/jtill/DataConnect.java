@@ -263,6 +263,8 @@ public interface DataConnect {
 
     public List<Tax> getAllTax() throws IOException, SQLException;
 
+    public List<Product> getProductsInTax(int id) throws IOException, SQLException, TaxNotFoundException;
+
     //Voucher
     public Voucher addVoucher(Voucher v) throws IOException, SQLException;
 
@@ -276,7 +278,7 @@ public interface DataConnect {
 
     public List<Voucher> getAllVouchers() throws IOException, SQLException;
 
-    public void close();
+    public void close() throws IOException;
 
     //Screens
     public Screen addScreen(Screen s) throws IOException, SQLException;

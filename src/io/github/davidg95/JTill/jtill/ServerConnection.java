@@ -94,7 +94,7 @@ public class ServerConnection implements DataConnect {
         obOut = new ObjectOutputStream(socket.getOutputStream());
         obOut.flush();
         obOut.writeObject("NOPERM");
-        obIn = new ObjectInputStream(socket.getInputStream());;
+        obIn = new ObjectInputStream(socket.getInputStream());
         isConnected = true;
     }
 
@@ -1155,6 +1155,7 @@ public class ServerConnection implements DataConnect {
      * @param s the new member of staff to add.
      * @return the Staff that is being added.
      * @throws IOException if there was a server communication error.
+     * @throws java.sql.SQLException if there was a database error.
      */
     @Override
     public Staff addStaff(Staff s) throws IOException, SQLException {
@@ -1977,10 +1978,8 @@ public class ServerConnection implements DataConnect {
         try {
             try {
                 sem.acquire();
-
             } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class
-                        .getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
             obOut.writeObject(ConnectionData.create("GETALLTAX"));
 
@@ -1997,13 +1996,46 @@ public class ServerConnection implements DataConnect {
                 return (List<Tax>) o;
             } else {
                 throw (SQLException) o;
-
             }
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    @Override
+    public List<Product> getProductsInTax(int id) throws IOException, SQLException, TaxNotFoundException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("GETPRODUCTSINTAX", id));
+
+            ConnectionData data;
+
+            try {
+                data = (ConnectionData) obIn.readObject();
+            } catch (IOException ex) {
+                throw ex;
+            } finally {
+                sem.release();
+            }
+
+            if (data.getFlag().equals("SUCC")) {
+                return (List) data.getData();
+            } else {
+                if (data.getData() instanceof TaxNotFoundException) {
+                    throw (TaxNotFoundException) data.getData();
+                } else {
+                    throw (SQLException) data.getData();
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return new ArrayList<>();
     }
 
     @Override
@@ -2161,15 +2193,13 @@ public class ServerConnection implements DataConnect {
 
     /**
      * Method to close the connection to the server.
+     *
+     * @throws IOException if there is a network error.
      */
     @Override
-    public void close() {
-        try {
-            obOut.writeObject(ConnectionData.create("CONNTERM"));
-            isConnected = false;
-        } catch (IOException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public void close() throws IOException {
+        obOut.writeObject(ConnectionData.create("CONNTERM"));
+        isConnected = false;
     }
 
     @Override
@@ -2499,7 +2529,8 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public void setGUI(GUIInterface g) {
+    public void setGUI(GUIInterface g
+    ) {
         this.g = g;
     }
 }
