@@ -339,18 +339,18 @@ public class Sale implements Serializable {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=-1"
-                    + ", TIMESTAMP='" + this.date.toString()
-                    + "', TERMINAL='" + this.terminal
+                    + ", TIMESTAMP=" + this.date.getTime()
+                    + ", TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
                     + ", STAFF=" + this.staff.getId()
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
-                    + " WHERE SALES.ID=" + this.date;
+                    + " WHERE SALES.ID=" + this.id;
         } else {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=" + this.customer.getId()
-                    + ", TIMESTAMP='" + this.date.toString()
-                    + "', TERMINAL='" + this.terminal
+                    + ", TIMESTAMP=" + this.date.getTime()
+                    + ", TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
                     + ", STAFF=" + this.staff.getId()
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount

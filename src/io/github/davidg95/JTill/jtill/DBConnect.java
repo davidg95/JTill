@@ -206,8 +206,8 @@ public class DBConnect implements DataConnect {
                 + "	COUNTRY VARCHAR(50),\n"
                 + "	POSTCODE VARCHAR(20),\n"
                 + "	NOTES VARCHAR(200),\n"
-                + "	LOYALTY_POINTS INTEGER not null,\n"
-                + "     MONEY_DUE DOUBLE not null\n"
+                + "	LOYALTY_POINTS INTEGER,\n"
+                + "     MONEY_DUE DOUBLE\n"
                 + ")";
         String products = "create table \"APP\".PRODUCTS\n"
                 + "(\n"
@@ -1820,7 +1820,6 @@ public class DBConnect implements DataConnect {
                     try {
                         customer = getCustomer(customerid);
                     } catch (CustomerNotFoundException ex) {
-                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
                 Date date = new Date(set.getLong("TIMESTAMP"));
@@ -1987,7 +1986,7 @@ public class DBConnect implements DataConnect {
                     customer = getCustomer(customerid);
                 } catch (CustomerNotFoundException ex) {
                 }
-                Date date = set.getTime("TIMESTAMP");
+                Date date = new Date(set.getLong("TIMESTAMP"));
                 String terminal = set.getString("TERMINAL");
                 boolean cashed = set.getBoolean("CASHED");
                 int sId = set.getInt("STAFF");
