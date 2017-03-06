@@ -104,7 +104,7 @@ public class Sale implements Serializable {
     public boolean addItem(Item i, int quantity) {
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
-            if (item.getItem().getId() == i.getId() && i.getClass().equals(item.getClass())) {
+            if (item.getItem().getId() == i.getId() && (item.getItem() instanceof Discount) == (i instanceof Discount)) {
                 if (i.isOpen()) {
                     if (i.getPrice().compareTo(item.getItem().getPrice()) == 0) {
                         BigDecimal inc = item.increaseQuantity(quantity);

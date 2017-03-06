@@ -139,10 +139,10 @@ public class SaleItem implements Serializable {
             return false;
         }
         final SaleItem other = (SaleItem) obj;
-        if (this.id != other.id) {
-            return false;
+        if (this.item.getId() == other.item.getId() && (this.item instanceof Discount) == (other.item instanceof Discount)) {
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override
