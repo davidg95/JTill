@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 public class Product implements Serializable, Cloneable, Item {
 
     private int productCode;
-    private String barcode;
+    private Plu plu;
     private String name;
     private String shortName;
     private Category category;
@@ -78,19 +78,19 @@ public class Product implements Serializable, Cloneable, Item {
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
-     * @param barcode the barcode of the product.
+     * @param plu the plu of the product.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode) {
+    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu) {
         this(name, shortName, category, comments, tax, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
         this.minStockLevel = minStock;
         this.maxStockLevel = maxStock;
-        this.barcode = barcode;
+        this.plu = plu;
     }
 
     /**
@@ -104,14 +104,14 @@ public class Product implements Serializable, Cloneable, Item {
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
-     * @param barcode the barcode of the product.
+     * @param plu the plu of the product.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, String barcode, int productCode) {
-        this(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, barcode);
+    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu, int productCode) {
+        this(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu);
         this.productCode = productCode;
     }
 
@@ -183,12 +183,12 @@ public class Product implements Serializable, Cloneable, Item {
         this.stock = stock;
     }
 
-    public String getBarcode() {
-        return barcode;
+    public Plu getPlu() {
+        return plu;
     }
 
-    public void setBarcode(String barcode) {
-        this.barcode = barcode;
+    public void setPlu(Plu plu) {
+        this.plu = plu;
     }
 
     public String getComments() {
@@ -260,8 +260,8 @@ public class Product implements Serializable, Cloneable, Item {
     }
 
     public String getSQLInsertString() {
-        return "'" + this.barcode
-                + "','" + this.name
+        return + this.plu.getId()
+                + ",'" + this.name
                 + "'," + this.open
                 + "," + this.price
                 + "," + this.stock
@@ -276,8 +276,8 @@ public class Product implements Serializable, Cloneable, Item {
 
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
-                + " SET PRODUCTS.BARCODE='" + this.getBarcode()
-                + "', PRODUCTS.NAME='" + this.getName()
+                + " SET PRODUCTS.PLU=" + this.getPlu().getId()
+                + ", PRODUCTS.NAME='" + this.getName()
                 + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
                 + ", PRODUCTS.PRICE=" + this.getPrice()
                 + ", PRODUCTS.STOCK=" + this.getStock()

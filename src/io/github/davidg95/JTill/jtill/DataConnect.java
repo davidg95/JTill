@@ -167,6 +167,21 @@ public interface DataConnect {
      */
     public List<Product> productLookup(String terms) throws IOException, SQLException;
 
+    //Plu
+    public Plu addPlu(Plu plu) throws IOException, SQLException;
+
+    public void removePlu(int id) throws IOException, JTillException, SQLException;
+
+    public void removePlu(Plu p) throws IOException, JTillException, SQLException;
+
+    public Plu getPlu(int id) throws IOException, JTillException, SQLException;
+
+    public Plu getPluByCode(String code) throws IOException, JTillException, SQLException;
+
+    public List<Plu> getAllPlus() throws IOException, SQLException;
+
+    public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException;
+
     //Customer
     public Customer addCustomer(Customer customer) throws IOException, SQLException;
 

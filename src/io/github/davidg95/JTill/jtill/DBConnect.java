@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -60,6 +61,7 @@ public class DBConnect implements DataConnect {
     private final Semaphore voucherSem;
     private final Semaphore screensSem;
     private final Semaphore tillSem;
+    private final Semaphore pluSem;
 
     public static String hostName;
 
@@ -69,7 +71,7 @@ public class DBConnect implements DataConnect {
     private final Settings systemSettings;
 
     private final List<Staff> loggedIn;
-    private Semaphore loggedInSem;
+    private final Semaphore loggedInSem;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -83,6 +85,7 @@ public class DBConnect implements DataConnect {
         voucherSem = new Semaphore(1);
         screensSem = new Semaphore(1);
         tillSem = new Semaphore(1);
+        pluSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
         systemSettings = Settings.getInstance();
         loggedIn = new ArrayList<>();
@@ -137,12 +140,19 @@ public class DBConnect implements DataConnect {
                 + "     TIME_RESTRICT BOOLEAN not null,\n"
                 + "     MINIMUM_AGE INT not null\n"
                 + ")";
+        String plus = "create table APP.PLUS\n"
+                + "(\n"
+                + "	ID INT not null primary key\n"
+                + "        GENERATED ALWAYS AS IDENTITY\n"
+                + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "     CODE VARCHAR(20))";
         String discounts = "create table \"APP\".DISCOUNTS\n"
                 + "(\n"
                 + "	ID INT not null primary key\n"
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "	NAME VARCHAR(20) not null,\n"
+                + "	PLU INTEGER,\n"
                 + "	PERCENTAGE DOUBLE not null,\n"
                 + "	PRICE DOUBLE not null\n"
                 + ")";
@@ -210,7 +220,7 @@ public class DBConnect implements DataConnect {
                 + "	ID INT not null primary key\n"
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "	BARCODE VARCHAR(20),\n"
+                + "	PLU INTEGER,\n"
                 + "	NAME VARCHAR(50) not null,\n"
                 + "     OPEN_PRICE BOOLEAN not null,\n"
                 + "	PRICE DOUBLE,\n"
@@ -276,6 +286,10 @@ public class DBConnect implements DataConnect {
         }
         try {
             stmt.execute(tax);
+        } catch (SQLException ex) {
+        }
+        try {
+            stmt.execute(plus);
         } catch (SQLException ex) {
         }
         try {
@@ -388,7 +402,13 @@ public class DBConnect implements DataConnect {
             products = new ArrayList<>();
             while (set.next()) {
                 int code = set.getInt("ID");
-                String barcode = set.getString("BARCODE");
+                int pluCode = set.getInt("PLU");
+                Plu plu = null;
+                try {
+                    plu = this.getPlu(pluCode);
+                } catch (IOException | JTillException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
                 String name = set.getString("NAME");
                 boolean open = set.getBoolean("OPEN_PRICE");
                 BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
@@ -413,7 +433,7 @@ public class DBConnect implements DataConnect {
                 int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                 int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-                Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+                Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
 
                 products.add(p);
             }
@@ -430,7 +450,13 @@ public class DBConnect implements DataConnect {
         List<Product> products = new ArrayList<>();
         while (set.next()) {
             int code = set.getInt("ID");
-            String barcode = set.getString("BARCODE");
+            int pluCode = set.getInt("PLU");
+            Plu plu = null;
+            try {
+                plu = getPlu(pluCode);
+            } catch (IOException | JTillException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             String name = set.getString("NAME");
             boolean open = set.getBoolean("OPEN_PRICE");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
@@ -455,7 +481,7 @@ public class DBConnect implements DataConnect {
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-            Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, barcode, code);
+            Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
 
             products.add(p);
         }
@@ -473,7 +499,7 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public Product addProduct(Product p) throws SQLException {
-        String query = "INSERT INTO PRODUCTS (BARCODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
+        String query = "INSERT INTO PRODUCTS (PLU, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
         try (Statement stmt = con.createStatement()) {
             try {
                 productSem.acquire();
@@ -3056,5 +3082,162 @@ public class DBConnect implements DataConnect {
     @Override
     public String getSettings(String key) {
         return systemSettings.getSetting(key);
+    }
+
+    private List<Plu> getPlusFromResultSet(ResultSet set) throws SQLException {
+        List<Plu> plus = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String code = set.getString("CODE");
+            plus.add(new Plu(id, code));
+        }
+        return plus;
+    }
+
+    @Override
+    public Plu addPlu(Plu plu) throws IOException, SQLException {
+        String query = "INSERT INTO APP.PLUS (CODE) values ('" + plu.getCode() + "')";
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        try {
+            pluSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while (set.next()) {
+                int id = set.getInt(1);
+                plu.setId(id);
+            }
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            pluSem.release();
+        }
+
+        return plu;
+    }
+
+    @Override
+    public void removePlu(int id) throws IOException, JTillException, SQLException {
+        String query = "DELETE FROM PLUS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        try {
+            pluSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value = 0;
+        try {
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            pluSem.release();
+        }
+
+        if (value == 0) {
+            throw new JTillException(id + " could not be found");
+        }
+    }
+
+    @Override
+    public void removePlu(Plu p) throws IOException, JTillException, SQLException {
+        removePlu(p.getId());
+    }
+
+    @Override
+    public Plu getPlu(int id) throws IOException, JTillException, SQLException {
+        String query = "SELECT * FROM PLUS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        try {
+            pluSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Plu> plus;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            plus = getPlusFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            pluSem.release();
+        }
+
+        if (plus.isEmpty()) {
+            throw new JTillException(id + " could not be found");
+        }
+
+        return plus.get(0);
+    }
+
+    @Override
+    public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
+        String query = "SELECT * FROM PLUS WHERE CODE='" + code + "'";
+        Statement stmt = con.createStatement();
+        try {
+            pluSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Plu> plus;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            plus = getPlusFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            pluSem.release();
+        }
+
+        if (plus.isEmpty()) {
+            throw new JTillException("Plu " + code + " not found");
+        }
+
+        return plus.get(0);
+    }
+
+    @Override
+    public List<Plu> getAllPlus() throws IOException, SQLException {
+        String query = "SELECT * FROM PLUS";
+        Statement stmt = con.createStatement();
+        try {
+            pluSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        List<Plu> plus;
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            plus = getPlusFromResultSet(set);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            pluSem.release();
+        }
+
+        return plus;
+    }
+
+    @Override
+    public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
+        String query = "UPDATE PLUS SET CODE='" + p.getCode() + "' WHERE ID=" + p.getId();
+        Statement stmt = con.createStatement();
+        try {
+            pluSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        int value;
+        try {
+            value = stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            pluSem.release();
+        }
+        return p;
     }
 }

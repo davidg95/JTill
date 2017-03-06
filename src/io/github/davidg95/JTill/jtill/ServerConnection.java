@@ -2529,8 +2529,191 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public void setGUI(GUIInterface g
-    ) {
+    public void setGUI(GUIInterface g) {
         this.g = g;
+    }
+
+    @Override
+    public Plu addPlu(Plu plu) throws IOException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("ADDPLU", plu));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (Plu) data.getData();
+            } else {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        return null;
+    }
+
+    @Override
+    public void removePlu(int id) throws IOException, JTillException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("REMOVEPLU", id));
+
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof TaxNotFoundException) {
+                    throw (JTillException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+    }
+
+    @Override
+    public void removePlu(Plu p) throws IOException, JTillException, SQLException {
+        removePlu(p.getId());
+    }
+
+    @Override
+    public Plu getPlu(int id) throws IOException, JTillException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("GETPLU", id));
+
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (Plu) data.getData();
+            } else {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof StaffNotFoundException) {
+                    throw (JTillException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+        } finally {
+            sem.release();
+        }
+        throw new JTillException(id + " not found");
+    }
+
+    @Override
+    public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("GETPLUBYCODE", code));
+
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (Plu) data.getData();
+            } else {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof ProductNotFoundException) {
+                    throw (JTillException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+        } finally {
+            sem.release();
+        }
+        throw new JTillException(code + " could not be found");
+    }
+
+    @Override
+    public List<Plu> getAllPlus() throws IOException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("GETALLPLUS"));
+
+            Object o;
+            try {
+                o = obIn.readObject();
+            } catch (IOException ex) {
+                throw ex;
+            } finally {
+                sem.release();
+            }
+
+            if (o instanceof List) {
+                return (List<Plu>) o;
+            } else {
+                throw (SQLException) o;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
+        try {
+            try {
+                sem.acquire();
+
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class
+                        .getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("UPDATEPLU", p));
+
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("SUCC")) {
+                return (Plu) data.getData();
+            } else {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof TaxNotFoundException) {
+                    throw (JTillException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        return null;
     }
 }
