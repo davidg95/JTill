@@ -41,12 +41,13 @@ public class Product implements Serializable, Cloneable, Item {
      * @param tax the tax class for this product.
      * @param open if the price is open.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open) {
+    public Product(String name, String shortName, Category category, String comments, Tax tax, Plu plu, boolean open) {
         this.name = name;
         this.shortName = shortName;
         this.category = category;
         this.comments = comments;
         this.tax = tax;
+        this.plu = plu;
         this.open = open;
     }
 
@@ -62,8 +63,8 @@ public class Product implements Serializable, Cloneable, Item {
      * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, int productCode) {
-        this(name, shortName, category, comments, tax, open);
+    public Product(String name, String shortName, Category category, String comments, Tax tax, Plu plu, boolean open, int productCode) {
+        this(name, shortName, category, comments, tax, plu, open);
         this.productCode = productCode;
     }
 
@@ -84,13 +85,12 @@ public class Product implements Serializable, Cloneable, Item {
      * @param maxStock the maximum stock level.
      */
     public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu) {
-        this(name, shortName, category, comments, tax, open);
+        this(name, shortName, category, comments, tax, plu, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
         this.minStockLevel = minStock;
         this.maxStockLevel = maxStock;
-        this.plu = plu;
     }
 
     /**
