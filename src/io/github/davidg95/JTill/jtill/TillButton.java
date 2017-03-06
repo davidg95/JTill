@@ -16,19 +16,19 @@ public class TillButton implements Serializable {
 
     private int id;
     private String name;
-    private Product product;
+    private Item item;
     private Screen screen;
     private int color;
 
-    public TillButton(String name, Product product, Screen screen, int color) {
+    public TillButton(String name, Item item, Screen screen, int color) {
         this.name = name;
-        this.product = product;
+        this.item = item;
         this.screen = screen;
         this.color = color;
     }
 
-    public TillButton(String name, Product product, Screen screen, int color, int id) {
-        this(name, product, screen, color);
+    public TillButton(String name, Item item, Screen screen, int color, int id) {
+        this(name, item, screen, color);
         this.id = id;
     }
 
@@ -48,13 +48,13 @@ public class TillButton implements Serializable {
         this.name = name;
     }
 
-    public Product getProduct() {
-        return product;
+    public Item getItem() {
+        return item;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
-        this.name = product.getName();
+    public void setItem(Item item) {
+        this.item = item;
+        this.name = item.getName();
     }
 
     public Screen getScreen() {
@@ -83,10 +83,10 @@ public class TillButton implements Serializable {
 
     public String getSQLInsertString() {
         int pId;
-        if (this.product == null) {
+        if (this.item == null) {
             pId = -1;
         } else {
-            pId = this.product.getId();
+            pId = this.item.getId();
         }
         return "'" + this.name
                 + "'," + pId
@@ -95,15 +95,15 @@ public class TillButton implements Serializable {
     }
 
     public String getSQLUpdateString() {
-        int pId;
-        if (this.product == null) {
-            pId = -1;
+        int iId;
+        if (this.item == null) {
+            iId = -1;
         } else {
-            pId = this.product.getId();
+            iId = this.item.getId();
         }
         return "UPDATE BUTTONS"
                 + " SET NAME='" + this.getName()
-                + "', PRODUCT=" + pId
+                + "', PRODUCT=" + iId
                 + ", COLOR=" + this.getColorValue()
                 + ", SCREEN_ID=" + this.getScreen().getId()
                 + " WHERE BUTTONS.ID=" + this.getId();

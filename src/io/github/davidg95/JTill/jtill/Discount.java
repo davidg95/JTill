@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  *
  * @author David
  */
-public class Discount implements Serializable, Item {
+public class Discount implements Serializable, Cloneable, Item {
 
     private int id;
     private String name;
@@ -116,5 +116,15 @@ public class Discount implements Serializable, Item {
     @Override
     public void setOpen(boolean open) {
         this.open = open;
+    }
+
+    @Override
+    public Item clone() {
+        try {
+            final Discount result = (Discount) super.clone();
+            return result;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 }

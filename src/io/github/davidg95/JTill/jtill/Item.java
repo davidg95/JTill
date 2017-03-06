@@ -28,4 +28,6 @@ public interface Item {
     public boolean isOpen();
 
     public void setOpen(boolean open);
+    
+    public Item clone();
 }

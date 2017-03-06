@@ -307,7 +307,7 @@ public class Product implements Serializable, Cloneable, Item {
     }
 
     @Override
-    public Product clone() {
+    public Item clone() {
         try {
             final Product result = (Product) super.clone();
             return result;

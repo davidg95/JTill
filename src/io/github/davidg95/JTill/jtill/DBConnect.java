@@ -68,6 +68,9 @@ public class DBConnect implements DataConnect {
     private volatile HashMap<Staff, Sale> suspendedSales;
     private final Settings systemSettings;
 
+    private final List<Staff> loggedIn;
+    private Semaphore loggedInSem;
+
     public DBConnect() {
         productSem = new Semaphore(1);
         customerSem = new Semaphore(1);
@@ -82,6 +85,8 @@ public class DBConnect implements DataConnect {
         tillSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
         systemSettings = Settings.getInstance();
+        loggedIn = new ArrayList<>();
+        loggedInSem = new Semaphore(1);
     }
 
     /**
@@ -2359,6 +2364,20 @@ public class DBConnect implements DataConnect {
 
         Staff s = staff.get(0);
 
+        try {
+            loggedInSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if (loggedIn.contains(s)) {
+            loggedInSem.release();
+            throw new LoginException("You are already logged in elsewhere");
+        }
+
+        loggedIn.add(s);
+        loggedInSem.release();
+
         return s;
     }
 
@@ -2369,7 +2388,13 @@ public class DBConnect implements DataConnect {
 
     @Override
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
-
+        try {
+            loggedInSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        loggedIn.remove(s);
+        loggedInSem.release();
     }
 
     private List<Screen> getScreensFromResultSet(ResultSet set) throws SQLException {
@@ -2735,16 +2760,16 @@ public class DBConnect implements DataConnect {
             while (set.next()) {
                 int id = set.getInt("ID");
                 String name = set.getString("NAME");
-                Product p = null;
+                Item i = null;
                 if (!name.equals("[SPACE]")) {
                     try {
-                        p = getProduct(set.getInt("PRODUCT"));
+                        i = getProduct(set.getInt("PRODUCT"));
                     } catch (ProductNotFoundException ex) {
                         Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
                 int color = set.getInt("COLOR");
-                TillButton b = new TillButton(name, p, s, color, id);
+                TillButton b = new TillButton(name, i, s, color, id);
 
                 buttons.add(b);
             }
