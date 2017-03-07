@@ -39,6 +39,7 @@ public class Product implements Serializable, Cloneable, Item {
      * @param category the category this will belong to.
      * @param comments the comments.
      * @param tax the tax class for this product.
+     * @param plu the products plu.
      * @param open if the price is open.
      */
     public Product(String name, String shortName, Category category, String comments, Tax tax, Plu plu, boolean open) {
