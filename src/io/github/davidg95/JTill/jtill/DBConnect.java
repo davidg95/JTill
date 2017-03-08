@@ -513,7 +513,7 @@ public class DBConnect implements DataConnect {
             productSem.release();
         }
         if (value == 0) {
-            throw new ProductNotFoundException(p.getId() + "");
+            throw new ProductNotFoundException("Product id " + p.getId() + " could not be found");
         }
         return p;
     }
@@ -741,23 +741,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Product> productLookup(String terms) throws IOException, SQLException {
-        String query = "SELECT * FROM PRODUCTS";
-        Statement stmt = con.createStatement();
-        try {
-            productSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        ResultSet res;
-        try {
-            res = stmt.executeQuery(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            productSem.release();
-        }
-
-        List<Product> products = getProductsFromResultSet(res);
+        List<Product> products = this.getAllProducts();
         List<Product> newList = new ArrayList<>();
 
         products.stream().filter((p) -> (p.getLongName().toLowerCase().contains(terms.toLowerCase()) || p.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((p) -> {
