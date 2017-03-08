@@ -690,7 +690,8 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
-        String query = "SELECT * FROM Products WHERE PRODUCTS.BARCODE = '" + barcode + "'";
+//        String query = "SELECT * FROM Products WHERE PRODUCTS.BARCODE = '" + barcode + "'";
+        String query = "SELECT * FROM Products, Plus WHERE PRODUCTS.PLU = PLUS.ID AND PLUS.CODE = '" + barcode + "'";
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();

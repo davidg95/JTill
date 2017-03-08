@@ -547,6 +547,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (ClassNotFoundException ex) {
+            System.out.println(ex);
         } finally {
             sem.release();
         }
