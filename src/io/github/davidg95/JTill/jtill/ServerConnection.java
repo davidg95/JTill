@@ -2534,4 +2534,60 @@ public class ServerConnection implements DataConnect {
         }
         return null;
     }
+
+    @Override
+    public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("ISLOGGEDTILL", s));
+
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof StaffNotFoundException) {
+                    throw (StaffNotFoundException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            } else {
+                return (boolean) data.getData() == true;
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class Error (Update may be required)");
+    }
+
+    @Override
+    public boolean checkUsername(String username) throws IOException, SQLException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("CHECKUSER", username));
+
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else {
+                    throw new IOException(data.getData().toString());
+                }
+            } else {
+                return (boolean) data.getData();
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
 }

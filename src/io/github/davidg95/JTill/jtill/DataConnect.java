@@ -481,6 +481,16 @@ public interface DataConnect {
     public Staff updateStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
     /**
+     * Method to check if a username is already in use. Case is ignored.
+     *
+     * @param username the username to check.
+     * @return true if it is in use, false otherwise.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public boolean checkUsername(String username) throws IOException, SQLException;
+
+    /**
      * Method to lo a member of staff into the system using the username and
      * password. This should not be used for logging into th terminals.
      *
@@ -506,6 +516,17 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      */
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException;
+
+    /**
+     * Method to check if a member of staff is logged into a till.
+     *
+     * @param s the staff member to check.
+     * @return boolean indicating whether they are logged in or not.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the staff member could not be found.
+     * @throws SQLException if there was a database error.
+     */
+    public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
     /**
      * Method to log a member of staff out of the system. this should not be

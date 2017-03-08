@@ -58,7 +58,6 @@ public class DBConnect implements DataConnect {
     private final Semaphore categorySem;
     private final Semaphore saleSem;
     private final Semaphore suspendSem;
-    private final Semaphore voucherSem;
     private final Semaphore screensSem;
     private final Semaphore tillSem;
     private final Semaphore pluSem;
@@ -82,7 +81,6 @@ public class DBConnect implements DataConnect {
         categorySem = new Semaphore(1);
         saleSem = new Semaphore(1);
         suspendSem = new Semaphore(1);
-        voucherSem = new Semaphore(1);
         screensSem = new Semaphore(1);
         tillSem = new Semaphore(1);
         pluSem = new Semaphore(1);
@@ -243,22 +241,6 @@ public class DBConnect implements DataConnect {
                 + "	USERNAME VARCHAR(20) not null,\n"
                 + "	PASSWORD VARCHAR(20) not null\n"
                 + ")";
-        String vouchers = "create table \"APP\".VOUCHERS\n"
-                + "(\n"
-                + "     ID INT not null primary key\n"
-                + "         GENERATED ALWAYS AS IDENTITY\n"
-                + "         (START WITH 1, INCREMENT BY 1),\n"
-                + "     NAME VARCHAR(50) not null,\n"
-                + "     TYPE VARCHAR(30) not null,\n"
-                + "     FIELD1 VARCHAR(50),\n"
-                + "     FIELD2 VARCHAR(50),\n"
-                + "     FIELD3 VARCHAR(50),\n"
-                + "     FIELD4 VARCHAR(50),\n"
-                + "     FIELD5 VARCHAR(50),\n"
-                + "     FIELD6 VARCHAR(50),\n"
-                + "     FIELD7 VARCHAR(50),\n"
-                + "     FIELD8 VARCHAR(50)\n"
-                + ")";
         String screens = "create table \"APP\".SCREENS\n"
                 + "(\n"
                 + "     ID INT not null primary key\n"
@@ -322,10 +304,6 @@ public class DBConnect implements DataConnect {
         }
         try {
             stmt.execute(staff);
-        } catch (SQLException ex) {
-        }
-        try {
-            stmt.execute(vouchers);
         } catch (SQLException ex) {
         }
         try {
@@ -3041,5 +3019,30 @@ public class DBConnect implements DataConnect {
             pluSem.release();
         }
         return p;
+    }
+
+    @Override
+    public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException {
+        return loggedIn.contains(s);
+    }
+
+    @Override
+    public boolean checkUsername(String username) throws IOException, SQLException {
+        String query = "SELECT * FROM STAFF WHERE USERNAME='" + username.toLowerCase() + "'";
+        Statement stmt = con.createStatement();
+        try {
+            staffSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            ResultSet set = stmt.executeQuery(query);
+
+            return set.next();
+        } catch (SQLException ex) {
+            throw ex;
+        } finally {
+            staffSem.release();
+        }
     }
 }
