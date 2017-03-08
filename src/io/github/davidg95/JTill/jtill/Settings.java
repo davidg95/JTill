@@ -14,6 +14,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class which holds all server configurations.
@@ -24,6 +26,7 @@ public class Settings implements Serializable {
 
     private static Settings settings;
     private final Properties properties;
+    private final Properties meta;
 
     /**
      * The default port number of 52341.
@@ -52,6 +55,7 @@ public class Settings implements Serializable {
 
     public Settings() {
         properties = new Properties();
+        meta = new Properties();
     }
 
     /**
@@ -75,6 +79,16 @@ public class Settings implements Serializable {
      */
     public String getSetting(String key) {
         return properties.getProperty(key);
+    }
+
+    /**
+     * Method to get the help message for a setting.
+     *
+     * @param key the settings to get the message for.
+     * @return the help message.
+     */
+    public String getSettingMeta(String key) {
+        return meta.getProperty(key);
     }
 
     /**
@@ -127,15 +141,23 @@ public class Settings implements Serializable {
      */
     public void loadProperties() {
         InputStream in;
-
         try {
             in = new FileInputStream("server.properties");
-
             properties.load(in);
 
             in.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
             initProperties();
+        } catch (IOException ex) {
+        }
+
+        try {
+            in = new FileInputStream("server-meta.properties");
+            meta.load(in);
+
+            in.close();
+        } catch (FileNotFoundException ex) {
+            initMeta();
         } catch (IOException ex) {
         }
     }
@@ -151,6 +173,14 @@ public class Settings implements Serializable {
             properties.store(out, null);
             out.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
+        } catch (IOException ex) {
+        }
+
+        try {
+            out = new FileOutputStream("server-meta.properties");
+            meta.store(out, null);
+            out.close();
+        } catch (FileNotFoundException ex) {
         } catch (IOException ex) {
         }
     }
@@ -172,6 +202,32 @@ public class Settings implements Serializable {
             setSetting("port", Integer.toString(DEFAULT_PORT));
             setSetting("AUTO_LOGOUT", "FALSE");
             setSetting("LOGOUT_TIMEOUT", "-1");
+            setSetting("MINIMUM_SERVER_LOGIN", "2");
+            setSetting("SETTINGS_EDIT", "3");
+
+            properties.store(out, null);
+            out.close();
+        } catch (FileNotFoundException | UnknownHostException ex) {
+        } catch (IOException ex) {
+        }
+    }
+
+    private void initMeta() {
+        OutputStream out;
+
+        try {
+            out = new FileOutputStream("server-meta.properties");
+
+            setSetting("db_address", "The address for the database.");
+            setSetting("db_username", "The username for logging onto the database.");
+            setSetting("db_password", "The password for logging onto the database.");
+            setSetting("max_conn", "The maximum allowed number of connections to the server at any one time.");
+            setSetting("max_queue", "The maximum number of connections to queue before blocking new connections if the maximum has been reached.");
+            setSetting("port", "The port number for the server.");
+            setSetting("AUTO_LOGOUT", "Whether staff should be automatically logged out after a sale or not.\nTRUE or FALSE.");
+            setSetting("LOGOUT_TIMEOUT", "Not supported yet.");
+            setSetting("MINIMUM_SERVER_LOGIN", "The lowest position allowed for a member of staff to log into the server manager.");
+            setSetting("SETTINGS_EDIT", "The lowest position allowed for a member of staff to edit these settings.");
 
             properties.store(out, null);
             out.close();
