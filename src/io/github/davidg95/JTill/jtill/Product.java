@@ -61,6 +61,7 @@ public class Product implements Serializable, Cloneable, Item {
      * @param category the category this will belong to.
      * @param comments the comments.
      * @param tax the tax class for this product.
+     * @param plu the plu for the product.
      * @param open if the price is open.
      * @param productCode the product code.
      */
@@ -261,7 +262,7 @@ public class Product implements Serializable, Cloneable, Item {
     }
 
     public String getSQLInsertString() {
-        return + this.plu.getId()
+        return +this.plu.getId()
                 + ",'" + this.name
                 + "'," + this.open
                 + "," + this.price

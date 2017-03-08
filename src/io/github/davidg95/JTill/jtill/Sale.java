@@ -225,9 +225,9 @@ public class Sale implements Serializable {
      */
     public void updateTotal() {
         total = new BigDecimal("0");
-        for (SaleItem item : saleItems) {
+        saleItems.forEach((item) -> {
             total = total.add(item.getPrice());
-        }
+        });
     }
 
     public int getId() {
@@ -268,9 +268,7 @@ public class Sale implements Serializable {
 
     public int getTotalItemCount() {
         int count = 0;
-        for (SaleItem item : saleItems) {
-            count += item.getQuantity();
-        }
+        count = saleItems.stream().map((item) -> item.getQuantity()).reduce(count, Integer::sum);
         return count;
     }
 

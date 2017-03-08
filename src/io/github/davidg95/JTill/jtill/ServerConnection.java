@@ -853,35 +853,6 @@ public class ServerConnection implements DataConnect {
     }
 
     /**
-     * Method to get the total number of customer on the server.
-     *
-     * @return int value representing how many customers are on the server.
-     * @throws IOException if there was an error connecting.
-     */
-    @Override
-    public int getCustomerCount() throws IOException {
-        try {
-            sem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        obOut.writeObject(ConnectionData.create("GETCUSTOMERCOUNT"));
-
-        String input = "";
-        try {
-            input = (String) obIn.readObject();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            throw ex;
-        } finally {
-            sem.release();
-        }
-
-        return Integer.parseInt(input);
-    }
-
-    /**
      * Method to get a List of all customers on the server.
      *
      * @return List of type Customer.
@@ -1334,7 +1305,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public int staffCount() throws IOException, SQLException {
+    public int getStaffCount() throws IOException, SQLException {
         try {
             sem.acquire();
         } catch (InterruptedException ex) {
@@ -2036,159 +2007,6 @@ public class ServerConnection implements DataConnect {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return new ArrayList<>();
-    }
-
-    @Override
-    public Voucher addVoucher(Voucher v) throws IOException, SQLException {
-        try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            obOut.writeObject(ConnectionData.create("ADDVOUCHER", v));
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("SUCC")) {
-                return (Voucher) data.getData();
-            } else {
-                if (data.getData() instanceof SQLException) {
-                    throw (SQLException) data.getData();
-                } else {
-                    throw new IOException(data.getData().toString());
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            sem.release();
-        }
-        return null;
-    }
-
-    @Override
-    public void removeVoucher(Voucher v) throws IOException, VoucherNotFoundException, SQLException {
-        removeVoucher(v.getId());
-    }
-
-    @Override
-    public void removeVoucher(int id) throws IOException, VoucherNotFoundException, SQLException {
-        try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            obOut.writeObject(ConnectionData.create("REMOVEVOUCHER", id));
-
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("FAIL")) {
-                if (data.getData() instanceof SQLException) {
-                    throw (SQLException) data.getData();
-                } else if (data.getData() instanceof VoucherNotFoundException) {
-                    throw (VoucherNotFoundException) data.getData();
-                } else {
-                    throw new IOException(data.getData().toString());
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            sem.release();
-        }
-    }
-
-    @Override
-    public Voucher getVoucher(int id) throws IOException, SQLException, VoucherNotFoundException {
-        try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            obOut.writeObject(ConnectionData.create("GETVOUCHER", id));
-
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("SUCC")) {
-                return (Voucher) data.getData();
-            } else {
-                if (data.getData() instanceof SQLException) {
-                    throw (SQLException) data.getData();
-                } else if (data.getData() instanceof VoucherNotFoundException) {
-                    throw (VoucherNotFoundException) data.getData();
-                } else {
-                    throw new IOException(data.getData().toString());
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            sem.release();
-        }
-        return null;
-    }
-
-    @Override
-    public Voucher updateVoucher(Voucher v) throws IOException, SQLException, VoucherNotFoundException {
-        try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            obOut.writeObject(ConnectionData.create("UPDATEVOUCHER", v));
-
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("SUCC")) {
-                return (Voucher) data.getData();
-            } else {
-                if (data.getData() instanceof SQLException) {
-                    throw (SQLException) data.getData();
-                } else if (data.getData() instanceof VoucherNotFoundException) {
-                    throw (VoucherNotFoundException) data.getData();
-                } else {
-                    throw new IOException(data.getData().toString());
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            sem.release();
-        }
-        return null;
-    }
-
-    @Override
-    public List<Voucher> getAllVouchers() throws IOException, SQLException {
-        try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            obOut.writeObject(ConnectionData.create("GETALLVOUCHERS"));
-
-            Object o;
-            try {
-                o = obIn.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            } finally {
-                sem.release();
-            }
-
-            if (o instanceof List) {
-                return (List<Voucher>) o;
-            } else if (o instanceof SQLException) {
-                throw (SQLException) o;
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
     }
 
     /**

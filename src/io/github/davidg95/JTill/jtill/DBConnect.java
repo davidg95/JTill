@@ -1003,29 +1003,6 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public int getCustomerCount() throws SQLException {
-        String query = "SELECT * FROM CUSTOMERS";
-        Statement stmt = con.createStatement();
-        try {
-            customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        ResultSet res;
-        try {
-            res = stmt.executeQuery(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            customerSem.release();
-        }
-
-        List<Customer> customers = getCustomersFromResultSet(res);
-
-        return customers.size();
-    }
-
-    @Override
     public List<Customer> customerLookup(String terms) throws IOException, SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
@@ -1251,7 +1228,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public int staffCount() throws SQLException {
+    public int getStaffCount() throws SQLException {
         String query = "SELECT * FROM STAFF";
         Statement stmt = con.createStatement();
         try {
@@ -2182,179 +2159,6 @@ public class DBConnect implements DataConnect {
         return sales;
     }
 
-    //Voucher Methods
-    @Override
-    public List<Voucher> getAllVouchers() throws SQLException {
-        String query = "SELECT * FROM VOUCHERS";
-        Statement stmt = con.createStatement();
-        try {
-            voucherSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Voucher> vouchers;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            vouchers = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                String type = set.getString("TYPE");
-                String field1 = set.getString("FIELD1");
-                String field2 = set.getString("FIELD2");
-                String field3 = set.getString("FIELD3");
-                String field4 = set.getString("FIELD4");
-                String field5 = set.getString("FIELD5");
-                String field6 = set.getString("FIELD6");
-                String field7 = set.getString("FIELD7");
-                String field8 = set.getString("FIELD8");
-                Voucher.VoucherType voucherType = Voucher.VoucherType.valueOf(type);
-                Voucher v = new Voucher(id, name, voucherType, field1, field2, field3, field4, field5, field6, field7, field8);
-                vouchers.add(v);
-            }
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            voucherSem.release();
-        }
-
-        return vouchers;
-    }
-
-    public List<Voucher> getVouchersFromResultSet(ResultSet set) throws SQLException {
-        List<Voucher> vouchers = new ArrayList<>();
-        while (set.next()) {
-            int id = set.getInt("ID");
-            String name = set.getString("NAME");
-            String type = set.getString("TYPE");
-            String field1 = set.getString("FIELD1");
-            String field2 = set.getString("FIELD2");
-            String field3 = set.getString("FIELD3");
-            String field4 = set.getString("FIELD4");
-            String field5 = set.getString("FIELD5");
-            String field6 = set.getString("FIELD6");
-            String field7 = set.getString("FIELD7");
-            String field8 = set.getString("FIELD8");
-            Voucher.VoucherType voucherType = Voucher.VoucherType.valueOf(type);
-            Voucher v = new Voucher(id, name, voucherType, field1, field2, field3, field4, field5, field6, field7, field8);
-            vouchers.add(v);
-        }
-        return vouchers;
-    }
-
-    @Override
-    public Voucher addVoucher(Voucher v) throws SQLException {
-        String query = "INSERT INTO VOUCHERS (NAME, TYPE) VALUES (" + v.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
-        try {
-            voucherSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
-            stmt.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            voucherSem.release();
-        }
-        return v;
-    }
-
-    @Override
-    public Voucher updateVoucher(Voucher v) throws SQLException, VoucherNotFoundException {
-        String query = v.getSQlUpdateString();
-        Statement stmt = con.createStatement();
-        try {
-            voucherSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        int value;
-        try {
-            value = stmt.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            voucherSem.release();
-        }
-        if (value == 0) {
-            throw new VoucherNotFoundException(v.getId() + "");
-        }
-        return v;
-    }
-
-    @Override
-    public void removeVoucher(Voucher v) throws SQLException, VoucherNotFoundException {
-        String query = "DELETE FROM VOUCHERS WHERE VOUCHERS.ID = " + v.getId();
-        Statement stmt = con.createStatement();
-        try {
-            voucherSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        int value;
-        try {
-            value = stmt.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            voucherSem.release();
-        }
-        if (value == 0) {
-            throw new VoucherNotFoundException(v.getId() + "");
-        }
-    }
-
-    @Override
-    public void removeVoucher(int id) throws SQLException, VoucherNotFoundException {
-        String query = "DELETE FROM VOUCHERS WHERE VOUCHERS.ID = " + id;
-        Statement stmt = con.createStatement();
-        try {
-            voucherSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        int value;
-        try {
-            value = stmt.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            voucherSem.release();
-        }
-        if (value == 0) {
-            throw new VoucherNotFoundException(id + "");
-        }
-    }
-
-    @Override
-    public Voucher getVoucher(int id) throws SQLException, VoucherNotFoundException {
-        String query = "SELECT * FROM VOUCHERS WHERE VOUCHERS.ID = " + id;
-        Statement stmt = con.createStatement();
-        try {
-            voucherSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Voucher> vouchers;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-
-            vouchers = getVouchersFromResultSet(set);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            voucherSem.release();
-        }
-
-        if (vouchers.isEmpty()) {
-            throw new VoucherNotFoundException(id + "");
-        }
-
-        return vouchers.get(0);
-    }
-
     @Override
     public String toString() {
         if (connected) {
@@ -2895,9 +2699,7 @@ public class DBConnect implements DataConnect {
         text += "Here is your receipt from your recent purchase\n";
         text += "Sale ID: " + sale.getId() + "\n";
         text += "Time: " + sale.getDate().toString() + "\n";
-        for (SaleItem i : sale.getSaleItems()) {
-            text += i.getItem().getName() + "\t" + i.getQuantity() + "\t£" + i.getPrice() + "\n";
-        }
+        text = sale.getSaleItems().stream().map((i) -> i.getItem().getName() + "\t" + i.getQuantity() + "\t£" + i.getPrice() + "\n").reduce(text, String::concat);
 
         text += "Total: £" + sale.getTotal() + "\n";
         if (sale.isChargeAccount()) {

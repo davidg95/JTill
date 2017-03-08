@@ -22,6 +22,8 @@ public interface DataConnect {
 
     public boolean isConnected();
 
+    public void close() throws IOException;
+
     public void setGUI(GUIInterface g);
 
     public void assisstance(String message) throws IOException;
@@ -168,92 +170,433 @@ public interface DataConnect {
     public List<Product> productLookup(String terms) throws IOException, SQLException;
 
     //Plu
+    /**
+     * Add a new plu barcode to the system.
+     *
+     * @param plu the Plu to add.
+     * @return the Plu that was added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Plu addPlu(Plu plu) throws IOException, SQLException;
 
+    /**
+     * Method to remove a plu from the system.
+     *
+     * @param id the id of the plu to remove.
+     * @throws IOException if there was a network error.
+     * @throws JTillException if there was an error removing the plu.
+     * @throws SQLException if there was a database error.
+     */
     public void removePlu(int id) throws IOException, JTillException, SQLException;
 
+    /**
+     * Method to remove a plu from the system.
+     *
+     * @param p the plu to remove.
+     * @throws IOException if there was a network error.
+     * @throws JTillException if there was an error removing the plu.
+     * @throws SQLException if there was a database error.
+     */
     public void removePlu(Plu p) throws IOException, JTillException, SQLException;
 
+    /**
+     * Method to get a plu from the system.
+     *
+     * @param id the if of the plu to get.
+     * @return the plu that matches the id.
+     * @throws IOException if there was a network error.
+     * @throws JTillException if there was an error getting the plu.
+     * @throws SQLException if there was a database error.
+     */
     public Plu getPlu(int id) throws IOException, JTillException, SQLException;
 
+    /**
+     * Method to get a plu by its barcode.
+     *
+     * @param code the barcode of the plu to get
+     * @return the plu that matches the barcode.
+     * @throws IOException if there was a network error.
+     * @throws JTillException if the plu could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public Plu getPluByCode(String code) throws IOException, JTillException, SQLException;
 
+    /**
+     * Method to get all plus on the system.
+     *
+     * @return a List of all the plus.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Plu> getAllPlus() throws IOException, SQLException;
 
+    /**
+     * Method to update a plu on the system.
+     *
+     * @param p the plu to update.
+     * @return the plu that was updated.
+     * @throws IOException if there was a network error.
+     * @throws JTillException if the plu could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException;
 
     //Customer
+    /**
+     * Method to add a customer to the system.
+     *
+     * @param customer the customer to add.
+     * @return the customer that was added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Customer addCustomer(Customer customer) throws IOException, SQLException;
 
+    /**
+     * Method to remove a customer from the system.
+     *
+     * @param id the id of the customer to remove.
+     * @throws IOException if there was a network error.
+     * @throws CustomerNotFoundException if the id could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
 
+    /**
+     * Method to remove a customer from the system.
+     *
+     * @param c the customer to remove.
+     * @throws IOException if there was a network error.
+     * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public void removeCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
 
+    /**
+     * Method to get a customer from the system.
+     *
+     * @param id the id of the customer to get.
+     * @return the customer that matches the id.
+     * @throws IOException if there was a network error.
+     * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
 
+    /**
+     * Method to search for customers with the given name.
+     *
+     * @param name the name to search for.
+     * @return a List of call customers matching the name.
+     * @throws IOException if there was a network error.
+     * @throws CustomerNotFoundException if no customer could be found.
+     * @throws SQLException if there was a database error.
+     */
     public List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException;
 
-    public int getCustomerCount() throws IOException, SQLException;
-
+    /**
+     * Method to get a list of all the customers in the system.
+     *
+     * @return a List of all the customers in the system.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Customer> getAllCustomers() throws IOException, SQLException;
 
+    /**
+     * Method to update a customer in the system.
+     *
+     * @param c the customer to update.
+     * @return the customer that was updated.
+     * @throws IOException if there was a network error.
+     * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public Customer updateCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
 
+    /**
+     * Method to search for customers that have details matching the given
+     * terms.
+     *
+     * @param terms the terms to search.
+     * @return a List of customers matching the terms.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Customer> customerLookup(String terms) throws IOException, SQLException;
 
     //Sale
+    /**
+     * Method to add a sale to the system.
+     *
+     * @param s the sale to add.
+     * @return the sale that was added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Sale addSale(Sale s) throws IOException, SQLException;
 
+    /**
+     * Method to get all the sales in the system.
+     *
+     * @return a List of all the sales in the system.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Sale> getAllSales() throws IOException, SQLException;
 
+    /**
+     * Method to get a sale in the system.
+     *
+     * @param id the id of the sale to get.
+     * @return the sale matching the id.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws SaleNotFoundException if the sale could not be found.
+     */
     public Sale getSale(int id) throws IOException, SQLException, SaleNotFoundException;
 
+    /**
+     * Method to get all sales within the specified date range.
+     *
+     * @param start the start date.
+     * @param end the end date.
+     * @return a List of all sales within the range.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException;
 
+    /**
+     * Method to update a sale in the database.
+     *
+     * @param s the sale to update.
+     * @return the sale that was updated.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws SaleNotFoundException if the sale could not be found.
+     */
     public Sale updateSale(Sale s) throws IOException, SQLException, SaleNotFoundException;
 
+    /**
+     * Method to suspend a sale. This will add the sale to a list of suspended
+     * sales that can then be continues from another terminal.
+     *
+     * @param sale the sale to suspend.
+     * @param staff the staff member the sales belongs to.
+     * @throws IOException if there was a network error.
+     */
     public void suspendSale(Sale sale, Staff staff) throws IOException;
 
+    /**
+     * Method to resume a sale. This method will remove the sale from the list
+     * of suspended sales.
+     *
+     * @param s the member of staff who wants to retrieve a sale.
+     * @return the sale that was suspended.
+     * @throws IOException if there was a network error.
+     */
     public Sale resumeSale(Staff s) throws IOException;
 
+    /**
+     * Method to get all uncashed sales from a given terminal with name t.
+     *
+     * @param t the name of the terminal to get the sales for.
+     * @return a List of all the sales which have not been cashed.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Sale> getUncashedSales(String t) throws IOException, SQLException;
 
     //Staff
-    public Staff addStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    /**
+     * Method to add a member of staff.
+     *
+     * @param s the member of staff to add.
+     * @return the member of staff that was added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public Staff addStaff(Staff s) throws IOException, SQLException;
 
+    /**
+     * Method to remove a member of staff from the system.
+     *
+     * @param id the id of the staff to remove.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the id could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException;
 
+    /**
+     * Method to remove a member of staff from the system.
+     *
+     * @param s the member of staff to remove.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the id could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public void removeStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
+    /**
+     * Method to get a member of staff from the system.
+     *
+     * @param id the member of staff to get.
+     * @return the member of staff matching the id.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the id could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException;
 
+    /**
+     * Method to get all staff in the system.
+     *
+     * @return a List of all the staff in the system.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Staff> getAllStaff() throws IOException, SQLException;
 
+    /**
+     * Method to get the amount of staff in the system
+     *
+     * @return int value representing the amount of staff.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public int getStaffCount() throws IOException, SQLException;
+
+    /**
+     * Method to update a member of staff.
+     *
+     * @param s the member of staff to update.
+     * @return the member of staff that was updated.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the id could not be found.
+     * @throws SQLException if there was a database error.
+     */
     public Staff updateStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
-    public int staffCount() throws IOException, StaffNotFoundException, SQLException;
-
+    /**
+     * Method to lo a member of staff into the system using the username and
+     * password. This should not be used for logging into th terminals.
+     *
+     * @param username the username of the staff member.
+     * @param password the password of the staff member.
+     * @return the member of staff that matches the details.
+     * @throws IOException if there was a network error.
+     * @throws LoginException if there was an error logging in. This can be
+     * because of incorrect username or password.
+     * @throws SQLException if there was a database error.
+     */
     public Staff login(String username, String password) throws IOException, LoginException, SQLException;
 
+    /**
+     * Method to log a member of staff into a till. This method only allows a
+     * member of staff to be logged in once at a time.
+     *
+     * @param id the id of the member of staff to log in.
+     * @return the member of staff that logged in.
+     * @throws IOException if there was a network error.
+     * @throws LoginException if there was an error logging in. This could be
+     * because of an incorrect id or they might already be logged in else where.
+     * @throws SQLException if there was a database error.
+     */
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException;
 
+    /**
+     * Method to log a member of staff out of the system. this should not be
+     * used for logging out of the tills.
+     *
+     * @param s the member of staff logging out.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
     public void logout(Staff s) throws IOException, StaffNotFoundException;
 
+    /**
+     * Method to log a member of staff out of the tills.
+     *
+     * @param s the member of staff to log out.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException;
 
     //Category
+    /**
+     * Method to add a category to the system.
+     *
+     * @param c the category to add.
+     * @return the category that was added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Category addCategory(Category c) throws IOException, SQLException;
 
+    /**
+     * Method to update a category in the system.
+     *
+     * @param c the category to update.
+     * @return the category that was updated.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws CategoryNotFoundException if the category could not be found.
+     */
     public Category updateCategory(Category c) throws IOException, SQLException, CategoryNotFoundException;
 
+    /**
+     * Method to remove a category from the system.
+     *
+     * @param c the category to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws CategoryNotFoundException if the category could not be found.
+     */
     public void removeCategory(Category c) throws IOException, SQLException, CategoryNotFoundException;
 
+    /**
+     * Method to remove a category from the system.
+     *
+     * @param id the id of the category to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws CategoryNotFoundException if the category could not be found.
+     */
     public void removeCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
 
+    /**
+     * Method to get a category from the system.
+     *
+     * @param id the id of the category to get.
+     * @return the category that matches the id.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws CategoryNotFoundException if the category could not be found.
+     */
     public Category getCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
 
+    /**
+     * Method to get all the categories in the system.
+     *
+     * @return a List of all the categories.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Category> getAllCategorys() throws IOException, SQLException;
 
+    /**
+     * Method to get all the products in a specific category.
+     *
+     * @param id the id of the category to get the products for.
+     * @return a List of all the products in the category.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws CategoryNotFoundException if the category could not be found.
+     */
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
 
     //Discount
@@ -283,21 +626,6 @@ public interface DataConnect {
     public List<Tax> getAllTax() throws IOException, SQLException;
 
     public List<Product> getProductsInTax(int id) throws IOException, SQLException, TaxNotFoundException;
-
-    //Voucher
-    public Voucher addVoucher(Voucher v) throws IOException, SQLException;
-
-    public void removeVoucher(Voucher v) throws IOException, SQLException, VoucherNotFoundException;
-
-    public void removeVoucher(int id) throws IOException, SQLException, VoucherNotFoundException;
-
-    public Voucher getVoucher(int id) throws IOException, SQLException, VoucherNotFoundException;
-
-    public Voucher updateVoucher(Voucher v) throws IOException, SQLException, VoucherNotFoundException;
-
-    public List<Voucher> getAllVouchers() throws IOException, SQLException;
-
-    public void close() throws IOException;
 
     //Screens
     public Screen addScreen(Screen s) throws IOException, SQLException;
