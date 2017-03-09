@@ -2299,7 +2299,7 @@ public class DBConnect implements DataConnect {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
+            stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
                 int id = set.getInt(1);
