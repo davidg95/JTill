@@ -2888,7 +2888,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public String getSettings(String key) {
+    public String getSetting(String key) {
         return systemSettings.getSetting(key);
     }
 
@@ -3072,5 +3072,15 @@ public class DBConnect implements DataConnect {
         } finally {
             staffSem.release();
         }
+    }
+
+    @Override
+    public String getSetting(String key, String value) throws IOException {
+        return systemSettings.getSetting(key, value);
+    }
+
+    @Override
+    public Settings getSettingsInstance() throws IOException {
+        return systemSettings;
     }
 }

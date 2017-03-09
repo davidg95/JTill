@@ -327,7 +327,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public String getSettings(String key) throws IOException {
+    public String getSetting(String key) throws IOException {
         try {
             try {
                 sem.acquire();
@@ -2594,5 +2594,48 @@ public class ServerConnection implements DataConnect {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public String getSetting(String key, String value) throws IOException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("GETSETTINGDEFAULT", key, value));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            } else {
+                return data.getData().toString();
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public Settings getSettingsInstance() throws IOException {
+        try {
+            try {
+                sem.acquire();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            obOut.writeObject(ConnectionData.create("GETSETTINGSINSTANCE"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            } else {
+                return (Settings) data.getData();
+            }
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required");
     }
 }

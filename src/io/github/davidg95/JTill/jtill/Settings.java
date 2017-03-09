@@ -14,8 +14,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Class which holds all server configurations.

@@ -51,7 +51,11 @@ public interface DataConnect {
 
     public void setSetting(String key, String value) throws IOException;
 
-    public String getSettings(String key) throws IOException;
+    public String getSetting(String key) throws IOException;
+
+    public String getSetting(String key, String value) throws IOException;
+
+    public Settings getSettingsInstance() throws IOException;
 
     //Product
     /**
@@ -621,16 +625,65 @@ public interface DataConnect {
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
 
     //Discount
+    /**
+     * Method to add a discount to the system.
+     *
+     * @param d the discount to add.
+     * @return the discount with its id assigned from the database.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Discount addDiscount(Discount d) throws IOException, SQLException;
 
+    /**
+     * Method to update a discount in the system.
+     *
+     * @param d the discount to update.
+     * @return the updated discount.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws DiscountNotFoundException if the discount was not found.
+     */
     public Discount updateDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException;
 
+    /**
+     * Method to remove a discount from the system.
+     *
+     * @param d the discount to remove
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws DiscountNotFoundException if the discount was not found.
+     */
     public void removeDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException;
 
+    /**
+     * Method to remove a discount from the system.
+     *
+     * @param id the discount id to remove
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws DiscountNotFoundException if the discount was not found.
+     */
     public void removeDiscount(int id) throws IOException, SQLException, DiscountNotFoundException;
 
+    /**
+     * Method to get a discount from the system.
+     *
+     * @param id the discount to get.
+     * @return the discount.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws DiscountNotFoundException if the discount was not found.
+     */
     public Discount getDiscount(int id) throws IOException, SQLException, DiscountNotFoundException;
 
+    /**
+     * Method to get all the discounts from the system.
+     *
+     * @return a list of all the discounts.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Discount> getAllDiscounts() throws IOException, SQLException;
 
     //Tax
