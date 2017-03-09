@@ -841,7 +841,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 c.setId(id);
             }
@@ -1063,7 +1063,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 s.setId(id);
             }
@@ -1286,7 +1286,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 d.setId(id);
             }
@@ -1449,7 +1449,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 t.setId(id);
             }
@@ -1651,7 +1651,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 c.setID(id);
             }
@@ -1873,12 +1873,18 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 s.setId(id);
             }
             for (SaleItem p : s.getSaleItems()) {
                 addSaleItem(s, p);
+                try {
+                    purchaseProduct(p.getItem().getId(), p.getQuantity());
+                } catch (OutOfStockException ex) {
+                    g.log(ex);
+                } catch (ProductNotFoundException ex) {
+                }
             }
             if (s.isChargeAccount()) {
                 new Thread("Charge To Account") {
@@ -2266,7 +2272,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 s.setId(id);
             }
@@ -2290,7 +2296,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate(query);
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 b.setId(id);
             }
@@ -2733,7 +2739,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
-            while(set.next()){
+            while (set.next()) {
                 int id = set.getInt(1);
                 t.setId(id);
             }
