@@ -319,10 +319,8 @@ public class DBConnect implements DataConnect {
 
         String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
-//        String addDiscount = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE) VALUES ('NONE',0.0)";
         stmt.executeUpdate(addCategory);
         stmt.executeUpdate(addTax);
-//        stmt.executeUpdate(addDiscount);
     }
 
     private void error(SQLException ex) {
@@ -478,14 +476,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Product addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (PLU, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
-        try (Statement stmt = con.createStatement()) {
+        try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             try {
                 productSem.acquire();
             } catch (InterruptedException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
             try {
-                stmt.executeUpdate(query);
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    p.setId(id);
+                }
             } catch (SQLException ex) {
                 throw ex;
             } finally {
@@ -690,7 +693,6 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
-//        String query = "SELECT * FROM Products WHERE PRODUCTS.BARCODE = '" + barcode + "'";
         String query = "SELECT * FROM Products, Plus WHERE PRODUCTS.PLU = PLUS.ID AND PLUS.CODE = '" + barcode + "'";
         Statement stmt = con.createStatement();
         try {
@@ -830,14 +832,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Customer addCustomer(Customer c) throws SQLException {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             customerSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                c.setId(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -1047,14 +1054,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Staff addStaff(Staff s) throws SQLException {
         String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             staffSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                s.setId(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -1265,14 +1277,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Discount addDiscount(Discount d) throws SQLException {
         String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE) VALUES (" + d.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             discountSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                d.setId(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -1423,14 +1440,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Tax addTax(Tax t) throws SQLException {
         String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             taxSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                t.setId(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -1620,14 +1642,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Category addCategory(Category c) throws SQLException {
         String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             categorySem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                c.setID(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -1837,21 +1864,22 @@ public class DBConnect implements DataConnect {
     @Override
     public Sale addSale(Sale s) throws SQLException {
         String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             saleSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
-
-            s.setId(getLastSaleID());
-
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                s.setId(id);
+            }
             for (SaleItem p : s.getSaleItems()) {
                 addSaleItem(s, p);
             }
-
             if (s.isChargeAccount()) {
                 new Thread("Charge To Account") {
                     @Override
@@ -1875,11 +1903,6 @@ public class DBConnect implements DataConnect {
         } catch (SQLException | CustomerNotFoundException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    private int getLastSaleID() throws SQLException {
-        List<Sale> sales = getAllSalesNoSem();
-        return sales.get(sales.size() - 1).getId();
     }
 
     @Override
@@ -2234,15 +2257,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Screen addScreen(Screen s) throws SQLException {
         String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR) VALUES (" + s.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             screensSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
-            s.setId(getLastScreenID());
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                s.setId(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -2251,15 +2278,10 @@ public class DBConnect implements DataConnect {
         return s;
     }
 
-    private int getLastScreenID() throws SQLException {
-        List<Screen> screens = getAllScreensNoSem();
-        return screens.get(screens.size() - 1).getId();
-    }
-
     @Override
     public TillButton addButton(TillButton b) throws SQLException {
         String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             screensSem.acquire();
         } catch (InterruptedException ex) {
@@ -2267,6 +2289,11 @@ public class DBConnect implements DataConnect {
         }
         try {
             stmt.executeUpdate(query);
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                b.setId(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
@@ -2697,14 +2724,19 @@ public class DBConnect implements DataConnect {
     @Override
     public Till addTill(Till t) throws IOException, SQLException {
         String query = "INSERT INTO TILLS (NAME, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
-        Statement stmt = con.createStatement();
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             tillSem.acquire();
         } catch (InterruptedException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
         try {
-            stmt.executeUpdate(query);
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while(set.next()){
+                int id = set.getInt(1);
+                t.setId(id);
+            }
         } catch (SQLException ex) {
             throw ex;
         } finally {
