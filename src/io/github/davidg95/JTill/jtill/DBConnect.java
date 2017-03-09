@@ -613,7 +613,7 @@ public class DBConnect implements DataConnect {
     /**
      * Method to purchase a product and reduce its stock level by 1.
      *
-     * @param code the code of the product to purchase.
+     * @param p the product to purchase.
      * @param amount the amount of the product to purchase.
      * @return the new stock level.
      * @throws SQLException if there was an error purchasing the product.
@@ -621,8 +621,8 @@ public class DBConnect implements DataConnect {
      * @throws ProductNotFoundException if the product was not found.
      */
     @Override
-    public int purchaseProduct(int code, int amount) throws SQLException, OutOfStockException, ProductNotFoundException {
-        String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + code;
+    public int purchaseProduct(Product p, int amount) throws SQLException, OutOfStockException, ProductNotFoundException {
+        String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + p.getId();
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
@@ -635,9 +635,12 @@ public class DBConnect implements DataConnect {
                 int stock = res.getInt("STOCK");
                 res.close();
                 stock -= amount;
-                String update = "UPDATE PRODUCTS SET STOCK=" + stock + " WHERE PRODUCTS.ID=" + code;
+                String update = "UPDATE PRODUCTS SET STOCK=" + stock + " WHERE PRODUCTS.ID=" + p.getId();
                 stmt = con.createStatement();
                 stmt.executeUpdate(update);
+                if (stock < p.getMinStockLevel()) {
+                    g.logWarning("WARNING- Product " + p.getId() + " is below is minimum level!");
+                }
                 return stock;
             }
         } catch (SQLException ex) {
@@ -645,7 +648,7 @@ public class DBConnect implements DataConnect {
         } finally {
             productSem.release();
         }
-        throw new ProductNotFoundException(code + "");
+        throw new ProductNotFoundException(p.getId() + " could not be found");
     }
 
     /**
@@ -1880,7 +1883,9 @@ public class DBConnect implements DataConnect {
             for (SaleItem p : s.getSaleItems()) {
                 addSaleItem(s, p);
                 try {
-                    purchaseProduct(p.getItem().getId(), p.getQuantity());
+                    if (p.getItem() instanceof Product) {
+                        purchaseProduct((Product) p.getItem(), p.getQuantity());
+                    }
                 } catch (OutOfStockException ex) {
                     g.log(ex);
                 } catch (ProductNotFoundException ex) {

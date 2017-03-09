@@ -432,7 +432,7 @@ public class ServerConnection implements DataConnect {
      * Method to purchase a product on the server and reduce is stock level by
      * one.
      *
-     * @param code the code of the product to purchase.
+     * @param p the the product to purchase.
      * @param amount the amount of the product to purchase.
      * @return the new stock level;
      * @throws IOException if there was an error connecting.
@@ -441,7 +441,7 @@ public class ServerConnection implements DataConnect {
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public int purchaseProduct(int code, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
+    public int purchaseProduct(Product p, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         String input = null;
         try {
             try {
@@ -449,7 +449,7 @@ public class ServerConnection implements DataConnect {
             } catch (InterruptedException ex) {
                 Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-            obOut.writeObject(ConnectionData.create("PURCHASE", code, amount));
+            obOut.writeObject(ConnectionData.create("PURCHASE", p.getId(), amount));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
 

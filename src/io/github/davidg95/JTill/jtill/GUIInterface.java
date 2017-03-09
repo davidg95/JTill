@@ -12,6 +12,8 @@ package io.github.davidg95.JTill.jtill;
 public interface GUIInterface {
 
     public void log(Object o);
+    
+    public void logWarning(Object o);
 
     public void setClientLabel(String text);
 
