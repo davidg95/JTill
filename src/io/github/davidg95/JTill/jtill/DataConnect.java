@@ -26,9 +26,13 @@ public interface DataConnect {
 
     public void setGUI(GUIInterface g);
 
+    public GUIInterface getGUI();
+
     public void assisstance(String message) throws IOException;
 
     public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
+
+    public void log(Object o);
 
     /**
      * Send an email to the report email set in the server.

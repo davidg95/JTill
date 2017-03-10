@@ -2642,4 +2642,13 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required");
     }
+
+    @Override
+    public GUIInterface getGUI() {
+        return this.g;
+    }
+
+    @Override
+    public void log(Object o) {
+    }
 }

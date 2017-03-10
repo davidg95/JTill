@@ -3083,4 +3083,13 @@ public class DBConnect implements DataConnect {
     public Settings getSettingsInstance() throws IOException {
         return systemSettings;
     }
+
+    @Override
+    public GUIInterface getGUI() {
+        return this.g;
+    }
+
+    @Override
+    public void log(Object o) {
+    }
 }
