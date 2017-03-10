@@ -32,8 +32,6 @@ public interface DataConnect {
 
     public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
 
-    public void log(Object o);
-
     /**
      * Send an email to the report email set in the server.
      *

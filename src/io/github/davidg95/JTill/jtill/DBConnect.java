@@ -41,6 +41,8 @@ import org.apache.derby.jdbc.EmbeddedDriver;
  */
 public class DBConnect implements DataConnect {
 
+    private static final Logger log = Logger.getGlobal();
+
     private Connection con;
     private Driver embedded;
 
@@ -72,6 +74,8 @@ public class DBConnect implements DataConnect {
     private final List<Staff> loggedIn;
     private final Semaphore loggedInSem;
 
+    private final LogFileHandler handler;
+
     public DBConnect() {
         productSem = new Semaphore(1);
         customerSem = new Semaphore(1);
@@ -88,6 +92,9 @@ public class DBConnect implements DataConnect {
         systemSettings = Settings.getInstance();
         loggedIn = new ArrayList<>();
         loggedInSem = new Semaphore(1);
+        handler = LogFileHandler.getInstance();
+        Logger.getGlobal().addHandler(handler);
+        log.log(Level.INFO, "Starting JTill Server");
     }
 
     /**
@@ -99,6 +106,7 @@ public class DBConnect implements DataConnect {
      * @throws SQLException if there was a log on error.
      */
     public void connect(String database_address, String username, String password) throws SQLException {
+        log.log(Level.INFO, "Connecting to database " + database_address);
         con = DriverManager.getConnection(database_address, username, password);
         this.address = database_address;
         this.username = username;
@@ -107,6 +115,7 @@ public class DBConnect implements DataConnect {
     }
 
     public void create(String address, String username, String password) throws SQLException {
+        log.log(Level.INFO, "The database does not exists, so it is getting created");
         embedded = new EmbeddedDriver();
         DriverManager.registerDriver(embedded);
         con = DriverManager.getConnection(address, username, password);
@@ -119,6 +128,7 @@ public class DBConnect implements DataConnect {
     }
 
     private void createTables() throws SQLException {
+        log.log(Level.INFO, "Creating tables");
         String tills = "create table APP.TILLS\n"
                 + "(\n"
                 + "	ID INT not null primary key\n"
@@ -264,55 +274,79 @@ public class DBConnect implements DataConnect {
         Statement stmt = con.createStatement();
         try {
             stmt.execute(tills);
+            log.log(Level.INFO, "Created tills table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(tax);
+            log.log(Level.INFO, "Created tax table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(plus);
+            log.log(Level.INFO, "Created plus table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(categorys);
+            log.log(Level.INFO, "Created categorys table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(discounts);
+            log.log(Level.INFO, "Created discounts table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(configs);
+            log.log(Level.INFO, "Created configs table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(sales);
+            log.log(Level.INFO, "Created sales table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(customers);
+            log.log(Level.INFO, "Created customers table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(products);
+            log.log(Level.INFO, "Created products table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(saleItems);
+            log.log(Level.INFO, "Created saleItems table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(staff);
+            log.log(Level.INFO, "Created staff table");
         } catch (SQLException ex) {
+            error(ex);
         }
         try {
             stmt.execute(screens);
+            log.log(Level.INFO, "Created screens table");
         } catch (SQLException ex) {
             error(ex);
         }
         try {
             stmt.execute(buttons);
+            log.log(Level.INFO, "Created buttons table");
         } catch (SQLException ex) {
             error(ex);
         }
@@ -325,6 +359,7 @@ public class DBConnect implements DataConnect {
 
     private void error(SQLException ex) {
         JOptionPane.showMessageDialog(null, ex, "Database error", JOptionPane.ERROR_MESSAGE);
+        log.log(Level.SEVERE, null, ex);
     }
 
     public String getAddress() {
@@ -414,6 +449,7 @@ public class DBConnect implements DataConnect {
                 products.add(p);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -480,7 +516,7 @@ public class DBConnect implements DataConnect {
             try {
                 productSem.acquire();
             } catch (InterruptedException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.SEVERE, null, ex);
             }
             try {
                 stmt.executeUpdate();
@@ -490,11 +526,13 @@ public class DBConnect implements DataConnect {
                     p.setId(id);
                 }
             } catch (SQLException ex) {
+                log.log(Level.SEVERE, null, ex);
                 throw ex;
             } finally {
                 productSem.release();
             }
         }
+        log.log(Level.INFO, "New Product " + p.getId() + " added");
         return p;
     }
 
@@ -505,12 +543,13 @@ public class DBConnect implements DataConnect {
         try {
             productSem.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
         int value;
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -518,6 +557,7 @@ public class DBConnect implements DataConnect {
         if (value == 0) {
             throw new ProductNotFoundException("Product id " + p.getId() + " could not be found");
         }
+        log.log(Level.INFO, "Product " + p.getId() + " updated");
         return p;
     }
 
@@ -537,13 +577,14 @@ public class DBConnect implements DataConnect {
         try {
             productSem.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
         try {
             res = stmt.executeQuery(query);
             lp = getProductsFromResultSet(res);
             res.close();
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -561,24 +602,7 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public void removeProduct(Product p) throws SQLException, ProductNotFoundException {
-        String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + p.getId();
-        Statement stmt = con.createStatement();
-        try {
-            productSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        int value;
-        try {
-            value = stmt.executeUpdate(query);
-        } catch (SQLException ex) {
-            throw ex;
-        } finally {
-            productSem.release();
-        }
-        if (value == 0) {
-            throw new ProductNotFoundException(p.getId() + "");
-        }
+        removeProduct(p.getId());
     }
 
     /**
@@ -595,12 +619,13 @@ public class DBConnect implements DataConnect {
         try {
             productSem.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
         int value;
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -608,6 +633,7 @@ public class DBConnect implements DataConnect {
         if (value == 0) {
             throw new ProductNotFoundException(id + "");
         }
+        log.log(Level.INFO, "Product " + id + " removed");
     }
 
     /**
@@ -627,7 +653,7 @@ public class DBConnect implements DataConnect {
         try {
             productSem.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
         ResultSet res = stmt.executeQuery(query);
         try {
@@ -639,11 +665,13 @@ public class DBConnect implements DataConnect {
                 stmt = con.createStatement();
                 stmt.executeUpdate(update);
                 if (stock < p.getMinStockLevel()) {
+                    log.log(Level.WARNING, p.getId() + " is below minimum stock level");
                     g.logWarning("WARNING- Product " + p.getId() + " is below is minimum level!");
                 }
                 return stock;
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -666,7 +694,7 @@ public class DBConnect implements DataConnect {
         try {
             productSem.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
 
         List<Product> products;
@@ -679,6 +707,7 @@ public class DBConnect implements DataConnect {
                 throw new ProductNotFoundException("Product " + code + " could not be found");
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -701,7 +730,7 @@ public class DBConnect implements DataConnect {
         try {
             productSem.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
 
         List<Product> products;
@@ -714,6 +743,7 @@ public class DBConnect implements DataConnect {
                 throw new ProductNotFoundException(barcode + " could not be found");
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -729,13 +759,14 @@ public class DBConnect implements DataConnect {
             productSem.acquire();
             discountSem.acquire();
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
         List<Discount> discounts;
         try {
             ResultSet res = stmt.executeQuery(query);
             discounts = getDiscountsFromResultSet(res);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             productSem.release();
@@ -790,6 +821,7 @@ public class DBConnect implements DataConnect {
                 customers.add(c);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -849,6 +881,7 @@ public class DBConnect implements DataConnect {
                 c.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -869,6 +902,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -892,6 +926,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -914,6 +949,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -938,6 +974,7 @@ public class DBConnect implements DataConnect {
 
             customers = getCustomersFromResultSet(res);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -964,6 +1001,7 @@ public class DBConnect implements DataConnect {
 
             customers = getCustomersFromResultSet(res);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -988,6 +1026,7 @@ public class DBConnect implements DataConnect {
         try {
             res = stmt.executeQuery(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             customerSem.release();
@@ -1029,6 +1068,7 @@ public class DBConnect implements DataConnect {
                 staff.add(s);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1071,6 +1111,7 @@ public class DBConnect implements DataConnect {
                 s.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1091,6 +1132,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1114,6 +1156,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1136,6 +1179,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1160,6 +1204,7 @@ public class DBConnect implements DataConnect {
 
             staff = getStaffFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1185,6 +1230,7 @@ public class DBConnect implements DataConnect {
         try {
             res = stmt.executeQuery(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1218,6 +1264,7 @@ public class DBConnect implements DataConnect {
         try {
             res = stmt.executeQuery(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -1253,6 +1300,7 @@ public class DBConnect implements DataConnect {
                 discounts.add(d);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             discountSem.release();
@@ -1294,6 +1342,7 @@ public class DBConnect implements DataConnect {
                 d.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             discountSem.release();
@@ -1314,6 +1363,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             discountSem.release();
@@ -1337,6 +1387,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             discountSem.release();
@@ -1359,6 +1410,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             discountSem.release();
@@ -1383,6 +1435,7 @@ public class DBConnect implements DataConnect {
 
             discounts = getDiscountsFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             discountSem.release();
@@ -1418,6 +1471,7 @@ public class DBConnect implements DataConnect {
                 tax.add(t);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             taxSem.release();
@@ -1457,6 +1511,7 @@ public class DBConnect implements DataConnect {
                 t.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             taxSem.release();
@@ -1477,6 +1532,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             taxSem.release();
@@ -1514,6 +1570,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             taxSem.release();
@@ -1538,6 +1595,7 @@ public class DBConnect implements DataConnect {
 
             tax = getTaxFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             taxSem.release();
@@ -1559,6 +1617,7 @@ public class DBConnect implements DataConnect {
 
             tax = getTaxFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         }
 
@@ -1585,6 +1644,7 @@ public class DBConnect implements DataConnect {
 
             products = getProductsFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             taxSem.release();
@@ -1619,6 +1679,7 @@ public class DBConnect implements DataConnect {
                 categorys.add(c);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             categorySem.release();
@@ -1659,6 +1720,7 @@ public class DBConnect implements DataConnect {
                 c.setID(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             categorySem.release();
@@ -1679,6 +1741,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             categorySem.release();
@@ -1716,6 +1779,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             categorySem.release();
@@ -1740,6 +1804,7 @@ public class DBConnect implements DataConnect {
 
             categorys = getCategorysFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             categorySem.release();
@@ -1761,6 +1826,7 @@ public class DBConnect implements DataConnect {
 
             categorys = getCategorysFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         }
 
@@ -1787,6 +1853,7 @@ public class DBConnect implements DataConnect {
 
             products = getProductsFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             categorySem.release();
@@ -1829,6 +1896,7 @@ public class DBConnect implements DataConnect {
                 sales.add(s);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         }
 
@@ -1900,6 +1968,7 @@ public class DBConnect implements DataConnect {
                 }.start();
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             saleSem.release();
@@ -1953,6 +2022,7 @@ public class DBConnect implements DataConnect {
                 sales.add(s);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             saleSem.release();
@@ -2005,6 +2075,7 @@ public class DBConnect implements DataConnect {
                 }
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             saleSem.release();
@@ -2026,6 +2097,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             sales = getSalesFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             saleSem.release();
@@ -2091,6 +2163,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             sales = getSalesFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             saleSem.release();
@@ -2116,6 +2189,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             saleSem.release();
@@ -2133,6 +2207,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         }
         if (value == 0) {
@@ -2178,6 +2253,7 @@ public class DBConnect implements DataConnect {
         try {
             res = stmt.executeQuery(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -2282,6 +2358,7 @@ public class DBConnect implements DataConnect {
                 s.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2306,6 +2383,7 @@ public class DBConnect implements DataConnect {
                 b.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2328,6 +2406,7 @@ public class DBConnect implements DataConnect {
             value = stmt.executeUpdate(query);
             stmt.executeUpdate(buttonsQuery);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2350,6 +2429,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2374,6 +2454,7 @@ public class DBConnect implements DataConnect {
 
             screens = getScreensFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2395,6 +2476,7 @@ public class DBConnect implements DataConnect {
 
             screens = getScreensFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
         }
@@ -2421,6 +2503,7 @@ public class DBConnect implements DataConnect {
 
             buttons = getButtonsFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2446,6 +2529,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2469,6 +2553,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2502,6 +2587,7 @@ public class DBConnect implements DataConnect {
                 screens.add(s);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2527,6 +2613,7 @@ public class DBConnect implements DataConnect {
                 screens.add(s);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         }
 
@@ -2567,6 +2654,7 @@ public class DBConnect implements DataConnect {
                 buttons.add(b);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2605,6 +2693,7 @@ public class DBConnect implements DataConnect {
                 buttons.add(b);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             screensSem.release();
@@ -2749,6 +2838,7 @@ public class DBConnect implements DataConnect {
                 t.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             tillSem.release();
@@ -2769,6 +2859,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             tillSem.release();
@@ -2795,6 +2886,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             tills = getTillsFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             tillSem.release();
@@ -2821,6 +2913,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             tills = getTillsFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             tillSem.release();
@@ -2870,6 +2963,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             tills = getTillsFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             tillSem.release();
@@ -2919,6 +3013,7 @@ public class DBConnect implements DataConnect {
                 plu.setId(id);
             }
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             pluSem.release();
@@ -2940,6 +3035,7 @@ public class DBConnect implements DataConnect {
         try {
             stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             pluSem.release();
@@ -2969,6 +3065,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             plus = getPlusFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             pluSem.release();
@@ -2995,6 +3092,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             plus = getPlusFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             pluSem.release();
@@ -3021,6 +3119,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.executeQuery(query);
             plus = getPlusFromResultSet(set);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             pluSem.release();
@@ -3042,6 +3141,7 @@ public class DBConnect implements DataConnect {
         try {
             value = stmt.executeUpdate(query);
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             pluSem.release();
@@ -3068,6 +3168,7 @@ public class DBConnect implements DataConnect {
 
             return set.next();
         } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
             throw ex;
         } finally {
             staffSem.release();
@@ -3087,9 +3188,5 @@ public class DBConnect implements DataConnect {
     @Override
     public GUIInterface getGUI() {
         return this.g;
-    }
-
-    @Override
-    public void log(Object o) {
     }
 }

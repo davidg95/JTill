@@ -2647,8 +2647,4 @@ public class ServerConnection implements DataConnect {
     public GUIInterface getGUI() {
         return this.g;
     }
-
-    @Override
-    public void log(Object o) {
-    }
 }
