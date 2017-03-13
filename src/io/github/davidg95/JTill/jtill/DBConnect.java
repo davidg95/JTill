@@ -228,7 +228,7 @@ public class DBConnect implements DataConnect {
                 + "	ID INT not null primary key\n"
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "	PLU INTEGER,\n"
+                + "	PLU INTEGER not null references PLUS(ID),\n"
                 + "	NAME VARCHAR(50) not null,\n"
                 + "     OPEN_PRICE BOOLEAN not null,\n"
                 + "	PRICE DOUBLE,\n"
@@ -402,13 +402,9 @@ public class DBConnect implements DataConnect {
     public List<Product> getAllProducts() throws SQLException {
         String query = "SELECT * FROM PRODUCTS";
         Statement stmt = con.createStatement();
-        List<Product> products;
+        List<Product> products = new ArrayList<>();
         try {
             productSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             ResultSet set = stmt.executeQuery(query);
             products = new ArrayList<>();
             while (set.next()) {
@@ -416,45 +412,46 @@ public class DBConnect implements DataConnect {
                 int pluCode = set.getInt("PLU");
                 Plu plu = null;
                 try {
-                    plu = this.getPlu(pluCode);
+                    plu = getPlu(pluCode);
+                    String name = set.getString("NAME");
+                    boolean open = set.getBoolean("OPEN_PRICE");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    int stock = set.getInt("STOCK");
+                    String comments = set.getString("COMMENTS");
+                    String shortName = set.getString("SHORT_NAME");
+                    int categoryID = set.getInt("CATEGORY_ID");
+                    Category category = null;
+                    try {
+                        category = getCategory(categoryID);
+                    } catch (CategoryNotFoundException ex) {
+                        log.log(Level.WARNING, "Could not find category " + category.getID() + " for product " + name, ex);
+                    }
+                    int taxID = set.getInt("TAX_ID");
+                    Tax tax = null;
+                    try {
+                        tax = getTax(taxID);
+                    } catch (TaxNotFoundException ex) {
+                        log.log(Level.WARNING, "Could not find tax " + tax.getId() + " for product " + name, ex);
+                    }
+                    BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
+                    int minStock = set.getInt("MIN_PRODUCT_LEVEL");
+                    int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
+
+                    Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
+
+                    products.add(p);
                 } catch (IOException | JTillException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.SEVERE, "Could not get PLU " + pluCode + " for product " + code + ". Skipping this product", ex);
                 }
-                String name = set.getString("NAME");
-                boolean open = set.getBoolean("OPEN_PRICE");
-                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                int stock = set.getInt("STOCK");
-                String comments = set.getString("COMMENTS");
-                String shortName = set.getString("SHORT_NAME");
-                int categoryID = set.getInt("CATEGORY_ID");
-                Category category = null;
-                try {
-                    category = getCategory(categoryID);
-                } catch (CategoryNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                int taxID = set.getInt("TAX_ID");
-                Tax tax = null;
-                try {
-                    tax = getTax(taxID);
-                } catch (TaxNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
-                int minStock = set.getInt("MIN_PRODUCT_LEVEL");
-                int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
-
-                Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
-
-                products.add(p);
             }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
         }
-
         return products;
     }
 
@@ -467,7 +464,7 @@ public class DBConnect implements DataConnect {
             try {
                 plu = getPlu(pluCode);
             } catch (IOException | JTillException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.SEVERE, null, ex);
             }
             String name = set.getString("NAME");
             boolean open = set.getBoolean("OPEN_PRICE");
@@ -478,16 +475,16 @@ public class DBConnect implements DataConnect {
             int categoryID = set.getInt("CATEGORY_ID");
             Category category = null;
             try {
-                category = getCategoryNoSem(categoryID);
+                category = getCategory(categoryID);
             } catch (CategoryNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+               log.log(Level.SEVERE, null, ex);
             }
             int taxID = set.getInt("TAX_ID");
             Tax tax = null;
             try {
-                tax = this.getTaxNoSem(taxID);
+                tax = this.getTax(taxID);
             } catch (TaxNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.SEVERE, null, ex);
             }
             BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
@@ -513,24 +510,20 @@ public class DBConnect implements DataConnect {
     public Product addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (PLU, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
         try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            try {
-                productSem.acquire();
-            } catch (InterruptedException ex) {
-                log.log(Level.SEVERE, null, ex);
+            productSem.acquire();
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while (set.next()) {
+                int id = set.getInt(1);
+                p.setId(id);
             }
-            try {
-                stmt.executeUpdate();
-                ResultSet set = stmt.getGeneratedKeys();
-                while (set.next()) {
-                    int id = set.getInt(1);
-                    p.setId(id);
-                }
-            } catch (SQLException ex) {
-                log.log(Level.SEVERE, null, ex);
-                throw ex;
-            } finally {
-                productSem.release();
-            }
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            productSem.release();
         }
         log.log(Level.INFO, "New Product " + p.getId() + " added");
         return p;
@@ -540,22 +533,20 @@ public class DBConnect implements DataConnect {
     public Product updateProduct(Product p) throws SQLException, ProductNotFoundException {
         String query = p.getSQlUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            productSem.acquire();
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            productSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new ProductNotFoundException("Product id " + p.getId() + " could not be found");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
-        }
-        if (value == 0) {
-            throw new ProductNotFoundException("Product id " + p.getId() + " could not be found");
         }
         log.log(Level.INFO, "Product " + p.getId() + " updated");
         return p;
@@ -572,20 +563,18 @@ public class DBConnect implements DataConnect {
     public boolean checkBarcode(String barcode) throws SQLException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.BARCODE = '" + barcode + "'";
         ResultSet res;
-        List<Product> lp;
+        List<Product> lp = new ArrayList<>();
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
-        try {
             res = stmt.executeQuery(query);
             lp = getProductsFromResultSet(res);
             res.close();
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
         }
@@ -616,23 +605,22 @@ public class DBConnect implements DataConnect {
     public void removeProduct(int id) throws SQLException, ProductNotFoundException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + id + "";
         Statement stmt = con.createStatement();
-        try {
-            productSem.acquire();
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            productSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new ProductNotFoundException(id + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
         }
-        if (value == 0) {
-            throw new ProductNotFoundException(id + "");
-        }
+
         log.log(Level.INFO, "Product " + id + " removed");
     }
 
@@ -652,11 +640,7 @@ public class DBConnect implements DataConnect {
         Statement stmt = con.createStatement();
         try {
             productSem.acquire();
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
-        ResultSet res = stmt.executeQuery(query);
-        try {
+            ResultSet res = stmt.executeQuery(query);
             while (res.next()) {
                 int stock = res.getInt("STOCK");
                 res.close();
@@ -673,6 +657,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
         }
@@ -691,15 +677,11 @@ public class DBConnect implements DataConnect {
     public Product getProduct(int code) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID = " + code;
         Statement stmt = con.createStatement();
+
+        List<Product> products = new ArrayList<>();
+
         try {
             productSem.acquire();
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
-
-        List<Product> products;
-
-        try {
             ResultSet res = stmt.executeQuery(query);
 
             products = getProductsFromResultSet(res);
@@ -709,6 +691,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
         }
@@ -727,15 +711,10 @@ public class DBConnect implements DataConnect {
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
         String query = "SELECT * FROM Products, Plus WHERE PRODUCTS.PLU = PLUS.ID AND PLUS.CODE = '" + barcode + "'";
         Statement stmt = con.createStatement();
+        List<Product> products = new ArrayList<>();
+
         try {
             productSem.acquire();
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
-
-        List<Product> products;
-
-        try {
             ResultSet res = stmt.executeQuery(query);
 
             products = getProductsFromResultSet(res);
@@ -745,6 +724,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
         }
@@ -755,19 +736,17 @@ public class DBConnect implements DataConnect {
     public List<Discount> getProductsDiscount(Product p) throws SQLException {
         String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getId() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
         Statement stmt = con.createStatement();
+        List<Discount> discounts = new ArrayList<>();
         try {
             productSem.acquire();
             discountSem.acquire();
-        } catch (InterruptedException ex) {
-            log.log(Level.SEVERE, null, ex);
-        }
-        List<Discount> discounts;
-        try {
             ResultSet res = stmt.executeQuery(query);
             discounts = getDiscountsFromResultSet(res);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             productSem.release();
             discountSem.release();
@@ -792,13 +771,9 @@ public class DBConnect implements DataConnect {
     public List<Customer> getAllCustomers() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
+        List<Customer> customers = new ArrayList<>();
         try {
             customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Customer> customers;
-        try {
             ResultSet set = stmt.executeQuery(query);
             customers = new ArrayList<>();
             while (set.next()) {
@@ -823,6 +798,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
         }
@@ -870,10 +847,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -883,6 +856,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
         }
@@ -893,22 +868,20 @@ public class DBConnect implements DataConnect {
     public Customer updateCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = c.getSQLUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            customerSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new CustomerNotFoundException(c.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
-        }
-        if (value == 0) {
-            throw new CustomerNotFoundException(c.getId() + "");
         }
         return c;
     }
@@ -917,22 +890,20 @@ public class DBConnect implements DataConnect {
     public void removeCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + c.getId();
         Statement stmt = con.createStatement();
-        try {
-            customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            customerSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new CustomerNotFoundException(c.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
-        }
-        if (value == 0) {
-            throw new CustomerNotFoundException(c.getId() + "");
         }
     }
 
@@ -940,22 +911,20 @@ public class DBConnect implements DataConnect {
     public void removeCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
         Statement stmt = con.createStatement();
-        try {
-            customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            customerSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new CustomerNotFoundException(id + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
-        }
-        if (value == 0) {
-            throw new CustomerNotFoundException(id + "");
         }
     }
 
@@ -963,23 +932,20 @@ public class DBConnect implements DataConnect {
     public Customer getCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Customer> customers = new ArrayList<>();
         try {
             customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Customer> customers;
-        try {
             ResultSet res = stmt.executeQuery(query);
 
             customers = getCustomersFromResultSet(res);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
         }
-
         if (customers.isEmpty()) {
             throw new CustomerNotFoundException("Customer " + id + " could not be found");
         }
@@ -990,23 +956,20 @@ public class DBConnect implements DataConnect {
     public List<Customer> getCustomerByName(String name) throws SQLException, CustomerNotFoundException {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.NAME = " + name;
         Statement stmt = con.createStatement();
+        List<Customer> customers = new ArrayList<>();
         try {
             customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Customer> customers;
-        try {
             ResultSet res = stmt.executeQuery(query);
 
             customers = getCustomersFromResultSet(res);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
         }
-
         if (customers.isEmpty()) {
             throw new CustomerNotFoundException("Customer " + name + " could not be found");
         }
@@ -1017,22 +980,20 @@ public class DBConnect implements DataConnect {
     public List<Customer> customerLookup(String terms) throws IOException, SQLException {
         String query = "SELECT * FROM CUSTOMERS";
         Statement stmt = con.createStatement();
+        List<Customer> customers = new ArrayList<>();
         try {
             customerSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        ResultSet res;
-        try {
-            res = stmt.executeQuery(query);
+            ResultSet res = stmt.executeQuery(query);
+            customers = getCustomersFromResultSet(res);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             customerSem.release();
         }
 
-        List<Customer> customers = getCustomersFromResultSet(res);
         List<Customer> newList = new ArrayList<>();
 
         customers.stream().filter((c) -> (c.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((c) -> {
@@ -1047,13 +1008,9 @@ public class DBConnect implements DataConnect {
     public List<Staff> getAllStaff() throws SQLException {
         String query = "SELECT * FROM STAFF";
         Statement stmt = con.createStatement();
+        List<Staff> staff = new ArrayList<>();
         try {
             staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Staff> staff;
-        try {
             ResultSet set = stmt.executeQuery(query);
             staff = new ArrayList<>();
             while (set.next()) {
@@ -1070,6 +1027,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
         }
@@ -1100,10 +1059,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -1113,6 +1068,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
         }
@@ -1123,22 +1080,20 @@ public class DBConnect implements DataConnect {
     public Staff updateStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = s.getSQLUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            staffSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new StaffNotFoundException(s.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
-        }
-        if (value == 0) {
-            throw new StaffNotFoundException(s.getId() + "");
         }
         return s;
     }
@@ -1147,22 +1102,20 @@ public class DBConnect implements DataConnect {
     public void removeStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + s.getId();
         Statement stmt = con.createStatement();
-        try {
-            staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            staffSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new StaffNotFoundException(s.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
-        }
-        if (value == 0) {
-            throw new StaffNotFoundException(s.getId() + "");
         }
     }
 
@@ -1170,22 +1123,20 @@ public class DBConnect implements DataConnect {
     public void removeStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
-        try {
-            staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            staffSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new StaffNotFoundException(id + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
-        }
-        if (value == 0) {
-            throw new StaffNotFoundException(id + "");
         }
     }
 
@@ -1193,19 +1144,17 @@ public class DBConnect implements DataConnect {
     public Staff getStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Staff> staff = new ArrayList<>();
         try {
             staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Staff> staff;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             staff = getStaffFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
         }
@@ -1221,22 +1170,19 @@ public class DBConnect implements DataConnect {
     public Staff login(String username, String password) throws SQLException, LoginException {
         String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username.toLowerCase() + "'";
         Statement stmt = con.createStatement();
+        List<Staff> staff = new ArrayList<>();
         try {
             staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        ResultSet res;
-        try {
-            res = stmt.executeQuery(query);
+            ResultSet res = stmt.executeQuery(query);
+            staff = getStaffFromResultSet(res);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
         }
-
-        List<Staff> staff = getStaffFromResultSet(res);
 
         if (staff.isEmpty()) {
             throw new LoginException(username + " could not be found");
@@ -1255,22 +1201,19 @@ public class DBConnect implements DataConnect {
     public int getStaffCount() throws SQLException {
         String query = "SELECT * FROM STAFF";
         Statement stmt = con.createStatement();
+        List<Staff> staff = new ArrayList<>();
         try {
             staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        ResultSet res;
-        try {
-            res = stmt.executeQuery(query);
+            ResultSet res = stmt.executeQuery(query);
+            staff = getStaffFromResultSet(res);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
         }
-
-        List<Staff> staff = getStaffFromResultSet(res);
 
         return staff.size();
     }
@@ -1280,13 +1223,9 @@ public class DBConnect implements DataConnect {
     public List<Discount> getAllDiscounts() throws SQLException {
         String query = "SELECT * FROM DISCOUNTS";
         Statement stmt = con.createStatement();
+        List<Discount> discounts = new ArrayList<>();
         try {
             discountSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Discount> discounts;
-        try {
             ResultSet set = stmt.executeQuery(query);
             discounts = new ArrayList<>();
             while (set.next()) {
@@ -1302,6 +1241,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             discountSem.release();
         }
@@ -1331,10 +1272,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             discountSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -1344,6 +1281,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             discountSem.release();
         }
@@ -1354,22 +1293,20 @@ public class DBConnect implements DataConnect {
     public Discount updateDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = d.getSQLUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            discountSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            discountSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new DiscountNotFoundException(d.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             discountSem.release();
-        }
-        if (value == 0) {
-            throw new DiscountNotFoundException(d.getId() + "");
         }
         return d;
     }
@@ -1378,22 +1315,20 @@ public class DBConnect implements DataConnect {
     public void removeDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + d.getId();
         Statement stmt = con.createStatement();
-        try {
-            discountSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
             value = stmt.executeUpdate(query);
+            discountSem.acquire();
+            if (value == 0) {
+                throw new DiscountNotFoundException(d.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             discountSem.release();
-        }
-        if (value == 0) {
-            throw new DiscountNotFoundException(d.getId() + "");
         }
     }
 
@@ -1401,22 +1336,20 @@ public class DBConnect implements DataConnect {
     public void removeDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
-        try {
-            discountSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
             value = stmt.executeUpdate(query);
+            discountSem.acquire();
+            if (value == 0) {
+                throw new DiscountNotFoundException(id + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             discountSem.release();
-        }
-        if (value == 0) {
-            throw new DiscountNotFoundException(id + "");
         }
     }
 
@@ -1424,19 +1357,17 @@ public class DBConnect implements DataConnect {
     public Discount getDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Discount> discounts = new ArrayList<>();
         try {
             discountSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Discount> discounts;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             discounts = getDiscountsFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             discountSem.release();
         }
@@ -1453,13 +1384,9 @@ public class DBConnect implements DataConnect {
     public List<Tax> getAllTax() throws SQLException {
         String query = "SELECT * FROM TAX";
         Statement stmt = con.createStatement();
+        List<Tax> tax = new ArrayList<>();
         try {
             taxSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Tax> tax;
-        try {
             ResultSet set = stmt.executeQuery(query);
             tax = new ArrayList<>();
             while (set.next()) {
@@ -1473,6 +1400,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             taxSem.release();
         }
@@ -1500,10 +1429,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             taxSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -1513,6 +1438,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             taxSem.release();
         }
@@ -1523,22 +1450,20 @@ public class DBConnect implements DataConnect {
     public Tax updateTax(Tax t) throws SQLException, TaxNotFoundException {
         String query = t.getSQLUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            taxSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            taxSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new TaxNotFoundException(t.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             taxSem.release();
-        }
-        if (value == 0) {
-            throw new TaxNotFoundException(t.getId() + "");
         }
         return t;
     }
@@ -1561,22 +1486,20 @@ public class DBConnect implements DataConnect {
         }
         String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
-        try {
-            taxSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            taxSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new TaxNotFoundException(id + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             taxSem.release();
-        }
-        if (value == 0) {
-            throw new TaxNotFoundException(id + "");
         }
     }
 
@@ -1584,41 +1507,19 @@ public class DBConnect implements DataConnect {
     public Tax getTax(int id) throws SQLException, TaxNotFoundException {
         String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Tax> tax = new ArrayList<>();
         try {
             taxSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Tax> tax;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             tax = getTaxFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             taxSem.release();
-        }
-
-        if (tax.isEmpty()) {
-            throw new TaxNotFoundException(id + "");
-        }
-
-        return tax.get(0);
-    }
-
-    private Tax getTaxNoSem(int id) throws SQLException, TaxNotFoundException {
-        String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Tax> tax;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-
-            tax = getTaxFromResultSet(set);
-        } catch (SQLException ex) {
-            log.log(Level.SEVERE, null, ex);
-            throw ex;
         }
 
         if (tax.isEmpty()) {
@@ -1632,20 +1533,18 @@ public class DBConnect implements DataConnect {
     public List<Product> getProductsInTax(int id) throws SQLException {
         String query = "SELECT * FROM PRODUCTS, TAX WHERE TAX.ID = PRODUCTS.TAX_ID AND TAX.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Product> products = new ArrayList<>();
         try {
             taxSem.acquire();
             productSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Product> products;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             products = getProductsFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             taxSem.release();
             productSem.release();
@@ -1659,13 +1558,9 @@ public class DBConnect implements DataConnect {
     public List<Category> getAllCategorys() throws SQLException {
         String query = "SELECT * FROM CATEGORYS";
         Statement stmt = con.createStatement();
+        List<Category> categorys = new ArrayList<>();
         try {
             categorySem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Category> categorys;
-        try {
             ResultSet set = stmt.executeQuery(query);
             categorys = new ArrayList<>();
             while (set.next()) {
@@ -1681,6 +1576,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             categorySem.release();
         }
@@ -1709,10 +1606,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             categorySem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -1722,6 +1615,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             categorySem.release();
         }
@@ -1732,22 +1627,20 @@ public class DBConnect implements DataConnect {
     public Category updateCategory(Category c) throws SQLException, CategoryNotFoundException {
         String query = c.getSQLUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            categorySem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            categorySem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new CategoryNotFoundException(c.getID() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             categorySem.release();
-        }
-        if (value == 0) {
-            throw new CategoryNotFoundException(c.getID() + "");
         }
         return c;
     }
@@ -1770,22 +1663,20 @@ public class DBConnect implements DataConnect {
         }
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
-        try {
-            categorySem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            categorySem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new CategoryNotFoundException(id + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             categorySem.release();
-        }
-        if (value == 0) {
-            throw new CategoryNotFoundException(id + "");
         }
     }
 
@@ -1793,41 +1684,19 @@ public class DBConnect implements DataConnect {
     public Category getCategory(int id) throws SQLException, CategoryNotFoundException {
         String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Category> categorys = new ArrayList<>();
         try {
             categorySem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Category> categorys;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             categorys = getCategorysFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             categorySem.release();
-        }
-
-        if (categorys.isEmpty()) {
-            throw new CategoryNotFoundException(id + "");
-        }
-
-        return categorys.get(0);
-    }
-
-    private Category getCategoryNoSem(int id) throws SQLException, CategoryNotFoundException {
-        String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Category> categorys;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-
-            categorys = getCategorysFromResultSet(set);
-        } catch (SQLException ex) {
-            log.log(Level.SEVERE, null, ex);
-            throw ex;
         }
 
         if (categorys.isEmpty()) {
@@ -1841,66 +1710,24 @@ public class DBConnect implements DataConnect {
     public List<Product> getProductsInCategory(int id) throws SQLException {
         String query = "SELECT * FROM PRODUCTS, CATEGORYS WHERE CATEGORYS.ID = PRODUCTS.CATEGORY_ID AND CATEGORYS.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Product> products = new ArrayList<>();
         try {
             categorySem.acquire();
             productSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Product> products;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             products = getProductsFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             categorySem.release();
             productSem.release();
         }
 
         return products;
-    }
-
-    private List<Sale> getAllSalesNoSem() throws SQLException {
-        String query = "SELECT * FROM SALES";
-        Statement stmt = con.createStatement();
-        List<Sale> sales;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            sales = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                int customerid = set.getInt("CUSTOMER");
-                Customer customer = null;
-                if (customerid > -1) {
-                    try {
-                        customer = getCustomer(customerid);
-                    } catch (CustomerNotFoundException ex) {
-                    }
-                }
-                Date date = new Date(set.getLong("TIMESTAMP"));
-                String terminal = set.getString("TERMINAL");
-                boolean cashed = set.getBoolean("CASHED");
-                int sId = set.getInt("STAFF");
-                Staff staff = null;
-                try {
-                    staff = getStaff(sId);
-                } catch (StaffNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
-                s.setProducts(getItemsInSale(s));
-                sales.add(s);
-            }
-        } catch (SQLException ex) {
-            log.log(Level.SEVERE, null, ex);
-            throw ex;
-        }
-
-        return sales;
     }
 
     public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
@@ -1913,7 +1740,7 @@ public class DBConnect implements DataConnect {
             try {
                 customer = getCustomer(customerid);
             } catch (CustomerNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.WARNING, null, ex);
             }
             Date date = new Date(set.getLong("TIMESTAMP"));
             String terminal = set.getString("TERMINAL");
@@ -1921,9 +1748,9 @@ public class DBConnect implements DataConnect {
             int sId = set.getInt("STAFF");
             Staff staff = null;
             try {
-                staff = getStaff(id);
+                staff = getStaff(sId);
             } catch (StaffNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.WARNING, null, ex);
             }
             Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
             s.setProducts(getItemsInSale(s));
@@ -1938,10 +1765,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             saleSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -1970,6 +1793,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             saleSem.release();
         }
@@ -1981,7 +1806,7 @@ public class DBConnect implements DataConnect {
         try {
             updateCustomer(c);
         } catch (SQLException | CustomerNotFoundException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -1989,13 +1814,9 @@ public class DBConnect implements DataConnect {
     public List<Sale> getAllSales() throws SQLException {
         String query = "SELECT * FROM SALES";
         Statement stmt = con.createStatement();
+        List<Sale> sales = new ArrayList<>();
         try {
             saleSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Sale> sales;
-        try {
             ResultSet set = stmt.executeQuery(query);
             sales = new ArrayList<>();
             while (set.next()) {
@@ -2015,7 +1836,7 @@ public class DBConnect implements DataConnect {
                 try {
                     staff = getStaff(sId);
                 } catch (StaffNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.WARNING, null, ex);
                 }
                 Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
                 s.setProducts(getItemsInSale(s));
@@ -2024,6 +1845,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             saleSem.release();
         }
@@ -2035,13 +1858,9 @@ public class DBConnect implements DataConnect {
     public BigDecimal getTillTakings(String t) throws SQLException {
         String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = '" + t + "'";
         Statement stmt = con.createStatement();
-        try {
-            saleSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         BigDecimal result = new BigDecimal("0");
         try {
+            saleSem.acquire();
             ResultSet set = stmt.executeQuery(query);
             while (set.next()) {
                 int id = set.getInt("ID");
@@ -2060,7 +1879,7 @@ public class DBConnect implements DataConnect {
                 try {
                     staff = getStaff(sId);
                 } catch (StaffNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.WARNING, null, ex);
                 }
                 Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
                 s.setProducts(getItemsInSale(s));
@@ -2070,13 +1889,15 @@ public class DBConnect implements DataConnect {
                     try {
                         updateSaleNoSem(s);
                     } catch (SaleNotFoundException ex) {
-                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                        log.log(Level.WARNING, null, ex);
                     }
                 }
             }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             saleSem.release();
         }
@@ -2087,18 +1908,16 @@ public class DBConnect implements DataConnect {
     public List<Sale> getUncashedSales(String t) throws SQLException {
         String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = '" + t + "'";
         Statement stmt = con.createStatement();
+        List<Sale> sales = new ArrayList<>();
         try {
             saleSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Sale> sales;
-        try {
             ResultSet set = stmt.executeQuery(query);
             sales = getSalesFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             saleSem.release();
         }
@@ -2132,13 +1951,13 @@ public class DBConnect implements DataConnect {
                 try {
                     item = getProduct(set.getInt("PRODUCT_ID"));
                 } catch (ProductNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.WARNING, null, ex);
                 }
             } else {
                 try {
                     item = getDiscount(set.getInt("PRODUCT_ID"));
                 } catch (DiscountNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.WARNING, null, ex);
                 }
             }
             int quantity = set.getInt("QUANTITY");
@@ -2153,18 +1972,16 @@ public class DBConnect implements DataConnect {
     public Sale getSale(int id) throws SQLException, SaleNotFoundException {
         String query = "SELECT * FROM APP.SALES WHERE SALES.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Sale> sales = new ArrayList<>();
         try {
             saleSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Sale> sales;
-        try {
             ResultSet set = stmt.executeQuery(query);
             sales = getSalesFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             saleSem.release();
         }
@@ -2180,22 +1997,20 @@ public class DBConnect implements DataConnect {
     public Sale updateSale(Sale s) throws SQLException, SaleNotFoundException {
         String query = s.getSQLUpdateStatement();
         Statement stmt = con.createStatement();
-        try {
-            saleSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            saleSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new SaleNotFoundException(s.getId() + "");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             saleSem.release();
-        }
-        if (value == 0) {
-            throw new SaleNotFoundException(s.getId() + "");
         }
         return s;
     }
@@ -2244,22 +2059,19 @@ public class DBConnect implements DataConnect {
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
         Statement stmt = con.createStatement();
+        List<Staff> staff = new ArrayList<>();
         try {
             staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        ResultSet res;
-        try {
-            res = stmt.executeQuery(query);
+            ResultSet res = stmt.executeQuery(query);
+            staff = getStaffFromResultSet(res);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, "There has been an error logging " + id + " into the system", ex);
         } finally {
             staffSem.release();
         }
-
-        List<Staff> staff = getStaffFromResultSet(res);
 
         if (staff.isEmpty()) {
             throw new LoginException(id + " could not be found");
@@ -2269,17 +2081,18 @@ public class DBConnect implements DataConnect {
 
         try {
             loggedInSem.acquire();
+
+            if (loggedIn.contains(s)) {
+                loggedInSem.release();
+                throw new LoginException("You are already logged in elsewhere");
+            }
+
+            loggedIn.add(s);
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        if (loggedIn.contains(s)) {
+            log.log(Level.SEVERE, "There has been an error loggin " + id + " into the system", ex);
+        } finally {
             loggedInSem.release();
-            throw new LoginException("You are already logged in elsewhere");
         }
-
-        loggedIn.add(s);
-        loggedInSem.release();
 
         return s;
     }
@@ -2293,11 +2106,15 @@ public class DBConnect implements DataConnect {
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
         try {
             loggedInSem.acquire();
+
+            loggedIn.remove(s);
+            return;
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, "There has been an error loggin " + s.getId() + " out of the system", ex);
+        } finally {
+            loggedInSem.release();
         }
-        loggedIn.remove(s);
-        loggedInSem.release();
+        throw new IOException("Error logging out");
     }
 
     private List<Screen> getScreensFromResultSet(ResultSet set) throws SQLException {
@@ -2324,13 +2141,13 @@ public class DBConnect implements DataConnect {
             try {
                 p = getProduct(set.getInt("PRODUCT"));
             } catch (ProductNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.WARNING, null, ex);
             }
             Screen s = null;
             try {
                 s = getScreen(set.getInt("SCREEN_ID"));
             } catch (ScreenNotFoundException ex) {
-                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                log.log(Level.SEVERE, null, ex);
             }
             int color = set.getInt("COLOR");
             TillButton b = new TillButton(name, p, s, color, id);
@@ -2347,10 +2164,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -2360,6 +2173,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
         }
@@ -2372,10 +2187,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -2385,6 +2196,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
         }
@@ -2396,23 +2209,21 @@ public class DBConnect implements DataConnect {
         String query = "DELETE FROM SCREENS WHERE SCREENS.ID = " + s.getId();
         String buttonsQuery = "DELETE FROM BUTTONS WHERE BUTTONS.SCREEN_ID = " + s.getId();
         Statement stmt = con.createStatement();
-        try {
-            screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            screensSem.acquire();
             value = stmt.executeUpdate(query);
             stmt.executeUpdate(buttonsQuery);
+            if (value == 0) {
+                throw new ScreenNotFoundException("Screen " + s + " could not be found");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
-        }
-        if (value == 0) {
-            throw new ScreenNotFoundException("Screen " + s + " could not be found");
         }
     }
 
@@ -2420,22 +2231,20 @@ public class DBConnect implements DataConnect {
     public void removeButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = "DELETE FROM BUTTONS WHERE BUTTONS.ID = " + b.getId();
         Statement stmt = con.createStatement();
-        try {
-            screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            screensSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new ButtonNotFoundException("Button " + b + " could not be found");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
-        }
-        if (value == 0) {
-            throw new ButtonNotFoundException("Button " + b + " could not be found");
         }
     }
 
@@ -2443,19 +2252,17 @@ public class DBConnect implements DataConnect {
     public Screen getScreen(int s) throws SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + s;
         Statement stmt = con.createStatement();
+        List<Screen> screens = new ArrayList<>();
         try {
             screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Screen> screens;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             screens = getScreensFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
         }
@@ -2492,19 +2299,17 @@ public class DBConnect implements DataConnect {
     public TillButton getButton(int b) throws SQLException, ButtonNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE BUTTONS.ID = " + b;
         Statement stmt = con.createStatement();
+        List<TillButton> buttons = new ArrayList<>();
         try {
             screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<TillButton> buttons;
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             buttons = getButtonsFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
         }
@@ -2520,22 +2325,20 @@ public class DBConnect implements DataConnect {
     public Screen updateScreen(Screen s) throws SQLException, ScreenNotFoundException {
         String query = s.getSQLUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            screensSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new ScreenNotFoundException("Screen " + s + " could not be found");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
-        }
-        if (value == 0) {
-            throw new ScreenNotFoundException("Screen " + s + " could not be found");
         }
         return s;
     }
@@ -2544,22 +2347,20 @@ public class DBConnect implements DataConnect {
     public TillButton updateButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = b.getSQLUpdateString();
         Statement stmt = con.createStatement();
-        try {
-            screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            screensSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new ButtonNotFoundException("Button " + b + " could not be found");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
-        }
-        if (value == 0) {
-            throw new ButtonNotFoundException("Button " + b + " could not be found");
         }
         return b;
     }
@@ -2568,13 +2369,9 @@ public class DBConnect implements DataConnect {
     public List<Screen> getAllScreens() throws SQLException {
         String query = "SELECT * FROM SCREENS";
         Statement stmt = con.createStatement();
+        List<Screen> screens = new ArrayList<>();
         try {
             screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Screen> screens;
-        try {
             ResultSet set = stmt.executeQuery(query);
             screens = new ArrayList<>();
             while (set.next()) {
@@ -2589,6 +2386,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
         }
@@ -2624,13 +2423,9 @@ public class DBConnect implements DataConnect {
     public List<TillButton> getAllButtons() throws SQLException {
         String query = "SELECT * FROM BUTTONS";
         Statement stmt = con.createStatement();
+        List<TillButton> buttons = new ArrayList<>();
         try {
             screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<TillButton> buttons;
-        try {
             ResultSet set = stmt.executeQuery(query);
             buttons = new ArrayList<>();
             while (set.next()) {
@@ -2640,14 +2435,14 @@ public class DBConnect implements DataConnect {
                 try {
                     p = getProduct(set.getInt("PRODUCT"));
                 } catch (ProductNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.WARNING, null, ex);
                 }
                 int color = set.getInt("COLOR");
                 Screen s = null;
                 try {
                     s = getScreenNoSem(set.getInt("SCREEN_ID"));
                 } catch (ScreenNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    log.log(Level.SEVERE, null, ex);
                 }
                 TillButton b = new TillButton(name, p, s, color, id);
 
@@ -2656,6 +2451,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
         }
@@ -2667,13 +2464,9 @@ public class DBConnect implements DataConnect {
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM BUTTONS WHERE BUTTONS.SCREEN_ID=" + s.getId();
         Statement stmt = con.createStatement();
+        List<TillButton> buttons = new ArrayList<>();
         try {
             screensSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<TillButton> buttons;
-        try {
             ResultSet set = stmt.executeQuery(query);
             buttons = new ArrayList<>();
             while (set.next()) {
@@ -2684,7 +2477,7 @@ public class DBConnect implements DataConnect {
                     try {
                         i = getProduct(set.getInt("PRODUCT"));
                     } catch (ProductNotFoundException ex) {
-                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                        log.log(Level.WARNING, null, ex);
                     }
                 }
                 int color = set.getInt("COLOR");
@@ -2695,6 +2488,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             screensSem.release();
         }
@@ -2721,24 +2516,27 @@ public class DBConnect implements DataConnect {
     public void suspendSale(Sale sale, Staff staff) throws IOException {
         try {
             suspendSem.acquire();
+            suspendedSales.put(staff, sale);
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            suspendSem.release();
         }
-        suspendedSales.put(staff, sale);
-        suspendSem.release();
     }
 
     @Override
     public Sale resumeSale(Staff s) throws IOException {
         try {
             suspendSem.acquire();
+            Sale sale = suspendedSales.get(s);
+            suspendedSales.remove(s);
+            return sale;
         } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            suspendSem.release();
         }
-        Sale sale = suspendedSales.get(s);
-        suspendedSales.remove(s);
-        suspendSem.release();
-        return sale;
+        throw new IOException("Error retrieveing sale");
     }
 
     @Override
@@ -2827,10 +2625,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             tillSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -2840,6 +2634,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             tillSem.release();
         }
@@ -2850,22 +2646,20 @@ public class DBConnect implements DataConnect {
     public void removeTill(int id) throws IOException, SQLException, TillNotFoundException {
         String query = "DELETE FROM TILLS WHERE TILLS.ID = " + id;
         Statement stmt = con.createStatement();
-        try {
-            tillSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            tillSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new TillNotFoundException(id + " could not be found");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             tillSem.release();
-        }
-        if (value == 0) {
-            throw new TillNotFoundException(id + " could not be found");
         }
     }
 
@@ -2874,20 +2668,16 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM TILLS WHERE TILLS.ID = " + id;
 
         Statement stmt = con.createStatement();
-
+        List<Till> tills = new ArrayList<>();
         try {
             tillSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        List<Till> tills;
-        try {
             ResultSet set = stmt.executeQuery(query);
             tills = getTillsFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             tillSem.release();
         }
@@ -2903,18 +2693,16 @@ public class DBConnect implements DataConnect {
     public List<Till> getAllTills() throws SQLException {
         String query = "SELECT * FROM TILLS";
         Statement stmt = con.createStatement();
+        List<Till> tills = new ArrayList<>();
         try {
             tillSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Till> tills;
-        try {
             ResultSet set = stmt.executeQuery(query);
             tills = getTillsFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             tillSem.release();
         }
@@ -2929,7 +2717,7 @@ public class DBConnect implements DataConnect {
             g.addTill(till);
             return true;
         } catch (SQLException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            log.log(Level.SEVERE, "There has been an error adding a till to the database", ex);
         } catch (TillNotFoundException ex) {
             boolean result = g.showYesNoMessage("New Till", "Allow till " + t + " to connect?");
 
@@ -2938,7 +2726,7 @@ public class DBConnect implements DataConnect {
                 try {
                     addTill(newTill);
                 } catch (IOException | SQLException ex1) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex1);
+                    log.log(Level.SEVERE, "There has been an error connecting a till the server", ex);
                 }
                 g.addTill(newTill);
                 return true;
@@ -2951,20 +2739,16 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM TILLS WHERE TILLS.NAME = '" + t + "'";
 
         Statement stmt = con.createStatement();
-
+        List<Till> tills = new ArrayList<>();
         try {
             tillSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        List<Till> tills;
-        try {
             ResultSet set = stmt.executeQuery(query);
             tills = getTillsFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             tillSem.release();
         }
@@ -3002,10 +2786,6 @@ public class DBConnect implements DataConnect {
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             pluSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             stmt.executeUpdate();
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
@@ -3015,6 +2795,8 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             pluSem.release();
         }
@@ -3026,21 +2808,18 @@ public class DBConnect implements DataConnect {
     public void removePlu(int id) throws IOException, JTillException, SQLException {
         String query = "DELETE FROM PLUS WHERE ID=" + id;
         Statement stmt = con.createStatement();
-        try {
-            pluSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value = 0;
         try {
+            pluSem.acquire();
             stmt.executeUpdate(query);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             pluSem.release();
         }
-
         if (value == 0) {
             throw new JTillException(id + " could not be found");
         }
@@ -3055,18 +2834,16 @@ public class DBConnect implements DataConnect {
     public Plu getPlu(int id) throws IOException, JTillException, SQLException {
         String query = "SELECT * FROM PLUS WHERE ID=" + id;
         Statement stmt = con.createStatement();
+        List<Plu> plus = new ArrayList<>();
         try {
             pluSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Plu> plus;
-        try {
             ResultSet set = stmt.executeQuery(query);
             plus = getPlusFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             pluSem.release();
         }
@@ -3082,18 +2859,16 @@ public class DBConnect implements DataConnect {
     public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
         String query = "SELECT * FROM PLUS WHERE CODE='" + code + "'";
         Statement stmt = con.createStatement();
+        List<Plu> plus = new ArrayList<>();
         try {
             pluSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Plu> plus;
-        try {
             ResultSet set = stmt.executeQuery(query);
             plus = getPlusFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             pluSem.release();
         }
@@ -3109,18 +2884,16 @@ public class DBConnect implements DataConnect {
     public List<Plu> getAllPlus() throws IOException, SQLException {
         String query = "SELECT * FROM PLUS";
         Statement stmt = con.createStatement();
+        List<Plu> plus = new ArrayList<>();
         try {
             pluSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        List<Plu> plus;
-        try {
             ResultSet set = stmt.executeQuery(query);
             plus = getPlusFromResultSet(set);
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             pluSem.release();
         }
@@ -3132,17 +2905,18 @@ public class DBConnect implements DataConnect {
     public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
         String query = "UPDATE PLUS SET CODE='" + p.getCode() + "' WHERE ID=" + p.getId();
         Statement stmt = con.createStatement();
-        try {
-            pluSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
         int value;
         try {
+            pluSem.acquire();
             value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new JTillException("Plu " + p.getId() + " not found");
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             pluSem.release();
         }
@@ -3158,21 +2932,21 @@ public class DBConnect implements DataConnect {
     public boolean checkUsername(String username) throws IOException, SQLException {
         String query = "SELECT * FROM STAFF WHERE USERNAME='" + username.toLowerCase() + "'";
         Statement stmt = con.createStatement();
+
         try {
             staffSem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
             ResultSet set = stmt.executeQuery(query);
 
             return set.next();
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
         } finally {
             staffSem.release();
         }
+        throw new IOException("Error checking username");
     }
 
     @Override

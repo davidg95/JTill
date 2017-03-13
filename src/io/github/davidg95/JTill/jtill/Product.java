@@ -279,7 +279,7 @@ public class Product implements Serializable, Cloneable, Item {
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
                 + " SET PRODUCTS.PLU=" + this.getPlu().getId()
-                + ", PRODUCTS.NAME='" + this.getName()
+                + ", PRODUCTS.NAME='" + this.getLongName()
                 + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
                 + ", PRODUCTS.PRICE=" + this.getPrice()
                 + ", PRODUCTS.STOCK=" + this.getStock()

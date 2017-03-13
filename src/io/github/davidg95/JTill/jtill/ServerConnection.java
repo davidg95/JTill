@@ -27,6 +27,8 @@ import java.util.logging.Logger;
  */
 public class ServerConnection implements DataConnect {
 
+    private static final Logger log = Logger.getGlobal();
+
     private Socket socket;
     private ObjectInputStream obIn;
     private ObjectOutputStream obOut;
@@ -308,19 +310,15 @@ public class ServerConnection implements DataConnect {
     @Override
     public void setSetting(String key, String value) throws IOException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("SETSETTING", key, value));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection while trying to set a setting", ex);
         } finally {
             sem.release();
         }
@@ -329,11 +327,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public String getSetting(String key) throws IOException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSETTING", key));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -342,8 +336,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 throw new IOException(data.getData().toString());
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection while trying to get a setting", ex);
         } finally {
             sem.release();
         }
@@ -372,6 +366,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Product addProduct(Product p) throws IOException, SQLException {
         try {
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("NEWPRODUCT", p));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -381,8 +376,8 @@ public class ServerConnection implements DataConnect {
             if (data.getData() instanceof SQLException) {
                 throw (SQLException) data.getData();
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection while trying to add a product", ex);
         }
         return null;
     }
@@ -398,11 +393,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeProduct(int code) throws IOException, ProductNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVEPRODUCT", code));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -416,8 +407,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection while trying to remove a product", ex);
         } finally {
             sem.release();
         }
@@ -444,11 +435,7 @@ public class ServerConnection implements DataConnect {
     public int purchaseProduct(Product p, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         String input = null;
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("PURCHASE", p.getId(), amount));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -466,8 +453,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection while trying to purchase a product", ex);
         } finally {
             sem.release();
         }
@@ -486,11 +473,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPRODUCT", code));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -506,8 +489,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in server connection while trying to get a product", ex);
         } finally {
             sem.release();
         }
@@ -526,11 +509,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Product getProductByBarcode(String barcode) throws IOException, ProductNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPRODUCTBARCODE", barcode));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -546,8 +525,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            System.out.println(ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection while trying to get a product by barcode", ex);
         } finally {
             sem.release();
         }
@@ -557,11 +536,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Product updateProduct(Product p) throws IOException, SQLException, ProductNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATEPRODUCT", p));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -577,8 +552,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -588,11 +563,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public boolean checkBarcode(String barcode) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("CHECKBARCODE", barcode));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -605,8 +576,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -617,11 +588,7 @@ public class ServerConnection implements DataConnect {
     public List<Discount> getProductsDiscount(Product p) throws IOException, SQLException {
         List<Discount> discounts = null;
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPRODUCTSDISCOUNT", p));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -635,8 +602,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -653,11 +620,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Product> getAllProducts() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLPRODUCTS"));
 
             Object o;
@@ -674,7 +637,8 @@ public class ServerConnection implements DataConnect {
             }
 
             return (List<Product>) o;
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return new ArrayList<>();
     }
@@ -682,11 +646,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Product> productLookup(String terms) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("PRODUCTLOOKUP", terms));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -700,8 +660,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -719,11 +679,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Customer addCustomer(Customer customer) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("NEWCUSTOMER", customer));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("SUCC")) {
@@ -735,8 +691,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -754,11 +710,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVECUSTOMER", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -772,8 +724,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -796,11 +748,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETCUSTOMER", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -816,7 +764,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -826,11 +775,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETCUSTOMERBYNAME", name));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -846,7 +791,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -863,11 +809,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Customer> getAllCustomers() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLCUSTOMERS"));
 
             Object o;
@@ -884,7 +826,8 @@ public class ServerConnection implements DataConnect {
             }
 
             return (List<Customer>) o;
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return new ArrayList<>();
     }
@@ -902,11 +845,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Customer updateCustomer(Customer c) throws IOException, SQLException, CustomerNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATECUSTOMER", c));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -922,8 +861,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -941,11 +880,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Customer> customerLookup(String terms) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("CUSTOMERLOOKUP", terms));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -959,8 +894,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -978,11 +913,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Sale addSale(Sale s) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDSALE", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("SUCC")) {
@@ -994,8 +925,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1005,11 +936,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Sale> getAllSales() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLSALES"));
 
             Object o;
@@ -1026,8 +953,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 throw (SQLException) o;
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return null;
     }
@@ -1035,11 +962,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Sale getSale(int id) throws IOException, SQLException, SaleNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSALE", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1055,8 +978,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1066,11 +989,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Sale updateSale(Sale s) throws IOException, SaleNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATESALE", s));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1086,8 +1005,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1097,11 +1016,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSALESDATERANGE", start, end));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1115,8 +1030,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return null;
     }
@@ -1132,11 +1047,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Staff addStaff(Staff s) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDSTAFF", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -1149,8 +1060,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1168,11 +1079,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVESTAFF", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1186,8 +1093,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1210,11 +1117,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSTAFF", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1230,7 +1133,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1247,20 +1151,13 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Staff> getAllStaff() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLSTAFF"));
-
             Object o;
             try {
                 o = obIn.readObject();
             } catch (IOException ex) {
                 throw ex;
-            } finally {
-                sem.release();
             }
 
             if (o instanceof SQLException) {
@@ -1268,20 +1165,19 @@ public class ServerConnection implements DataConnect {
             }
 
             return (List<Staff>) o;
-        } catch (ClassNotFoundException ex) {
-
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
         }
+
         return new ArrayList<>();
     }
 
     @Override
     public Staff updateStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATESTAFF", s));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1295,10 +1191,11 @@ public class ServerConnection implements DataConnect {
                     throw (StaffNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1309,26 +1206,25 @@ public class ServerConnection implements DataConnect {
     public int getStaffCount() throws IOException, SQLException {
         try {
             sem.acquire();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        obOut.writeObject(ConnectionData.create("STAFFCOUNT"));
-        String input = "";
-        try {
-            input = (String) obIn.readObject();
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (IOException ex) {
-            throw ex;
+            obOut.writeObject(ConnectionData.create("STAFFCOUNT"));
+            String input = "";
+            try {
+                input = (String) obIn.readObject();
+            } catch (IOException ex) {
+                throw ex;
+            }
+
+            if (input.equals("FAIL")) {
+                throw new SQLException("Database Error");
+            } else {
+                return Integer.parseInt(input);
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
-
-        if (input.equals("FAIL")) {
-            throw new SQLException("Database Error");
-        } else {
-            return Integer.parseInt(input);
-        }
+        throw new IOException("Error");
     }
 
     /**
@@ -1344,11 +1240,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Staff login(String username, String password) throws IOException, LoginException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("LOGIN", username, password));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1364,7 +1256,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1383,11 +1276,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("TILLLOGIN", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1403,7 +1292,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1420,11 +1310,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void logout(Staff s) throws IOException, StaffNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("LOGOUT", s));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1434,10 +1320,11 @@ public class ServerConnection implements DataConnect {
                     throw (StaffNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1453,11 +1340,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("TILLLOGOUT", s));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1467,10 +1350,11 @@ public class ServerConnection implements DataConnect {
                     throw (StaffNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1479,11 +1363,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Category addCategory(Category c) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDCATEGORY", c));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -1494,10 +1374,11 @@ public class ServerConnection implements DataConnect {
                     throw (SQLException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1507,11 +1388,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Category updateCategory(Category c) throws IOException, SQLException, CategoryNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATECATEGORY", c));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1525,10 +1402,11 @@ public class ServerConnection implements DataConnect {
                     throw (CategoryNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1543,11 +1421,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeCategory(int id) throws IOException, CategoryNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVECATEGORY", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1559,10 +1433,11 @@ public class ServerConnection implements DataConnect {
                     throw (CategoryNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1571,11 +1446,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Category getCategory(int id) throws IOException, SQLException, CategoryNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETCATEGORY", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1591,8 +1462,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
-
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1602,11 +1473,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Category> getAllCategorys() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLCATEGORYS"));
 
             Object o;
@@ -1624,8 +1491,8 @@ public class ServerConnection implements DataConnect {
                 throw (SQLException) o;
 
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1635,11 +1502,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPRODUCTSINCATEGORY"));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1653,10 +1516,11 @@ public class ServerConnection implements DataConnect {
                     throw (CategoryNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1666,11 +1530,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Discount addDiscount(Discount d) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDDISCOUNT", d));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("SUCC")) {
@@ -1680,10 +1540,11 @@ public class ServerConnection implements DataConnect {
                     throw (SQLException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1693,11 +1554,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Discount updateDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATEDISCOUNT", d));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1711,10 +1568,11 @@ public class ServerConnection implements DataConnect {
                     throw (DiscountNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1729,13 +1587,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeDiscount(int id) throws IOException, DiscountNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVEDISCOUNT", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1747,10 +1599,11 @@ public class ServerConnection implements DataConnect {
                     throw (DiscountNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1759,11 +1612,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Discount getDiscount(int id) throws IOException, SQLException, DiscountNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETDISCOUNT", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1777,10 +1626,11 @@ public class ServerConnection implements DataConnect {
                     throw (DiscountNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1790,11 +1640,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Discount> getAllDiscounts() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLDISCOUNTS"));
 
             Object o;
@@ -1802,8 +1648,6 @@ public class ServerConnection implements DataConnect {
                 o = obIn.readObject();
             } catch (IOException ex) {
                 throw ex;
-            } finally {
-                sem.release();
             }
 
             if (o instanceof List) {
@@ -1812,8 +1656,10 @@ public class ServerConnection implements DataConnect {
                 throw (SQLException) o;
 
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -1821,11 +1667,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Tax addTax(Tax t) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDTAX", t));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("SUCC")) {
@@ -1835,10 +1677,11 @@ public class ServerConnection implements DataConnect {
                     throw (SQLException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1853,11 +1696,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeTax(int id) throws IOException, TaxNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVETAX", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1869,10 +1708,11 @@ public class ServerConnection implements DataConnect {
                     throw (TaxNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1881,13 +1721,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Tax getTax(int id) throws IOException, SQLException, TaxNotFoundException {
         try {
-            try {
-                sem.acquire();
-
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETTAX", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1901,11 +1735,11 @@ public class ServerConnection implements DataConnect {
                     throw (TaxNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class
-                    .getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1915,13 +1749,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Tax updateTax(Tax t) throws IOException, SQLException, TaxNotFoundException {
         try {
-            try {
-                sem.acquire();
-
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATETAX", t));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -1935,10 +1763,11 @@ public class ServerConnection implements DataConnect {
                     throw (TaxNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1948,11 +1777,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Tax> getAllTax() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLTAX"));
 
             Object o;
@@ -1960,17 +1785,18 @@ public class ServerConnection implements DataConnect {
                 o = obIn.readObject();
             } catch (IOException ex) {
                 throw ex;
-            } finally {
-                sem.release();
             }
 
             if (o instanceof List) {
                 return (List<Tax>) o;
             } else {
                 throw (SQLException) o;
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -1978,11 +1804,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Product> getProductsInTax(int id) throws IOException, SQLException, TaxNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPRODUCTSINTAX", id));
 
             ConnectionData data;
@@ -1991,8 +1813,6 @@ public class ServerConnection implements DataConnect {
                 data = (ConnectionData) obIn.readObject();
             } catch (IOException ex) {
                 throw ex;
-            } finally {
-                sem.release();
             }
 
             if (data.getFlag().equals("SUCC")) {
@@ -2002,10 +1822,13 @@ public class ServerConnection implements DataConnect {
                     throw (TaxNotFoundException) data.getData();
                 } else {
                     throw (SQLException) data.getData();
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
         }
         return new ArrayList<>();
     }
@@ -2029,11 +1852,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Screen addScreen(Screen s) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDSCREEN", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2044,10 +1863,11 @@ public class ServerConnection implements DataConnect {
                     throw (SQLException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2057,11 +1877,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public TillButton addButton(TillButton b) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDBUTTON", b));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2072,10 +1888,11 @@ public class ServerConnection implements DataConnect {
                     throw (SQLException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2085,11 +1902,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVESCREEN", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2100,10 +1913,11 @@ public class ServerConnection implements DataConnect {
                     throw (ScreenNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2112,11 +1926,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removeButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVEBUTTON", b));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2127,10 +1937,11 @@ public class ServerConnection implements DataConnect {
                     throw (ButtonNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2139,11 +1950,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSCREEN", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2156,10 +1963,11 @@ public class ServerConnection implements DataConnect {
                     throw (ScreenNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2169,11 +1977,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public TillButton getButton(int b) throws IOException, SQLException, ButtonNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETBUTTON", b));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2186,10 +1990,11 @@ public class ServerConnection implements DataConnect {
                     throw (ButtonNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2199,11 +2004,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATESCREEN", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2216,10 +2017,11 @@ public class ServerConnection implements DataConnect {
                     throw (ScreenNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2229,11 +2031,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public TillButton updateButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATEBUTTON", b));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2246,10 +2044,11 @@ public class ServerConnection implements DataConnect {
                     throw (ButtonNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2259,27 +2058,24 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Screen> getAllScreens() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLSCREENS"));
             Object o;
             try {
                 o = obIn.readObject();
             } catch (IOException ex) {
                 throw ex;
-            } finally {
-                sem.release();
             }
             if (o instanceof List) {
                 return (List<Screen>) o;
             } else {
                 throw (SQLException) o;
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2287,27 +2083,24 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<TillButton> getAllButtons() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLBUTTONS"));
             Object o;
             try {
                 o = obIn.readObject();
             } catch (IOException ex) {
                 throw ex;
-            } finally {
-                sem.release();
             }
             if (o instanceof List) {
                 return (List<TillButton>) o;
             } else {
                 throw (SQLException) o;
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2315,11 +2108,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETBUTTONSONSCREEN", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2332,10 +2121,11 @@ public class ServerConnection implements DataConnect {
                     throw (ScreenNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2355,11 +2145,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Plu addPlu(Plu plu) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDPLU", plu));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2370,10 +2156,11 @@ public class ServerConnection implements DataConnect {
                     throw (SQLException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2383,11 +2170,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void removePlu(int id) throws IOException, JTillException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVEPLU", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -2399,10 +2182,11 @@ public class ServerConnection implements DataConnect {
                     throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2416,11 +2200,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Plu getPlu(int id) throws IOException, JTillException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPLU", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -2436,7 +2216,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2446,11 +2227,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPLUBYCODE", code));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -2466,7 +2243,8 @@ public class ServerConnection implements DataConnect {
                     throw new IOException(data.getData().toString());
                 }
             }
-        } catch (ClassNotFoundException ex) {
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2476,11 +2254,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public List<Plu> getAllPlus() throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLPLUS"));
 
             Object o;
@@ -2488,17 +2262,18 @@ public class ServerConnection implements DataConnect {
                 o = obIn.readObject();
             } catch (IOException ex) {
                 throw ex;
-            } finally {
-                sem.release();
             }
 
             if (o instanceof List) {
                 return (List<Plu>) o;
             } else {
                 throw (SQLException) o;
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
         }
         return null;
     }
@@ -2506,13 +2281,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
         try {
-            try {
-                sem.acquire();
-
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class
-                        .getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATEPLU", p));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -2526,10 +2295,11 @@ public class ServerConnection implements DataConnect {
                     throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
+
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2539,11 +2309,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("ISLOGGEDTILL", s));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -2558,9 +2324,10 @@ public class ServerConnection implements DataConnect {
                 }
             } else {
                 return (boolean) data.getData() == true;
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2570,11 +2337,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public boolean checkUsername(String username) throws IOException, SQLException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("CHECKUSER", username));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -2587,9 +2350,10 @@ public class ServerConnection implements DataConnect {
                 }
             } else {
                 return (boolean) data.getData();
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2599,11 +2363,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public String getSetting(String key, String value) throws IOException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSETTINGDEFAULT", key, value));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -2611,10 +2371,11 @@ public class ServerConnection implements DataConnect {
                 throw new IOException(data.getData().toString());
             } else {
                 return data.getData().toString();
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
@@ -2623,21 +2384,18 @@ public class ServerConnection implements DataConnect {
     @Override
     public Settings getSettingsInstance() throws IOException {
         try {
-            try {
-                sem.acquire();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSETTINGSINSTANCE"));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
             } else {
                 return (Settings) data.getData();
+
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required");
