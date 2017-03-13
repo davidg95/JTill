@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -48,7 +49,18 @@ public class LogFileHandler extends Handler {
     public void publish(LogRecord record) {
         try {
             String eol = System.getProperty("line.separator");
-            out.write(("[" + new Date(record.getMillis()) + "] " + record.getLevel().toString() + " " + record.getMessage()+ eol).getBytes());
+            SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+            if (record.getThrown() == null) {
+                if (record.getMessage() != null) {
+                    out.write(("[" + df.format(new Date(record.getMillis())) + "] [" + record.getLevel().toString() + "] " + record.getMessage() + eol).getBytes());
+                }
+            } else {
+                if (record.getMessage() != null) {
+                    out.write(("[" + df.format(new Date(record.getMillis())) + "] [" + record.getLevel().toString() + "] " + record.getMessage() + eol + record.getThrown() + eol).getBytes());
+                } else {
+                    out.write(("[" + df.format(new Date(record.getMillis())) + "] [" + record.getLevel().toString() + "] " + record.getThrown() + eol).getBytes());
+                }
+            }
         } catch (IOException ex) {
             Logger.getLogger(LogFileHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -76,6 +88,11 @@ public class LogFileHandler extends Handler {
         file = new File("log.txt");
         try {
             out = new FileOutputStream(file);
+            try {
+                out.write(("JTill log " + new Date() + System.getProperty("line.separator")).getBytes());
+            } catch (IOException ex) {
+                Logger.getLogger(LogFileHandler.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } catch (FileNotFoundException ex) {
             Logger.getLogger(LogFileHandler.class.getName()).log(Level.SEVERE, null, ex);
         }
