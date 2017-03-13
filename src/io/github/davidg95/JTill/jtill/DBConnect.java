@@ -63,6 +63,8 @@ public class DBConnect implements DataConnect {
     private final Semaphore screensSem;
     private final Semaphore tillSem;
     private final Semaphore pluSem;
+    private final Semaphore wasteSem;
+    private final Semaphore wasteItemSem;
 
     public static String hostName;
 
@@ -88,6 +90,8 @@ public class DBConnect implements DataConnect {
         screensSem = new Semaphore(1);
         tillSem = new Semaphore(1);
         pluSem = new Semaphore(1);
+        wasteSem = new Semaphore(1);
+        wasteItemSem = new Semaphore(1);
         suspendedSales = new HashMap<>();
         systemSettings = Settings.getInstance();
         loggedIn = new ArrayList<>();
@@ -270,6 +274,24 @@ public class DBConnect implements DataConnect {
                 + "     COLOR INT,\n"
                 + "     SCREEN_ID INT not null references SCREENS(ID)\n"
                 + ")";
+        String wasteReports = "create table \"APP\".WASTEREPORTS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     VALUE DOUBLE,\n"
+                + "     TIMESTAMP bigint\n"
+                + ")";
+        String wasteItems = "create table \"APP\".WASTEITEMS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     REPORT_ID INT not null references WASTE(ID),\n"
+                + "     PRODUCT INT not null references PRODUCTS(ID),\n"
+                + "     QUANTITY INT,\n"
+                + "     REASON VARCHAR(50)\n"
+                + ")";
 
         Statement stmt = con.createStatement();
         try {
@@ -347,6 +369,18 @@ public class DBConnect implements DataConnect {
         try {
             stmt.execute(buttons);
             log.log(Level.INFO, "Created buttons table");
+        } catch (SQLException ex) {
+            error(ex);
+        }
+        try {
+            stmt.execute(wasteReports);
+            log.log(Level.INFO, "Created waste reports table");
+        } catch (SQLException ex) {
+            error(ex);
+        }
+        try {
+            stmt.execute(wasteItems);
+            log.log(Level.INFO, "Created table waste items");
         } catch (SQLException ex) {
             error(ex);
         }
@@ -2934,5 +2968,283 @@ public class DBConnect implements DataConnect {
     @Override
     public GUIInterface getGUI() {
         return this.g;
+    }
+
+    private List<WasteReport> getWasteReportsFromResultSet(ResultSet set) throws SQLException {
+        List<WasteReport> wrs = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            BigDecimal value = new BigDecimal(Double.toString(set.getDouble("VALUE")));
+            Date date = new Date(set.getLong("TIMESTAMP"));
+            wrs.add(new WasteReport(id, value, date));
+        }
+        return wrs;
+    }
+
+    @Override
+    public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
+        String query = "INSERT INTO APP.WASTEREPORTS (VALUE, TIMESTAMP) values (" + wr.getTotalValue().doubleValue() + "," + wr.getDate().getTime() + ")";
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        try {
+            wasteSem.acquire();
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while (set.next()) {
+                int id = set.getInt(1);
+                wr.setId(id);
+            }
+            for (WasteItem wi : wr.getItems()) {
+                addWasteItem(wr, wi);
+            }
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteSem.release();
+        }
+
+        return wr;
+    }
+
+    @Override
+    public void removeWasteReport(int id) throws IOException, SQLException, JTillException {
+        String query = "DELETE FROM WASTEREPORTS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        int value = 0;
+        try {
+            wasteSem.acquire();
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteSem.release();
+        }
+        if (value == 0) {
+            throw new JTillException(id + " could not be found");
+        }
+    }
+
+    @Override
+    public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException {
+        String query = "SELECT * FROM WASTEREPORTS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        List<WasteReport> wrs = new ArrayList<>();
+        try {
+            wasteSem.acquire();
+            ResultSet set = stmt.executeQuery(query);
+            wrs = getWasteReportsFromResultSet(set);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteSem.release();
+        }
+
+        if (wrs.isEmpty()) {
+            throw new JTillException(id + " could not be found");
+        }
+
+        WasteReport wr = wrs.get(0);
+        wr.setItems(getWasteItemsInReport(id));
+        return wr;
+    }
+
+    private List<WasteItem> getWasteItemsInReport(int id) throws SQLException {
+        String query = "SELECT * FROM WASTEITEMS WHERE REPORT_ID=" + id;
+        Statement stmt = con.createStatement();
+        List<WasteItem> wis = new ArrayList<>();
+        try {
+            wasteItemSem.acquire();
+            ResultSet set = stmt.executeQuery(query);
+            wis = getWasteItemsFromResultSet(set);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteItemSem.release();
+        }
+
+        return wis;
+    }
+
+    @Override
+    public List<WasteReport> getAllWasteReports() throws IOException, SQLException {
+        String query = "SELECT * FROM WASTEREPORTS";
+        Statement stmt = con.createStatement();
+        List<WasteReport> wrs = new ArrayList<>();
+        try {
+            wasteSem.acquire();
+            ResultSet set = stmt.executeQuery(query);
+            wrs = getWasteReportsFromResultSet(set);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteSem.release();
+        }
+
+        return wrs;
+    }
+
+    @Override
+    public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
+        String query = "UPDATE WASTEREPORTS SET VALUE=" + wr.getTotalValue().doubleValue() + ", TIMESTAMP=" + wr.getDate().getTime() + " WHERE ID=" + wr.getId();
+        Statement stmt = con.createStatement();
+        int value;
+        try {
+            wasteSem.acquire();
+            value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new JTillException("Waste Report " + wr.getId() + " not found");
+            }
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteSem.release();
+        }
+        return wr;
+    }
+
+    private List<WasteItem> getWasteItemsFromResultSet(ResultSet set) throws SQLException {
+        List<WasteItem> wis = new ArrayList<>();
+        while (set.next()) {
+            try {
+                int id = set.getInt("ID");
+                Product p = this.getProduct(set.getInt("PRODUCT_ID"));
+                int quantity = set.getInt("QUANTITY");
+                String reason = set.getString("REASON");
+                wis.add(new WasteItem(id, p, quantity, reason));
+            } catch (ProductNotFoundException ex) {
+                log.log(Level.SEVERE, null, ex);
+            }
+        }
+        return wis;
+    }
+
+    @Override
+    public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
+        String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + ",'" + wi.getReason() + "')";
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        try {
+            wasteItemSem.acquire();
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while (set.next()) {
+                int id = set.getInt(1);
+                wr.setId(id);
+            }
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteItemSem.release();
+        }
+
+        return wi;
+    }
+
+    @Override
+    public void removeWasteItem(int id) throws IOException, SQLException, JTillException {
+        String query = "DELETE FROM WASTEITEMS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        int value = 0;
+        try {
+            wasteItemSem.acquire();
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteItemSem.release();
+        }
+        if (value == 0) {
+            throw new JTillException(id + " could not be found");
+        }
+    }
+
+    @Override
+    public WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException {
+        String query = "SELECT * FROM WASTEITEMS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        List<WasteItem> wis = new ArrayList<>();
+        try {
+            wasteItemSem.acquire();
+            ResultSet set = stmt.executeQuery(query);
+            wis = getWasteItemsFromResultSet(set);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteItemSem.release();
+        }
+
+        if (wis.isEmpty()) {
+            throw new JTillException(id + " could not be found");
+        }
+
+        return wis.get(0);
+    }
+
+    @Override
+    public List<WasteItem> getAllWasteItems() throws IOException, SQLException {
+        String query = "SELECT * FROM WASTEITEMS";
+        Statement stmt = con.createStatement();
+        List<WasteItem> wis = new ArrayList<>();
+        try {
+            wasteItemSem.acquire();
+            ResultSet set = stmt.executeQuery(query);
+            wis = getWasteItemsFromResultSet(set);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteItemSem.release();
+        }
+
+        return wis;
+    }
+
+    @Override
+    public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
+        String query = "UPDATE WASTEREPORTS SET PRODUCT=" + wi.getProduct().getId() + ", quantity=" + wi.getQuantity() + ", REASON='" + wi.getReason() + "', WHERE ID=" + wi.getId();
+        Statement stmt = con.createStatement();
+        int value;
+        try {
+            wasteItemSem.acquire();
+            value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new JTillException("Waste Report " + wi.getId() + " not found");
+            }
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } catch (InterruptedException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            wasteItemSem.release();
+        }
+        return wi;
     }
 }

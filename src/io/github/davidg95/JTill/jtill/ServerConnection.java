@@ -2405,4 +2405,52 @@ public class ServerConnection implements DataConnect {
     public GUIInterface getGUI() {
         return this.g;
     }
+
+    @Override
+    public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
+        return null;
+    }
+
+    @Override
+    public void removeWasteReport(int id) throws IOException, SQLException, JTillException {
+    }
+
+    @Override
+    public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException {
+        return null;
+    }
+
+    @Override
+    public List<WasteReport> getAllWasteReports() throws IOException, SQLException {
+        return null;
+    }
+
+    @Override
+    public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
+        return null;
+    }
+
+    @Override
+    public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
+        return null;
+    }
+
+    @Override
+    public void removeWasteItem(int id) throws IOException, SQLException, JTillException {
+    }
+
+    @Override
+    public WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException {
+        return null;
+    }
+
+    @Override
+    public List<WasteItem> getAllWasteItems() throws IOException, SQLException {
+        return null;
+    }
+
+    @Override
+    public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
+        return null;
+    }
 }
