@@ -2391,7 +2391,6 @@ public class ServerConnection implements DataConnect {
                 throw new IOException(data.getData().toString());
             } else {
                 return (Settings) data.getData();
-
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             log.log(Level.SEVERE, "Error in ServerConnection", ex);
@@ -2408,49 +2407,247 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("ADDWASTEREPORT", wr));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                }
+            } else {
+                return (WasteReport) data.getData();
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
     public void removeWasteReport(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("REMOVEWASTEREPORT", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                }
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
+        }
     }
 
     @Override
     public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETWASTEREPORT", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                }
+            } else {
+                WasteReport wr = (WasteReport) data.getData();
+                return wr;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (may require update)");
     }
 
     @Override
     public List<WasteReport> getAllWasteReports() throws IOException, SQLException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETALLWASTEREPORTS"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                }
+            } else {
+                List<WasteReport> wrs = (List) data.getData();
+                return wrs;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (May require update)");
     }
 
     @Override
     public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("UPDATEWASTEREPORT", wr));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                }
+            } else {
+                wr = (WasteReport) data.getData();
+                return wr;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
     public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("ADDWASTEITEM", wr, wi));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                }
+            } else {
+                return (WasteItem) data.getData();
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
     public void removeWasteItem(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("REMOVEWASTEITEM", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                }
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
+        }
     }
 
     @Override
     public WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETWASTEITEM", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                }
+            } else {
+                WasteItem wi = (WasteItem) data.getData();
+                return wi;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (may require update)");
     }
 
     @Override
     public List<WasteItem> getAllWasteItems() throws IOException, SQLException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETALLWASTEITEMS"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                }
+            } else {
+                List<WasteItem> wis = (List) data.getData();
+                return wis;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            log.log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (May require update)");
     }
 
     @Override
     public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("UPDATEWASTEITEM", wi));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof IOException) {
+                    throw (IOException) data.getData();
+                } else if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
+                }
+            } else {
+                wi = (WasteItem) data.getData();
+                return wi;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 }

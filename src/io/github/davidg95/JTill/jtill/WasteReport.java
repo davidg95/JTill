@@ -30,6 +30,10 @@ public class WasteReport implements Serializable {
         this.totalValue = totalValue;
         this.date = date;
     }
+    
+    public WasteReport(Date date){
+        this(BigDecimal.ZERO, date);
+    }
 
     public int getId() {
         return id;

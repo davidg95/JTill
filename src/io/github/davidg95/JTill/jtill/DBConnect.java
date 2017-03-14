@@ -287,7 +287,7 @@ public class DBConnect implements DataConnect {
                 + "     ID INT not null primary key\n"
                 + "         GENERATED ALWAYS AS IDENTITY\n"
                 + "         (START WITH 1, INCREMENT BY 1),\n"
-                + "     REPORT_ID INT not null references WASTE(ID),\n"
+                + "     REPORT_ID INT not null references WASTEREPORTS(ID),\n"
                 + "     PRODUCT INT not null references PRODUCTS(ID),\n"
                 + "     QUANTITY INT,\n"
                 + "     REASON VARCHAR(50)\n"
@@ -3137,7 +3137,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
-        String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + ",'" + wi.getReason() + "')";
+        String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + ",'" + wi.getReason() + "')";
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             wasteItemSem.acquire();
