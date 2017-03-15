@@ -292,6 +292,13 @@ public class DBConnect implements DataConnect {
                 + "     QUANTITY INT,\n"
                 + "     REASON VARCHAR(50)\n"
                 + ")";
+        String wasteReasons = "create table \"APP\".WASTEREASONS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     REASON VARCHAR(30)\n"
+                + ")";
 
         Statement stmt = con.createStatement();
         try {
@@ -381,6 +388,12 @@ public class DBConnect implements DataConnect {
         try {
             stmt.execute(wasteItems);
             log.log(Level.INFO, "Created table waste items");
+        } catch (SQLException ex) {
+            error(ex);
+        }
+        try {
+            stmt.execute(wasteReasons);
+            log.log(Level.INFO, "Created table waste reasons");
         } catch (SQLException ex) {
             error(ex);
         }
@@ -3085,7 +3098,7 @@ public class DBConnect implements DataConnect {
             wasteSem.acquire();
             ResultSet set = stmt.executeQuery(query);
             wrs = getWasteReportsFromResultSet(set);
-            for(WasteReport wr: wrs){
+            for (WasteReport wr : wrs) {
                 wr.setItems(getWasteItemsInReport(wr.getId()));
             }
         } catch (SQLException ex) {
