@@ -3085,6 +3085,9 @@ public class DBConnect implements DataConnect {
             wasteSem.acquire();
             ResultSet set = stmt.executeQuery(query);
             wrs = getWasteReportsFromResultSet(set);
+            for(WasteReport wr: wrs){
+                wr.setItems(getWasteItemsInReport(wr.getId()));
+            }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
             throw ex;
@@ -3124,7 +3127,7 @@ public class DBConnect implements DataConnect {
         while (set.next()) {
             try {
                 int id = set.getInt("ID");
-                Product p = this.getProduct(set.getInt("PRODUCT_ID"));
+                Product p = this.getProduct(set.getInt("PRODUCT"));
                 int quantity = set.getInt("QUANTITY");
                 String reason = set.getString("REASON");
                 wis.add(new WasteItem(id, p, quantity, reason));
@@ -3145,7 +3148,7 @@ public class DBConnect implements DataConnect {
             ResultSet set = stmt.getGeneratedKeys();
             while (set.next()) {
                 int id = set.getInt(1);
-                wr.setId(id);
+                wi.setId(id);
             }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
