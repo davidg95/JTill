@@ -20,6 +20,7 @@ public class Discount implements Serializable, Cloneable, Item {
     private double percentage;
     private BigDecimal price;
     private boolean open;
+    private Product trigger;
 
     /**
      * Constructor for discount which takes in all values.
@@ -28,9 +29,10 @@ public class Discount implements Serializable, Cloneable, Item {
      * @param name the name.
      * @param percentage the percentage as a double from 0-100.
      * @param price the price.
+     * @param trigger the product that triggers this discount.
      */
-    public Discount(int id, String name, double percentage, BigDecimal price) {
-        this(name, percentage, price);
+    public Discount(int id, String name, double percentage, BigDecimal price, Product trigger) {
+        this(name, percentage, price, trigger);
         this.id = id;
     }
 
@@ -40,11 +42,13 @@ public class Discount implements Serializable, Cloneable, Item {
      * @param name the name.
      * @param percentage the percentage as a double from 0-100.
      * @param price the price.
+     * @param trigger the product that triggers this discount.
      */
-    public Discount(String name, double percentage, BigDecimal price) {
+    public Discount(String name, double percentage, BigDecimal price, Product trigger) {
         this.name = name;
         this.percentage = percentage;
         this.price = price;
+        this.trigger = trigger;
     }
 
     @Override
@@ -79,10 +83,19 @@ public class Discount implements Serializable, Cloneable, Item {
         this.percentage = percentage;
     }
 
+    public Product getTrigger() {
+        return trigger;
+    }
+
+    public void setTrigger(Product trigger) {
+        this.trigger = trigger;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.percentage
-                + "," + this.price.doubleValue();
+                + "," + this.price.doubleValue()
+                + "," + this.trigger.getId();
     }
 
     public String getSQLUpdateString() {
@@ -90,6 +103,7 @@ public class Discount implements Serializable, Cloneable, Item {
                 + " SET NAME='" + this.getName()
                 + "', PERCENTAGE=" + this.getPercentage()
                 + ", PRICE=" + this.price.doubleValue()
+                + ", TRIGGER=" + this.trigger.getId()
                 + " WHERE DISCOUNTS.ID=" + this.getId();
     }
 

@@ -158,16 +158,6 @@ public class DBConnect implements DataConnect {
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "     CODE VARCHAR(20))";
-        String discounts = "create table \"APP\".DISCOUNTS\n"
-                + "(\n"
-                + "	ID INT not null primary key\n"
-                + "        GENERATED ALWAYS AS IDENTITY\n"
-                + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "	NAME VARCHAR(20) not null,\n"
-                + "	PLU INTEGER,\n"
-                + "	PERCENTAGE DOUBLE not null,\n"
-                + "	PRICE DOUBLE not null\n"
-                + ")";
         String tax = "create table \"APP\".TAX\n"
                 + "(\n"
                 + "	ID INT not null primary key\n"
@@ -244,6 +234,17 @@ public class DBConnect implements DataConnect {
                 + "	COST_PRICE DOUBLE,\n"
                 + "	MIN_PRODUCT_LEVEL INTEGER,\n"
                 + "	MAX_PRODUCT_LEVEL INTEGER\n"
+                + ")";
+        String discounts = "create table \"APP\".DISCOUNTS\n"
+                + "(\n"
+                + "	ID INT not null primary key\n"
+                + "        GENERATED ALWAYS AS IDENTITY\n"
+                + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "	NAME VARCHAR(20) not null,\n"
+                + "	PLU INTEGER,\n"
+                + "	PERCENTAGE DOUBLE not null,\n"
+                + "	PRICE DOUBLE not null,\n"
+                + "     TRIGGER INTEGER not null references PRODUCTS(ID)"
                 + ")";
         String staff = "create table \"APP\".STAFF\n"
                 + "(\n"
@@ -326,12 +327,6 @@ public class DBConnect implements DataConnect {
             error(ex);
         }
         try {
-            stmt.execute(discounts);
-            log.log(Level.INFO, "Created discounts table");
-        } catch (SQLException ex) {
-            error(ex);
-        }
-        try {
             stmt.execute(configs);
             log.log(Level.INFO, "Created configs table");
         } catch (SQLException ex) {
@@ -352,6 +347,12 @@ public class DBConnect implements DataConnect {
         try {
             stmt.execute(products);
             log.log(Level.INFO, "Created products table");
+        } catch (SQLException ex) {
+            error(ex);
+        }
+        try {
+            stmt.execute(discounts);
+            log.log(Level.INFO, "Created discounts table");
         } catch (SQLException ex) {
             error(ex);
         }
@@ -1264,8 +1265,13 @@ public class DBConnect implements DataConnect {
                 String name = set.getString("NAME");
                 double percentage = set.getDouble("PERCENTAGE");
                 BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-
-                Discount d = new Discount(id, name, percentage, price);
+                Product p = null;
+                try {
+                    p = this.getProduct(set.getInt("TRIGGER"));
+                } catch (ProductNotFoundException ex) {
+                    log.log(Level.SEVERE, null, ex);
+                }
+                Discount d = new Discount(id, name, percentage, price, p);
 
                 discounts.add(d);
             }
@@ -1288,8 +1294,13 @@ public class DBConnect implements DataConnect {
             String name = set.getString("NAME");
             double percentage = set.getDouble("PERCENTAGE");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-
-            Discount d = new Discount(id, name, percentage, price);
+            Product p = null;
+            try {
+                p = this.getProduct(set.getInt("DISCOUNTS.TRIGGER"));
+            } catch (ProductNotFoundException ex) {
+                log.log(Level.SEVERE, null, ex);
+            }
+            Discount d = new Discount(id, name, percentage, price, p);
 
             discounts.add(d);
         }
@@ -1299,7 +1310,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Discount addDiscount(Discount d) throws SQLException {
-        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE) VALUES (" + d.getSQLInsertString() + ")";
+        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, TRIGGER) VALUES (" + d.getSQLInsertString() + ")";
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             log.log(Level.INFO, "Add discount " + d.getId());
