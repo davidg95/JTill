@@ -65,6 +65,6 @@ public class WasteReason implements Serializable {
 
     @Override
     public String toString() {
-        return "ID=" + id + ", Reason=" + reason;
+        return reason;
     }
 }

@@ -845,4 +845,14 @@ public interface DataConnect {
      * @throws JTillException if the waste item could not be found.
      */
     public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException;
+    
+    public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
+    
+    public void removeWasteReason(int id) throws IOException, SQLException, JTillException;
+    
+    public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException;
+    
+    public List<WasteReason> getAllWasteReasons() throws IOException, SQLException;
+    
+    public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
 }

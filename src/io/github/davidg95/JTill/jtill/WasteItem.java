@@ -16,14 +16,14 @@ public class WasteItem implements Serializable {
     private int id;
     private Product product;
     private int quantity;
-    private String reason;
+    private WasteReason reason;
 
-    public WasteItem(int id, Product product, int quantity, String reason) {
+    public WasteItem(int id, Product product, int quantity, WasteReason reason) {
         this(product, quantity, reason);
         this.id = id;
     }
 
-    public WasteItem(Product product, int quantity, String reason) {
+    public WasteItem(Product product, int quantity, WasteReason reason) {
         this.product = product;
         this.quantity = quantity;
         this.reason = reason;
@@ -53,11 +53,11 @@ public class WasteItem implements Serializable {
         this.quantity = quantity;
     }
 
-    public String getReason() {
+    public WasteReason getReason() {
         return reason;
     }
 
-    public void setReason(String reason) {
+    public void setReason(WasteReason reason) {
         this.reason = reason;
     }
 

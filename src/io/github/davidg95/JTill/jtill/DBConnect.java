@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.mail.Authenticator;
@@ -65,6 +66,7 @@ public class DBConnect implements DataConnect {
     private final Semaphore pluSem;
     private final Semaphore wasteSem;
     private final Semaphore wasteItemSem;
+    private final StampedLock wasteReasonLock;
 
     public static String hostName;
 
@@ -92,6 +94,7 @@ public class DBConnect implements DataConnect {
         pluSem = new Semaphore(1);
         wasteSem = new Semaphore(1);
         wasteItemSem = new Semaphore(1);
+        wasteReasonLock = new StampedLock();
         suspendedSales = new HashMap<>();
         systemSettings = Settings.getInstance();
         loggedIn = new ArrayList<>();
@@ -3153,8 +3156,14 @@ public class DBConnect implements DataConnect {
                 int id = set.getInt("ID");
                 Product p = this.getProduct(set.getInt("PRODUCT"));
                 int quantity = set.getInt("QUANTITY");
+                WasteReason wreason = null;
+                try {
+                    wreason = this.getWasteReason(set.getInt("REASON"));
+                } catch (IOException | JTillException ex) {
+                    log.log(Level.SEVERE, null, ex);
+                }
                 String reason = set.getString("REASON");
-                wis.add(new WasteItem(id, p, quantity, reason));
+                wis.add(new WasteItem(id, p, quantity, wreason));
             } catch (ProductNotFoundException ex) {
                 log.log(Level.SEVERE, null, ex);
             }
@@ -3273,5 +3282,118 @@ public class DBConnect implements DataConnect {
             wasteItemSem.release();
         }
         return wi;
+    }
+
+    private List<WasteReason> getWasteReasonsFromResultSet(ResultSet set) throws SQLException {
+        List<WasteReason> wrs = new ArrayList<>();
+        while (set.next()) {
+            int id = set.getInt("ID");
+            String reason = set.getString("REASON");
+            wrs.add(new WasteReason(id, reason));
+        }
+        return wrs;
+    }
+
+    @Override
+    public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
+        String query = "INSERT INTO APP.WASTEREASONS (ID, REASON) values (" + wr.getId() + ",'" + wr.getReason() + "')";
+        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+        long stamp = wasteReasonLock.writeLock();
+        try {
+            stmt.executeUpdate();
+            ResultSet set = stmt.getGeneratedKeys();
+            while (set.next()) {
+                int id = set.getInt(1);
+                wr.setId(id);
+            }
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } finally {
+            wasteReasonLock.unlockWrite(stamp);
+        }
+
+        return wr;
+    }
+
+    @Override
+    public void removeWasteReason(int id) throws IOException, SQLException, JTillException {
+        String query = "DELETE FROM WATSEREASONS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        int value = 0;
+        long stamp = wasteReasonLock.writeLock();
+        try {
+            stmt.executeUpdate(query);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } finally {
+            wasteReasonLock.unlockWrite(stamp);
+        }
+        if (value == 0) {
+            throw new JTillException(id + " could not be found");
+        }
+    }
+
+    @Override
+    public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException {
+        String query = "SELECT * FROM WASTEREASONS WHERE ID=" + id;
+        Statement stmt = con.createStatement();
+        List<WasteReason> wrs = new ArrayList<>();
+        long stamp = wasteReasonLock.readLock();
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            wrs = getWasteReasonsFromResultSet(set);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } finally {
+            wasteReasonLock.unlockRead(stamp);
+        }
+
+        if (wrs.isEmpty()) {
+            throw new JTillException(id + " could not be found");
+        }
+
+        return wrs.get(0);
+    }
+
+    @Override
+    public List<WasteReason> getAllWasteReasons() throws IOException, SQLException {
+        String query = "SELECT * FROM WASTEREASONS";
+        Statement stmt = con.createStatement();
+        List<WasteReason> wrs = new ArrayList<>();
+        long stamp = wasteReasonLock.readLock();
+        try {
+            ResultSet set = stmt.executeQuery(query);
+            wrs = getWasteReasonsFromResultSet(set);
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } finally {
+            wasteReasonLock.unlockRead(stamp);
+        }
+
+        return wrs;
+    }
+
+    @Override
+    public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
+        String query = "UPDATE WASTEREASONS SET REASON='" + wr.getReason() + "'";
+        Statement stmt = con.createStatement();
+        int value;
+        long stamp = wasteReasonLock.writeLock();
+        try {
+            value = stmt.executeUpdate(query);
+            if (value == 0) {
+                throw new JTillException("Waste Reason " + wr.getId() + " not found");
+            }
+        } catch (SQLException ex) {
+            log.log(Level.SEVERE, null, ex);
+            throw ex;
+        } finally {
+            wasteReasonLock.unlockWrite(stamp);
+        }
+        return wr;
     }
 }
