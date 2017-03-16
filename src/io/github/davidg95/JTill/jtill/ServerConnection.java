@@ -271,20 +271,46 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public boolean connectTill(String t) throws IOException {
+    public Till connectTill(String t) throws IOException {
         try {
             obOut.writeObject(ConnectionData.create("CONNECTTILL", t));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("CONNECT")) {
-                return (boolean) data.getData();
+                return (Till) data.getData();
             } else {
                 throw new IOException(data.getData().toString());
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return false;
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public void disconnectTill(Till t) {
+        try {
+            obOut.writeObject(ConnectionData.create("DISCONNECTTILL", t));
+        } catch (IOException ex) {
+            log.log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public List<Till> getConnectedTills() throws IOException {
+        try {
+            obOut.writeObject(ConnectionData.create("GETCONNECTEDTILLS"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+
+            if (data.getFlag().equals("FAIL")) {
+                throw (IOException) data.getData();
+            } else {
+                return (List) data.getData();
+            }
+        } catch (ClassNotFoundException ex) {
+            log.log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override

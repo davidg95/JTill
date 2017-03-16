@@ -737,7 +737,11 @@ public interface DataConnect {
 
     public List<Till> getAllTills() throws IOException, SQLException;
 
-    public boolean connectTill(String t) throws IOException;
+    public Till connectTill(String t) throws IOException;
+    
+    public void disconnectTill(Till t);
+    
+    public List<Till> getConnectedTills() throws IOException;
 
     //Waste Report
     /**

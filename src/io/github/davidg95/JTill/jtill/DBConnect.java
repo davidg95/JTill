@@ -23,6 +23,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -79,6 +82,8 @@ public class DBConnect implements DataConnect {
     private final Semaphore loggedInSem;
 
     private final LogFileHandler handler;
+    
+    private ObservableList<Till> connectedTills;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -99,6 +104,13 @@ public class DBConnect implements DataConnect {
         systemSettings = Settings.getInstance();
         loggedIn = new ArrayList<>();
         loggedInSem = new Semaphore(1);
+        connectedTills = FXCollections.observableArrayList();
+        connectedTills.addListener(new ListChangeListener<Till>(){
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends Till> c) {
+                g.updateTills();
+            }
+        });
         handler = LogFileHandler.getInstance();
         Logger.getGlobal().addHandler(handler);
         log.log(Level.INFO, "Starting JTill Server");
@@ -2746,11 +2758,12 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public boolean connectTill(String t) {
+    public Till connectTill(String t) {
         try {
             Till till = this.getTillByName(t);
             g.addTill(till);
-            return true;
+            connectedTills.add(till);
+            return till;
         } catch (SQLException ex) {
             log.log(Level.SEVERE, "There has been an error adding a till to the database", ex);
         } catch (TillNotFoundException ex) {
@@ -2764,10 +2777,19 @@ public class DBConnect implements DataConnect {
                     log.log(Level.SEVERE, "There has been an error connecting a till the server", ex);
                 }
                 g.addTill(newTill);
-                return true;
+                connectedTills.add(newTill);
+                return newTill;
             }
         }
-        return false;
+        return null;
+    }
+    
+    public void disconnectTill(Till t){
+        connectedTills.remove(t);
+    }
+    
+    public List<Till> getConnectedTills(){
+        return connectedTills;
     }
 
     private Till getTillByName(String t) throws SQLException, TillNotFoundException {

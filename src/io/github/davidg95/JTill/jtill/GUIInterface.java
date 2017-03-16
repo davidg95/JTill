@@ -30,4 +30,6 @@ public interface GUIInterface {
     public void allow();
 
     public void disallow();
+    
+    public void updateTills();
 }
