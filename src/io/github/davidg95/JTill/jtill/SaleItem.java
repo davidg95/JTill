@@ -26,7 +26,7 @@ public class SaleItem implements Serializable, JTillObject {
         this(sale, item, quantity);
         this.id = id;
         this.price = price;
-        this.price = price.setScale(2);
+        this.price = price.setScale(2, 2);
     }
 
     public SaleItem(Sale sale, Item item, int quantity) {
