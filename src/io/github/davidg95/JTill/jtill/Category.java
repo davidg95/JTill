@@ -15,7 +15,7 @@ import java.text.SimpleDateFormat;
  *
  * @author David
  */
-public class Category implements Serializable {
+public class Category implements Serializable, JTillObject {
 
     private int ID;
     private String name;
@@ -77,7 +77,8 @@ public class Category implements Serializable {
         return t.after(startSell) && t.before(endSell);
     }
 
-    public int getID() {
+    @Override
+    public int getId() {
         return ID;
     }
 
@@ -85,6 +86,7 @@ public class Category implements Serializable {
         this.ID = ID;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -141,7 +143,7 @@ public class Category implements Serializable {
                     + "', SELL_END='" + this.getEndSell().toString()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
                     + ", MINIMUM_AGE=" + this.getMinAge()
-                    + " WHERE CATEGORYS.ID=" + this.getID();
+                    + " WHERE CATEGORYS.ID=" + this.getId();
         } else {
             return "UPDATE CATEGORYS"
                     + " SET NAME='" + this.getName()
@@ -149,7 +151,7 @@ public class Category implements Serializable {
                     + "', SELL_END='" + this.getEndSell().toString()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
                     + ", MINIMUM_AGE=" + this.getMinAge()
-                    + " WHERE CATEGORYS.ID=" + this.getID();
+                    + " WHERE CATEGORYS.ID=" + this.getId();
         }
     }
 

@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author David
  */
-public class Tax implements Serializable {
+public class Tax implements Serializable, JTillObject {
 
     private int id;
     private String name;
@@ -27,6 +27,7 @@ public class Tax implements Serializable {
         this.value = value;
     }
 
+    @Override
     public int getId() {
         return id;
     }
@@ -35,6 +36,7 @@ public class Tax implements Serializable {
         this.id = id;
     }
 
+    @Override
     public String getName() {
         return name;
     }

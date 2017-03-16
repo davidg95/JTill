@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author David
  */
-public class WasteReport implements Serializable {
+public class WasteReport implements Serializable, JTillObject {
 
     private int id;
     private BigDecimal totalValue;
@@ -30,11 +30,17 @@ public class WasteReport implements Serializable {
         this.totalValue = totalValue;
         this.date = date;
     }
-    
-    public WasteReport(Date date){
+
+    public WasteReport(Date date) {
         this(BigDecimal.ZERO, date);
     }
 
+    @Override
+    public String getName() {
+        return this.date.toString();
+    }
+
+    @Override
     public int getId() {
         return id;
     }

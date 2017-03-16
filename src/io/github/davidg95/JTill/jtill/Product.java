@@ -14,7 +14,7 @@ import java.math.BigDecimal;
  *
  * @author 1301480
  */
-public class Product implements Serializable, Cloneable, Item {
+public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     private int productCode;
     private Plu plu;
@@ -269,7 +269,7 @@ public class Product implements Serializable, Cloneable, Item {
                 + "," + this.stock
                 + ",'" + this.comments
                 + "','" + this.shortName
-                + "'," + this.category.getID()
+                + "'," + this.category.getId()
                 + "," + this.tax.getId()
                 + "," + this.costPrice
                 + "," + this.minStockLevel
@@ -285,7 +285,7 @@ public class Product implements Serializable, Cloneable, Item {
                 + ", PRODUCTS.STOCK=" + this.getStock()
                 + ", PRODUCTS.COMMENTS='" + this.getComments()
                 + "', PRODUCTS.SHORT_NAME='" + this.getName()
-                + "', PRODUCTS.CATEGORY_ID=" + this.getCategory().getID()
+                + "', PRODUCTS.CATEGORY_ID=" + this.getCategory().getId()
                 + ", PRODUCTS.TAX_ID=" + this.getTax().getId()
                 + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()

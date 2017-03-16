@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author David
  */
-public class WasteItem implements Serializable {
+public class WasteItem implements Serializable, JTillObject {
 
     private int id;
     private Product product;
@@ -29,6 +29,12 @@ public class WasteItem implements Serializable {
         this.reason = reason;
     }
 
+    @Override
+    public String getName() {
+        return this.product.getName();
+    }
+
+    @Override
     public int getId() {
         return id;
     }

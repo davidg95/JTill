@@ -1415,7 +1415,7 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public void removeCategory(Category c) throws IOException, CategoryNotFoundException, SQLException {
-        removeCategory(c.getID());
+        removeCategory(c.getId());
     }
 
     @Override

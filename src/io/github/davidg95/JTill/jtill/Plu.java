@@ -11,7 +11,7 @@ import java.io.Serializable;
  * 
  * @author David
  */
-public class Plu implements Serializable, Cloneable {
+public class Plu implements Serializable, Cloneable, JTillObject {
 
     private int id;
     private String code;
@@ -25,6 +25,12 @@ public class Plu implements Serializable, Cloneable {
         this.code = code;
     }
 
+    @Override
+    public String getName() {
+        return this.code;
+    }
+
+    @Override
     public int getId() {
         return id;
     }

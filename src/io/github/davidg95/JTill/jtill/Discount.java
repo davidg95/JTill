@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  *
  * @author David
  */
-public class Discount implements Serializable, Cloneable, Item {
+public class Discount implements Serializable, Cloneable, Item, JTillObject {
 
     private int id;
     private String name;

@@ -13,7 +13,7 @@ import java.math.BigDecimal;
  *
  * @author David
  */
-public class Customer implements Serializable {
+public class Customer implements Serializable, JTillObject {
 
     private int id;
     private String name;
@@ -121,6 +121,7 @@ public class Customer implements Serializable {
         this.moneyDue = BigDecimal.ZERO;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -129,6 +130,7 @@ public class Customer implements Serializable {
         this.name = name;
     }
 
+    @Override
     public int getId() {
         return id;
     }

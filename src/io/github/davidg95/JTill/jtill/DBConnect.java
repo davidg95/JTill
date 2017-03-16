@@ -479,7 +479,7 @@ public class DBConnect implements DataConnect {
                     try {
                         category = getCategory(categoryID);
                     } catch (CategoryNotFoundException ex) {
-                        log.log(Level.WARNING, "Could not find category " + category.getID() + " for product " + name, ex);
+                        log.log(Level.WARNING, "Could not find category " + category.getId() + " for product " + name, ex);
                     }
                     int taxID = set.getInt("TAX_ID");
                     Tax tax = null;
@@ -1667,7 +1667,7 @@ public class DBConnect implements DataConnect {
             categorySem.acquire();
             value = stmt.executeUpdate(query);
             if (value == 0) {
-                throw new CategoryNotFoundException(c.getID() + "");
+                throw new CategoryNotFoundException(c.getId() + "");
             }
         } catch (SQLException ex) {
             log.log(Level.SEVERE, null, ex);
@@ -1682,7 +1682,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public void removeCategory(Category c) throws SQLException, CategoryNotFoundException {
-        removeCategory(c.getID());
+        removeCategory(c.getId());
     }
 
     @Override

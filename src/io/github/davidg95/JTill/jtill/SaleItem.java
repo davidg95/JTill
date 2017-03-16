@@ -14,7 +14,7 @@ import java.text.DecimalFormat;
  *
  * @author David
  */
-public class SaleItem implements Serializable {
+public class SaleItem implements Serializable, JTillObject {
 
     private int id;
     private Item item;
@@ -92,6 +92,12 @@ public class SaleItem implements Serializable {
         this.price = price;
     }
 
+    @Override
+    public String getName() {
+        return this.item.getName();
+    }
+    
+    @Override
     public int getId() {
         return id;
     }

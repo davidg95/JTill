@@ -12,7 +12,7 @@ import java.math.BigDecimal;
  *
  * @author David
  */
-public class Till implements Serializable, Cloneable {
+public class Till implements Serializable, Cloneable, JTillObject {
 
     private int id;
     private final String name;
@@ -35,10 +35,12 @@ public class Till implements Serializable, Cloneable {
         this.id = id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public int getId() {
         return id;
     }

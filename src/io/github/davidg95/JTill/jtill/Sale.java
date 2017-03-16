@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author David
  */
-public class Sale implements Serializable {
+public class Sale implements Serializable, JTillObject {
 
     private int id;
     private List<SaleItem> saleItems;
@@ -230,6 +230,12 @@ public class Sale implements Serializable {
         });
     }
 
+    @Override
+    public String getName() {
+        return this.date.toString();
+    }
+
+    @Override
     public int getId() {
         return id;
     }
