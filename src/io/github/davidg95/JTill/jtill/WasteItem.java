@@ -88,7 +88,7 @@ public class WasteItem implements Serializable {
 
     @Override
     public String toString() {
-        return "" + id;
+        return "" + id + " - " + reason;
     }
 
 }
