@@ -286,6 +286,13 @@ public class DBConnect implements DataConnect {
                 + "     VALUE DOUBLE,\n"
                 + "     TIMESTAMP bigint\n"
                 + ")";
+        String wasteReasons = "create table \"APP\".WASTEREASONS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     REASON VARCHAR(30)\n"
+                + ")";
         String wasteItems = "create table \"APP\".WASTEITEMS\n"
                 + "(\n"
                 + "     ID INT not null primary key\n"
@@ -294,14 +301,7 @@ public class DBConnect implements DataConnect {
                 + "     REPORT_ID INT not null references WASTEREPORTS(ID),\n"
                 + "     PRODUCT INT not null references PRODUCTS(ID),\n"
                 + "     QUANTITY INT,\n"
-                + "     REASON VARCHAR(50)\n"
-                + ")";
-        String wasteReasons = "create table \"APP\".WASTEREASONS\n"
-                + "(\n"
-                + "     ID INT not null primary key\n"
-                + "         GENERATED ALWAYS AS IDENTITY\n"
-                + "         (START WITH 1, INCREMENT BY 1),\n"
-                + "     REASON VARCHAR(30)\n"
+                + "     REASON INT not null references WASTEREASONS(ID)\n"
                 + ")";
 
         Statement stmt = con.createStatement();
@@ -390,22 +390,24 @@ public class DBConnect implements DataConnect {
             error(ex);
         }
         try {
-            stmt.execute(wasteItems);
-            log.log(Level.INFO, "Created table waste items");
+            stmt.execute(wasteReasons);
+            log.log(Level.INFO, "Created table waste reasons");
         } catch (SQLException ex) {
             error(ex);
         }
         try {
-            stmt.execute(wasteReasons);
-            log.log(Level.INFO, "Created table waste reasons");
+            stmt.execute(wasteItems);
+            log.log(Level.INFO, "Created table waste items");
         } catch (SQLException ex) {
             error(ex);
         }
 
         String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
         String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
+        String addReason = "INSERT INTO WASTEREASONS (REASON) VALUES ('DEFAULT')";
         stmt.executeUpdate(addCategory);
         stmt.executeUpdate(addTax);
+        stmt.executeUpdate(addReason);
     }
 
     private void error(SQLException ex) {
@@ -3173,7 +3175,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
-        String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + ",'" + wi.getReason() + "')";
+        String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + "," + wi.getReason().getId() + ")";
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         try {
             wasteItemSem.acquire();
@@ -3296,7 +3298,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
-        String query = "INSERT INTO APP.WASTEREASONS (ID, REASON) values (" + wr.getId() + ",'" + wr.getReason() + "')";
+        String query = "INSERT INTO APP.WASTEREASONS (REASON) values ('" + wr.getReason() + "')";
         PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
         long stamp = wasteReasonLock.writeLock();
         try {
