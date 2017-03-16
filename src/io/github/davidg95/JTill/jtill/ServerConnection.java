@@ -2257,25 +2257,23 @@ public class ServerConnection implements DataConnect {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETALLPLUS"));
 
-            Object o;
-            try {
-                o = obIn.readObject();
-            } catch (IOException ex) {
-                throw ex;
-            }
+            ConnectionData data = (ConnectionData) obIn.readObject();
 
-            if (o instanceof List) {
-                return (List<Plu>) o;
+            if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof SQLException) {
+                    throw (SQLException) data.getData();
+                }
             } else {
-                throw (SQLException) o;
-
+                if (data.getData() instanceof List) {
+                    return (List<Plu>) data.getData();
+                }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             log.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
-        return null;
+        throw new IOException("Class error (update may be required)");
     }
 
     @Override
