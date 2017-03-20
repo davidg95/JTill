@@ -202,6 +202,7 @@ public class Settings implements Serializable {
             setSetting("LOGOUT_TIMEOUT", "-1");
             setSetting("MINIMUM_SERVER_LOGIN", "2");
             setSetting("SETTINGS_EDIT", "3");
+            setSetting("CURERNCY_SYMBOL", "£");
 
             properties.store(out, null);
             out.close();

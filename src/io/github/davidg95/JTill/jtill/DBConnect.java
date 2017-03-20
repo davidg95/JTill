@@ -83,7 +83,9 @@ public class DBConnect implements DataConnect {
 
     private final LogFileHandler handler;
     
-    private ObservableList<Till> connectedTills;
+    private final ObservableList<Till> connectedTills;
+    
+    private String symbol;
 
     public DBConnect() {
         productSem = new Semaphore(1);
@@ -114,6 +116,7 @@ public class DBConnect implements DataConnect {
         handler = LogFileHandler.getInstance();
         Logger.getGlobal().addHandler(handler);
         log.log(Level.INFO, "Starting JTill Server");
+        symbol = Settings.getInstance().getSetting("CURRENCY_SYMBOL");
     }
 
     /**
@@ -2634,9 +2637,9 @@ public class DBConnect implements DataConnect {
         text += "Here is your receipt from your recent purchase\n";
         text += "Sale ID: " + sale.getId() + "\n";
         text += "Time: " + sale.getDate().toString() + "\n";
-        text = sale.getSaleItems().stream().map((i) -> i.getItem().getName() + "\t" + i.getQuantity() + "\t£" + i.getPrice() + "\n").reduce(text, String::concat);
+        text = sale.getSaleItems().stream().map((i) -> i.getItem().getName() + "\t" + i.getQuantity() + "\t" + symbol + i.getPrice() + "\n").reduce(text, String::concat);
 
-        text += "Total: £" + sale.getTotal() + "\n";
+        text += "Total: " + symbol + sale.getTotal() + "\n";
         if (sale.isChargeAccount()) {
             text += "You will be invoiced for this sale\n";
         }
