@@ -17,6 +17,7 @@ public class Till implements Serializable, Cloneable, JTillObject {
     private int id;
     private final String name;
     private BigDecimal uncashedTakings;
+    private boolean connected;
 
     public Till(String name) {
         this.name = name;
@@ -61,6 +62,14 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.uncashedTakings = uncashedTakings.add(val);
     }
 
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void setConnected(boolean connected) {
+        this.connected = connected;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.uncashedTakings;
@@ -102,6 +111,6 @@ public class Till implements Serializable, Cloneable, JTillObject {
 
     @Override
     public String toString() {
-        return this.id + " - " + this.name;
+        return this.id + " - " + this.name + " - " + (this.connected ? "Connected" : "Not Connected");
     }
 }
