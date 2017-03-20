@@ -203,6 +203,7 @@ public class Settings implements Serializable {
             setSetting("MINIMUM_SERVER_LOGIN", "2");
             setSetting("SETTINGS_EDIT", "3");
             setSetting("CURERNCY_SYMBOL", "£");
+            setSetting("SITE_NAME", "SITE");
 
             properties.store(out, null);
             out.close();
