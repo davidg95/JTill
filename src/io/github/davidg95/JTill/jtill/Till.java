@@ -7,6 +7,7 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  *
@@ -18,6 +19,7 @@ public class Till implements Serializable, Cloneable, JTillObject {
     private final String name;
     private BigDecimal uncashedTakings;
     private boolean connected;
+    private Date lastContact;
 
     public Till(String name) {
         this.name = name;
@@ -70,6 +72,14 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.connected = connected;
     }
 
+    public Date getLastContact() {
+        return lastContact;
+    }
+
+    public void setLastContact(Date lastContact) {
+        this.lastContact = lastContact;
+    }
+    
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.uncashedTakings;
