@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author David
  */
-public class Sale implements Serializable, JTillObject {
+public class Sale implements Serializable, JTillObject, Cloneable {
 
     private int id;
     private List<SaleItem> saleItems;
@@ -359,6 +359,16 @@ public class Sale implements Serializable, JTillObject {
                     + ", STAFF=" + this.staff.getId()
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.id;
+        }
+    }
+
+    @Override
+    public Sale clone() {
+        try {
+            final Sale result = (Sale) super.clone();
+            return result;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
         }
     }
 
