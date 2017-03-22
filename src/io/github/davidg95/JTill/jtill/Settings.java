@@ -99,9 +99,11 @@ public class Settings implements Serializable {
      */
     public String getSetting(String key, String defaultValue) {
         if (properties.containsKey(key)) {
+            saveProperties();
             return properties.getProperty(key);
         } else {
             setSetting(key, defaultValue);
+            saveProperties();
             return defaultValue;
         }
     }
@@ -114,6 +116,7 @@ public class Settings implements Serializable {
      */
     public void setSetting(String key, String value) {
         properties.put(key, value);
+        saveProperties();
     }
 
     /**
@@ -123,6 +126,7 @@ public class Settings implements Serializable {
      */
     public void removeSetting(String key) {
         properties.remove(key);
+        saveProperties();
     }
 
     /**

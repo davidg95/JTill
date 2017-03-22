@@ -51,12 +51,41 @@ public interface DataConnect {
      */
     public void emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException;
 
+    /**
+     * Set a setting.
+     *
+     * @param key the setting to set.
+     * @param value the value for the setting.
+     * @throws IOException if there was an error.
+     */
     public void setSetting(String key, String value) throws IOException;
 
+    /**
+     * Get a setting.
+     *
+     * @param key the setting to get.
+     * @return the value of the setting.
+     * @throws IOException if there was an error.
+     */
     public String getSetting(String key) throws IOException;
 
+    /**
+     * Get a setting. Set it if it does not exist.
+     *
+     * @param key the setting to get.
+     * @param value the value to set if it does not exists.
+     * @return the setting value if it does exist.
+     * @throws IOException if there was an error.
+     */
     public String getSetting(String key, String value) throws IOException;
 
+    /**
+     * Get an instance of the settings object. Not recommended.
+     *
+     * @return the settings object.
+     * @throws IOException if there was an error.
+     */
+    @Deprecated
     public Settings getSettingsInstance() throws IOException;
 
     //Product
@@ -738,9 +767,9 @@ public interface DataConnect {
     public List<Till> getAllTills() throws IOException, SQLException;
 
     public Till connectTill(String t) throws IOException;
-    
+
     public void disconnectTill(Till t);
-    
+
     public List<Till> getConnectedTills() throws IOException;
 
     //Waste Report
@@ -849,14 +878,14 @@ public interface DataConnect {
      * @throws JTillException if the waste item could not be found.
      */
     public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException;
-    
+
     public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
-    
+
     public void removeWasteReason(int id) throws IOException, SQLException, JTillException;
-    
+
     public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException;
-    
+
     public List<WasteReason> getAllWasteReasons() throws IOException, SQLException;
-    
+
     public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
 }
