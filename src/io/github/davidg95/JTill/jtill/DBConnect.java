@@ -671,7 +671,7 @@ public class DBConnect implements DataConnect {
         } finally {
             productSem.release();
         }
-        LOG.log(Level.INFO, "Product " + p.getId() + " updated");
+        LOG.log(Level.INFO, "Product {0} updated", p.getId());
         return p;
     }
 
@@ -809,7 +809,7 @@ public class DBConnect implements DataConnect {
         List<Product> products = new ArrayList<>();
 
         try {
-            LOG.log(Level.INFO, "Get product " + code);
+            LOG.log(Level.INFO, "Get product {0}", code);
             productSem.acquire();
             ResultSet res = stmt.executeQuery(query);
 
@@ -843,7 +843,7 @@ public class DBConnect implements DataConnect {
         List<Product> products = new ArrayList<>();
 
         try {
-            LOG.log(Level.INFO, "Get Product " + barcode);
+            LOG.log(Level.INFO, "Get Product {0}", barcode);
             productSem.acquire();
             ResultSet res = stmt.executeQuery(query);
 
@@ -868,7 +868,7 @@ public class DBConnect implements DataConnect {
         Statement stmt = con.createStatement();
         List<Discount> discounts = new ArrayList<>();
         try {
-            LOG.log(Level.INFO, "Get discounts for product " + p.getId());
+            LOG.log(Level.INFO, "Get discounts for product {0}", p.getId());
             productSem.acquire();
             discountSem.acquire();
             ResultSet res = stmt.executeQuery(query);
