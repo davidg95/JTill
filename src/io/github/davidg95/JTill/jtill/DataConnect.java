@@ -879,13 +879,108 @@ public interface DataConnect {
      */
     public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException;
 
+    /**
+     * Method to add a waste reason.
+     *
+     * @param wr the WasteReason to add.
+     * @return the WasteReason that was added with its ID assigned by the
+     * database.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the waste reason was not found.
+     */
     public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
 
+    /**
+     * Method to remove a waste reason.
+     *
+     * @param id the waste reason to remove.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the waste reason was not found.
+     */
     public void removeWasteReason(int id) throws IOException, SQLException, JTillException;
 
+    /**
+     * Method to get a waste reason.
+     *
+     * @param id the waste reason to get.
+     * @return the WasteReason.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the waste reason was not found.
+     */
     public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException;
 
+    /**
+     * Method to get all WasteReasons.
+     *
+     * @return a List of all the WasteReasons.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
     public List<WasteReason> getAllWasteReasons() throws IOException, SQLException;
 
+    /**
+     * Method to update a WasteReason.
+     *
+     * @param wr the WasteReason.
+     * @return the WasteReason after being updated.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the waste reason was not found.
+     */
     public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to add a Supplier.
+     *
+     * @param s the Supplier to add.
+     * @return the Supplier after being added.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the Supplier was not found.
+     */
+    public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to remove a Supplier.
+     *
+     * @param id the supplier to remove.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the Supplier was not found.
+     */
+    public void removeSupplier(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to get a Supplier.
+     *
+     * @param id the supplier to get.
+     * @return the Supplier.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the Supplier was not found.
+     */
+    public Supplier getSupplier(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to get all suppliers.
+     *
+     * @return a List of the Suppliers.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
+    public List<Supplier> getAllSuppliers() throws IOException, SQLException;
+
+    /**
+     * Method to update a Supplier.
+     *
+     * @param s the Supplier to update.
+     * @return the Supplier after being updated.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the Supplier was not found.
+     */
+    public Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException;
 }

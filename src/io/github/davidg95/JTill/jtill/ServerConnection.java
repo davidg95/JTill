@@ -2797,4 +2797,100 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required)");
     }
+
+    @Override
+    public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("ADDSUPPLIER", s));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new JTillException(data.getData().toString());
+            } else {
+                s = (Supplier) data.getData();
+                return s;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public void removeSupplier(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("REMOVESUPPLIER", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new JTillException(data.getData().toString());
+            }
+            return;
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public Supplier getSupplier(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETSUPPLIER", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new JTillException(data.getData().toString());
+            } else {
+                return (Supplier) data.getData();
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public List<Supplier> getAllSuppliers() throws IOException, SQLException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETALLSUPPLIERS"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new SQLException(data.getData().toString());
+            } else {
+                return (List) data.getData();
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("UPDATESUPPLIER", s));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new JTillException(data.getData().toString());
+            } else {
+                s = (Supplier) data.getData();
+                return s;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
 }
