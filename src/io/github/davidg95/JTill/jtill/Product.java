@@ -21,6 +21,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private String name;
     private String shortName;
     private Category category;
+    private Department department;
     private Tax tax;
     private boolean open;
     private BigDecimal price;
@@ -37,15 +38,17 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param name the name of the product.
      * @param shortName the shortened name of the product.
      * @param category the category this will belong to.
+     * @param department the department the product belongs to.
      * @param comments the comments.
      * @param tax the tax class for this product.
      * @param plu the products plu.
      * @param open if the price is open.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, Plu plu, boolean open) {
+    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, Plu plu, boolean open) {
         this.name = name;
         this.shortName = shortName;
         this.category = category;
+        this.department = department;
         this.comments = comments;
         this.tax = tax;
         this.plu = plu;
@@ -59,14 +62,15 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param name the name of the product.
      * @param shortName the shortened name of the product.
      * @param category the category this will belong to.
+     * @param department the department the product belongs to.
      * @param comments the comments.
      * @param tax the tax class for this product.
      * @param plu the plu for the product.
      * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, Plu plu, boolean open, int productCode) {
-        this(name, shortName, category, comments, tax, plu, open);
+    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, Plu plu, boolean open, int productCode) {
+        this(name, shortName, category, department, comments, tax, plu, open);
         this.productCode = productCode;
     }
 
@@ -76,6 +80,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param name the name for the product.
      * @param shortName the shortened name of the product.
      * @param category the category this will belong to.
+     * @param department the department the product belongs to.
      * @param price the price for the product.
      * @param tax the tax class for this product.
      * @param open if the price is open.
@@ -86,8 +91,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu) {
-        this(name, shortName, category, comments, tax, plu, open);
+    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu) {
+        this(name, shortName, category, department, comments, tax, plu, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -101,6 +106,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param name the name for the product.
      * @param shortName the shortened name of the product.
      * @param category the category this will belong to.
+     * @param department the department the product belongs to.
      * @param price the price for the product.
      * @param tax the tax class for this product.
      * @param open if the price is open.
@@ -112,8 +118,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, Category category, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu, int productCode) {
-        this(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu);
+    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu, int productCode) {
+        this(name, shortName, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu);
         this.productCode = productCode;
     }
 
@@ -251,6 +257,14 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.maxStockLevel = maxStockLevel;
     }
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
     @Override
     public boolean isOpen() {
         return open;
@@ -270,6 +284,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ",'" + this.comments
                 + "','" + this.shortName
                 + "'," + this.category.getId()
+                + "," + this.department.getId()
                 + "," + this.tax.getId()
                 + "," + this.costPrice
                 + "," + this.minStockLevel
@@ -286,6 +301,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ", PRODUCTS.COMMENTS='" + this.getComments()
                 + "', PRODUCTS.SHORT_NAME='" + this.getName()
                 + "', PRODUCTS.CATEGORY_ID=" + this.getCategory().getId()
+                + ", PRODUCTS.DEPARTMENT_ID=" + this.getDepartment().getId()
                 + ", PRODUCTS.TAX_ID=" + this.getTax().getId()
                 + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
@@ -320,7 +336,6 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     @Override
     public String toString() {
-        //return "Code: " + this.productCode + "\nName: " + this.name + "\nPrice: £" + this.price + "\nStock: " + this.stock;
         return this.shortName;
     }
 }

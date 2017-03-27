@@ -278,6 +278,7 @@ public class DBConnect implements DataConnect {
                 + "	COMMENTS VARCHAR(200),\n"
                 + "	SHORT_NAME VARCHAR(50) not null,\n"
                 + "	CATEGORY_ID INT not null references CATEGORYS(ID),\n"
+                + "     DEPARTMENT_ID INT not null references DEPARTMENTS(ID),\n"
                 + "	TAX_ID INT not null references TAX(ID),\n"
                 + "	COST_PRICE DOUBLE,\n"
                 + "	MIN_PRODUCT_LEVEL INTEGER,\n"
@@ -506,10 +507,12 @@ public class DBConnect implements DataConnect {
 
             try {
                 String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
+                String addDepartment = "INSERT INTO DEPARTMENTS (NAME) VALUES ('DEFAULT')";
                 String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
                 String addReason = "INSERT INTO WASTEREASONS (REASON) VALUES ('DEFAULT')";
                 String addCustomer = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES ('NONE','0','0','','','','','','','','',0,0)";
                 stmt.executeUpdate(addCategory);
+                stmt.executeUpdate(addDepartment);
                 stmt.executeUpdate(addTax);
                 stmt.executeUpdate(addReason);
                 stmt.executeUpdate(addCustomer);
@@ -559,7 +562,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Product> getAllProducts() throws SQLException {
-        String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID";
+        String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, d.ID as dId, d.NAME as dName, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, DEPARTMENTS d, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND p.DEPARTMENT_ID = d.ID";
         List<Product> products;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -585,6 +588,9 @@ public class DBConnect implements DataConnect {
                     boolean restrict = set.getBoolean("TIME_RESTRICT");
                     int minAge = set.getInt("MINIMUM_AGE");
                     Category category = new Category(id, catName, start, end, restrict, minAge);
+                    int dId = set.getInt("dId");
+                    String dName = set.getString("dName");
+                    Department department = new Department(dId, dName);
                     int taxID = set.getInt("tId");
                     String taxName = set.getString("tName");
                     double taxValue = set.getDouble("tValue");
@@ -593,7 +599,7 @@ public class DBConnect implements DataConnect {
                     int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                     int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-                    Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
+                    Product p = new Product(name, shortName, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
 
                     products.add(p);
                 }
@@ -629,6 +635,9 @@ public class DBConnect implements DataConnect {
             boolean restrict = set.getBoolean("TIME_RESTRICT");
             int minAge = set.getInt("MINIMUM_AGE");
             Category category = new Category(categoryID, catName, start, end, restrict, minAge);
+            int dId = set.getInt("dId");
+            String dName = set.getString("dName");
+            Department department = new Department(dId, dName);
             int taxID = set.getInt("tId");
             String taxName = set.getString("tName");
             double taxValue = set.getDouble("tValue");
@@ -637,7 +646,7 @@ public class DBConnect implements DataConnect {
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-            Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
+            Product p = new Product(name, shortName, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
 
             products.add(p);
         }
@@ -3812,7 +3821,7 @@ public class DBConnect implements DataConnect {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
                 while (set.next()) {
-                    int id = set.getInt("ID");
+                    int id = set.getInt(1);
                     d.setId(id);
                 }
                 con.commit();
