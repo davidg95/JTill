@@ -2893,4 +2893,91 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required)");
     }
+
+    @Override
+    public Department addDepartment(Department d) throws IOException, SQLException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("ADDDEPARTMENT", d));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            } else {
+                return (Department) data.getData();
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public void removeDepartment(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("REMOVEDEPARTMENT", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public Department getDepartment(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETDEPARTMENT", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            } else {
+                Department d = (Department) data.getData();
+                return d;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public List<Department> getAllDepartments() throws IOException, SQLException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETALLDEPARTMENTS"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            } else {
+                List<Department> d = (List) data.getData();
+                return d;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public Department updateDepartment(Department d) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("UPDATEDEPARTMENT", d));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            } else {
+                d = (Department) data.getData();
+                return d;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
 }

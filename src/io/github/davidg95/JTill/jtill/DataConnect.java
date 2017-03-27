@@ -655,6 +655,58 @@ public interface DataConnect {
      */
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
 
+    //Department
+    /**
+     * Add a new department to the system.
+     *
+     * @param d the department to add.
+     * @return the department that was added with the id that was assigned.
+     * @throws IOException if there was a network error
+     * @throws SQLException if there was a database error.
+     */
+    public Department addDepartment(Department d) throws IOException, SQLException;
+
+    /**
+     * Remove a department from the system.
+     *
+     * @param id the id of the department to remove.
+     * @throws IOException if there was a network error
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the department was not found.
+     */
+    public void removeDepartment(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Get a department from the system.
+     *
+     * @param id the id of the department to get.
+     * @return the department that matches the id.
+     * @throws IOException if there was a network error
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the department was not found.
+     */
+    public Department getDepartment(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Gets all the department on the system.
+     *
+     * @return a list of all the departments.
+     * @throws IOException if there was a network error
+     * @throws SQLException if there was a database error.
+     */
+    public List<Department> getAllDepartments() throws IOException, SQLException;
+
+    /**
+     * Update a department on the system.
+     *
+     * @param d the department to update.
+     * @return the department that was updated.
+     * @throws IOException if there was a network error
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the department was not found.
+     */
+    public Department updateDepartment(Department d) throws IOException, SQLException, JTillException;
+
     //Discount
     /**
      * Method to add a discount to the system.

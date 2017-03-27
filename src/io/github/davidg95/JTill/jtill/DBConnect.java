@@ -46,7 +46,7 @@ import org.apache.derby.jdbc.EmbeddedDriver;
 public class DBConnect implements DataConnect {
 
     private static final Logger LOG = Logger.getGlobal();
-    
+
     /**
      * The database driver.
      */
@@ -192,6 +192,13 @@ public class DBConnect implements DataConnect {
                 + "     SELL_END TIME,\n"
                 + "     TIME_RESTRICT BOOLEAN not null,\n"
                 + "     MINIMUM_AGE INT not null\n"
+                + ")";
+        String departments = "create table APP.DEPARTMENTS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),"
+                + "     NAME VARCHAR(30) not null\n"
                 + ")";
         String plus = "create table APP.PLUS\n"
                 + "(\n"
@@ -385,6 +392,14 @@ public class DBConnect implements DataConnect {
                 error(ex);
             }
             try {
+                stmt.execute(departments);
+                LOG.log(Level.INFO, "Created departments table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
                 stmt.execute(configs);
                 LOG.log(Level.INFO, "Created configs table");
                 con.commit();
@@ -522,7 +537,7 @@ public class DBConnect implements DataConnect {
     @Override
     @Deprecated
     public void close() {
-        
+
     }
 
     /**
@@ -3770,6 +3785,109 @@ public class DBConnect implements DataConnect {
                 throw ex;
             } finally {
                 supL.unlockWrite(stamp);
+            }
+        }
+    }
+
+    @Override
+    public Department addDepartment(Department d) throws IOException, SQLException {
+        String query = "INSERT INTO DEPARTMENTS (NAME) VALUES('" + d.getName() + "')";
+        try (Connection con = getConnection()) {
+            try {
+                PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    d.setId(id);
+                }
+                con.commit();
+                return d;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public void removeDepartment(int id) throws IOException, SQLException, JTillException {
+        String query = "DELETE FROM DEPARTMENTS WHERE ID='" + id + "'";
+        try (Connection con = getConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                int value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new JTillException("Department " + id + " not found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public Department getDepartment(int id) throws IOException, SQLException, JTillException {
+        String query = "SELECT * FROM DEPARTMENT WHERE ID='" + id + "'";
+        try (Connection con = getConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<Department> departments = new ArrayList<>();
+                while (set.next()) {
+                    String name = set.getString("NAME");
+                    departments.add(new Department(id, name));
+                }
+                con.commit();
+                return departments.get(0);
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public List<Department> getAllDepartments() throws IOException, SQLException {
+        String query = "SELECT * FROM DEPARTMENTS";
+        try (Connection con = getConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<Department> departments = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    departments.add(new Department(id, name));
+                }
+                con.commit();
+                return departments;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.INFO, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public Department updateDepartment(Department d) throws IOException, SQLException, JTillException {
+        String query = "UPDATE DEPARTMENTS SET NAME='" + d.getName() + "' WHERE ID=" + d.getId();
+        try (Connection con = getConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+                return d;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.INFO, null, ex);
+                throw ex;
             }
         }
     }
