@@ -53,9 +53,9 @@ public class DBConnect implements DataConnect {
     private Driver embedded;
 
     //Database credentials
-    public String address;
-    public String username;
-    public String password;
+    public String address; //The database address.
+    public String username; //the database username.
+    public String password; //The database password.
 
     private boolean connected; //Connection flag
 
@@ -76,21 +76,19 @@ public class DBConnect implements DataConnect {
     private final StampedLock wasReL;
     private final StampedLock supL;
 
-    public static String hostName;
+    private GUIInterface g; //A reference to the GUI.
 
-    private GUIInterface g;
+    private volatile HashMap<Staff, Sale> suspendedSales; //A hash map of suspended sales.
+    private final Settings systemSettings; //The system settings.
 
-    private volatile HashMap<Staff, Sale> suspendedSales;
-    private final Settings systemSettings;
+    private final List<Staff> loggedIn; //A list of logged in staff.
+    private final Semaphore loggedInSem; //Semaphore for the list of logged in staff.
 
-    private final List<Staff> loggedIn;
-    private final Semaphore loggedInSem;
+    private final LogFileHandler handler; //Handler object for the logger.
 
-    private final LogFileHandler handler;
+    private final ObservableList<Till> connectedTills; //List of connected tills.
 
-    private final ObservableList<Till> connectedTills;
-
-    private final String symbol;
+    private final String symbol; //Symbol to use for currency.
 
     /**
      * Constructor which initialises the concurrent locks.
@@ -140,7 +138,13 @@ public class DBConnect implements DataConnect {
         connected = true;
     }
 
-    private Connection getConnection() throws SQLException {
+    /**
+     * Returns a new connection to the database with auto commit disabled.
+     *
+     * @return new Connection.
+     * @throws SQLException if there was an error getting the connection.
+     */
+    private Connection getNewConnection() throws SQLException {
         LOG.log(Level.INFO, "Connecting to database {0}", address);
         Connection connection = DriverManager.getConnection(address, username, password);
         connection.setAutoCommit(false);
@@ -160,15 +164,11 @@ public class DBConnect implements DataConnect {
         LOG.log(Level.INFO, "The database does not exists, so it is getting created");
         embedded = new EmbeddedDriver();
         DriverManager.registerDriver(embedded);
-        Connection con;
-        con = DriverManager.getConnection(address, username, password);
-        con.setAutoCommit(false);
 
         this.address = address;
         this.username = username;
         this.password = password;
         connected = true;
-        con.close();
         createTables();
     }
 
@@ -357,7 +357,7 @@ public class DBConnect implements DataConnect {
                 + "     ADDRESS VARCHAR(100),\n"
                 + "     PHONE VARCHAR(20)\n"
                 + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
                 stmt.execute(tills);
@@ -504,12 +504,19 @@ public class DBConnect implements DataConnect {
                 error(ex);
             }
 
-            String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
-            String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
-            String addReason = "INSERT INTO WASTEREASONS (REASON) VALUES ('DEFAULT')";
-            stmt.executeUpdate(addCategory);
-            stmt.executeUpdate(addTax);
-            stmt.executeUpdate(addReason);
+            try {
+                String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
+                String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
+                String addReason = "INSERT INTO WASTEREASONS (REASON) VALUES ('DEFAULT')";
+                String addCustomer = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES ('NONE','0','0','','','','','','','','',0,0)";
+                stmt.executeUpdate(addCategory);
+                stmt.executeUpdate(addTax);
+                stmt.executeUpdate(addReason);
+                stmt.executeUpdate(addCustomer);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+            }
         }
     }
 
@@ -554,7 +561,7 @@ public class DBConnect implements DataConnect {
     public List<Product> getAllProducts() throws SQLException {
         String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID";
         List<Product> products;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = prL.readLock();
             try {
@@ -648,7 +655,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Product addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (PLU, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             long stamp = prL.writeLock();
             try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.executeUpdate();
@@ -673,7 +680,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Product updateProduct(Product p) throws SQLException, ProductNotFoundException {
         String query = p.getSQlUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = prL.writeLock();
@@ -706,7 +713,7 @@ public class DBConnect implements DataConnect {
     public boolean checkBarcode(String barcode) throws SQLException {
         String query = "SELECT * FROM PLUS WHERE CODE = '" + barcode + "'";
         ResultSet res;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = prL.readLock();
             try {
@@ -751,7 +758,7 @@ public class DBConnect implements DataConnect {
     public void removeProduct(int id) throws SQLException, ProductNotFoundException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + id + "";
         String iQuery = "DELETE FROM WASTEITEMS WHERE PRODUCT = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = wasItL.writeLock();
@@ -796,7 +803,7 @@ public class DBConnect implements DataConnect {
     @Override
     public int purchaseProduct(Product p, int amount) throws SQLException, OutOfStockException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + p.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = prL.writeLock();
             try {
@@ -838,7 +845,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Product getProduct(int code) throws SQLException, ProductNotFoundException {
         String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND p.ID=" + code;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
             long stamp = prL.readLock();
@@ -873,7 +880,7 @@ public class DBConnect implements DataConnect {
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
         String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND pl.CODE='" + barcode + "'";
         List<Product> products = new ArrayList<>();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = prL.readLock();
             try {
@@ -898,7 +905,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Discount> getProductsDiscount(Product p) throws SQLException {
         String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getId() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
             long pStamp = prL.readLock();
@@ -934,7 +941,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Customer> getAllCustomers() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
             long stamp = cusL.readLock();
@@ -1008,7 +1015,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Customer addCustomer(Customer c) throws SQLException {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = cusL.writeLock();
             try {
@@ -1034,7 +1041,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Customer updateCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = c.getSQLUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = cusL.writeLock();
@@ -1064,7 +1071,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = cusL.writeLock();
@@ -1088,7 +1095,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Customer getCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
             long stamp = cusL.readLock();
@@ -1114,7 +1121,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Customer> getCustomerByName(String name) throws SQLException, CustomerNotFoundException {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.NAME = " + name;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
             long stamp = cusL.readLock();
@@ -1140,7 +1147,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Customer> customerLookup(String terms) throws IOException, SQLException {
         String query = "SELECT * FROM CUSTOMERS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
             long stamp = cusL.readLock();
@@ -1171,7 +1178,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Staff> getAllStaff() throws SQLException {
         String query = "SELECT * FROM STAFF";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
             long stamp = stL.readLock();
@@ -1220,7 +1227,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Staff addStaff(Staff s) throws SQLException {
         String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = stL.writeLock();
             try {
@@ -1246,7 +1253,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Staff updateStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = s.getSQLUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = stL.writeLock();
@@ -1276,7 +1283,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = stL.writeLock();
@@ -1300,7 +1307,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Staff getStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
             long stamp = stL.readLock();
@@ -1328,7 +1335,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Staff login(String username, String password) throws SQLException, LoginException {
         String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username.toLowerCase() + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
             long stamp = stL.readLock();
@@ -1362,7 +1369,7 @@ public class DBConnect implements DataConnect {
     @Override
     public int getStaffCount() throws SQLException {
         String query = "SELECT * FROM STAFF";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
             long stamp = stL.readLock();
@@ -1387,7 +1394,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Discount> getAllDiscounts() throws SQLException {
         String query = "SELECT * FROM DISCOUNTS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
             long stamp = disL.readLock();
@@ -1445,7 +1452,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Discount addDiscount(Discount d) throws SQLException {
         String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, TRIGGER) VALUES (" + d.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = disL.writeLock();
             try {
@@ -1471,7 +1478,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Discount updateDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = d.getSQLUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = disL.writeLock();
@@ -1501,7 +1508,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = disL.writeLock();
@@ -1525,7 +1532,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Discount getDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
             long stamp = disL.readLock();
@@ -1554,7 +1561,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Tax> getAllTax() throws SQLException {
         String query = "SELECT * FROM TAX";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Tax> tax = new ArrayList<>();
             long stamp = taxL.readLock();
@@ -1597,7 +1604,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Tax addTax(Tax t) throws SQLException {
         String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = taxL.writeLock();
             try {
@@ -1622,7 +1629,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Tax updateTax(Tax t) throws SQLException, TaxNotFoundException {
         String query = t.getSQLUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = taxL.writeLock();
@@ -1660,7 +1667,7 @@ public class DBConnect implements DataConnect {
             }
         }
         String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = taxL.writeLock();
@@ -1683,7 +1690,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Tax getTax(int id) throws SQLException, TaxNotFoundException {
         String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Tax> tax = new ArrayList<>();
             long stamp = taxL.readLock();
@@ -1710,7 +1717,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Product> getProductsInTax(int id) throws SQLException {
         String query = "SELECT * FROM PRODUCTS, TAX WHERE TAX.ID = PRODUCTS.TAX_ID AND TAX.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
             long tStamp = taxL.readLock();
@@ -1736,7 +1743,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Category> getAllCategorys() throws SQLException {
         String query = "SELECT * FROM CATEGORYS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Category> categorys = new ArrayList<>();
             long stamp = catL.readLock();
@@ -1783,7 +1790,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Category addCategory(Category c) throws SQLException {
         String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stmap = catL.writeLock();
             try {
@@ -1808,7 +1815,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Category updateCategory(Category c) throws SQLException, CategoryNotFoundException {
         String query = c.getSQLUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = catL.writeLock();
@@ -1846,7 +1853,7 @@ public class DBConnect implements DataConnect {
             }
         }
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = catL.writeLock();
@@ -1869,7 +1876,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Category getCategory(int id) throws SQLException, CategoryNotFoundException {
         String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Category> categorys = new ArrayList<>();
             long stamp = catL.readLock();
@@ -1896,7 +1903,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Product> getProductsInCategory(int id) throws SQLException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.CATEGORY_ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
             long stamp = prL.readLock();
@@ -1955,7 +1962,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Sale addSale(Sale s) throws SQLException {
         String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = salL.writeLock();
             try {
@@ -2008,7 +2015,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Sale> getAllSales() throws SQLException {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
             long sStamp = salL.readLock();
@@ -2018,7 +2025,7 @@ public class DBConnect implements DataConnect {
                 ResultSet set = stmt.executeQuery(query);
                 sales = new ArrayList<>();
                 while (set.next()) {
-                    int id = set.getInt("ID");
+                    int id = set.getInt("sId");
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                     int customerid = set.getInt("cId");
                     String name = set.getString("cName");
@@ -2065,7 +2072,7 @@ public class DBConnect implements DataConnect {
     @Override
     public BigDecimal getTillTakings(String t) throws SQLException {
         String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = '" + t + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             BigDecimal result = new BigDecimal("0");
             long stamp = salL.readLock();
@@ -2117,7 +2124,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Sale> getUncashedSales(String t) throws SQLException {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS-LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND TERMINAL = '" + t + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
             long stamp = salL.readLock();
@@ -2137,7 +2144,7 @@ public class DBConnect implements DataConnect {
     }
 
     private void addSaleItem(Sale s, SaleItem p) throws SQLException {
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             try {
                 p.setSale(s);
                 String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
@@ -2153,12 +2160,18 @@ public class DBConnect implements DataConnect {
 
     private List<SaleItem> getItemsInSale(Sale sale) throws SQLException {
         String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getId();
-        try (Connection con = getConnection()) {
-            Statement stmt = con.createStatement();
-            List<SaleItem> items;
-            ResultSet set = stmt.executeQuery(query);
-            items = getSaleItemsFromResultSet(set, sale);
-            return items;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                List<SaleItem> items;
+                ResultSet set = stmt.executeQuery(query);
+                items = getSaleItemsFromResultSet(set, sale);
+                con.commit();
+                return items;
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
         }
     }
 
@@ -2192,7 +2205,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Sale getSale(int id) throws SQLException, SaleNotFoundException {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS-LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
             long stamp = salL.readLock();
@@ -2218,7 +2231,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Sale updateSale(Sale s) throws SQLException, SaleNotFoundException {
         String query = s.getSQLUpdateStatement();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = salL.writeLock();
@@ -2241,7 +2254,7 @@ public class DBConnect implements DataConnect {
 
     public Sale updateSaleNoSem(Sale s) throws SQLException, SaleNotFoundException {
         String query = s.getSQLUpdateStatement();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             try {
@@ -2286,7 +2299,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
             long stamp = stL.readLock();
@@ -2390,7 +2403,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Screen addScreen(Screen s) throws SQLException {
         String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR) VALUES (" + s.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = scrL.writeLock();
             try {
@@ -2415,7 +2428,7 @@ public class DBConnect implements DataConnect {
     @Override
     public TillButton addButton(TillButton b) throws SQLException {
         String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = scrL.writeLock();
             try {
@@ -2441,7 +2454,7 @@ public class DBConnect implements DataConnect {
     public void removeScreen(Screen s) throws SQLException, ScreenNotFoundException {
         String query = "DELETE FROM SCREENS WHERE SCREENS.ID = " + s.getId();
         String buttonsQuery = "DELETE FROM BUTTONS WHERE BUTTONS.SCREEN_ID = " + s.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = scrL.writeLock();
@@ -2465,7 +2478,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = "DELETE FROM BUTTONS WHERE BUTTONS.ID = " + b.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = scrL.writeLock();
@@ -2488,7 +2501,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Screen getScreen(int s) throws SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + s;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Screen> screens = new ArrayList<>();
             long stamp = scrL.readLock();
@@ -2512,7 +2525,7 @@ public class DBConnect implements DataConnect {
 
     private Screen getScreenNoSem(int id) throws SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Screen> screens;
             try {
@@ -2535,7 +2548,7 @@ public class DBConnect implements DataConnect {
     @Override
     public TillButton getButton(int b) throws SQLException, ButtonNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE BUTTONS.ID = " + b;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<TillButton> buttons = new ArrayList<>();
             long stamp = scrL.readLock();
@@ -2560,7 +2573,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Screen updateScreen(Screen s) throws SQLException, ScreenNotFoundException {
         String query = s.getSQLUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = scrL.writeLock();
@@ -2584,7 +2597,7 @@ public class DBConnect implements DataConnect {
     @Override
     public TillButton updateButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = b.getSQLUpdateString();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = scrL.writeLock();
@@ -2608,7 +2621,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Screen> getAllScreens() throws SQLException {
         String query = "SELECT * FROM SCREENS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Screen> screens = new ArrayList<>();
             long stamp = scrL.readLock();
@@ -2639,7 +2652,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<TillButton> getAllButtons() throws SQLException {
         String query = "SELECT * FROM BUTTONS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<TillButton> buttons = new ArrayList<>();
             long stamp = scrL.readLock();
@@ -2681,7 +2694,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM BUTTONS WHERE BUTTONS.SCREEN_ID=" + s.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<TillButton> buttons = new ArrayList<>();
             long stamp = scrL.readLock();
@@ -2718,7 +2731,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public void deleteAllScreensAndButtons() throws IOException, SQLException {
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             try {
                 String buttons = "DROP TABLE BUTTONS";
                 String screens = "DROP TABLE SCREENS";
@@ -2866,7 +2879,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Till addTill(Till t) throws IOException, SQLException {
         String query = "INSERT INTO TILLS (NAME, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = tilL.writeLock();
             try {
@@ -2891,7 +2904,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeTill(int id) throws IOException, SQLException, TillNotFoundException {
         String query = "DELETE FROM TILLS WHERE TILLS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = tilL.writeLock();
@@ -2914,7 +2927,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Till getTill(int id) throws IOException, SQLException, TillNotFoundException {
         String query = "SELECT * FROM TILLS WHERE TILLS.ID = " + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Till> tills = new ArrayList<>();
             long stamp = tilL.readLock();
@@ -2940,7 +2953,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Till> getAllTills() throws SQLException {
         String query = "SELECT * FROM TILLS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Till> tills = new ArrayList<>();
             long stamp = tilL.readLock();
@@ -2998,7 +3011,7 @@ public class DBConnect implements DataConnect {
 
     private Till getTillByName(String t) throws SQLException, TillNotFoundException {
         String query = "SELECT * FROM TILLS WHERE TILLS.NAME = '" + t + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Till> tills = new ArrayList<>();
             long stamp = tilL.readLock();
@@ -3045,7 +3058,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Plu addPlu(Plu plu) throws IOException, SQLException {
         String query = "INSERT INTO APP.PLUS (CODE) values ('" + plu.getCode() + "')";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = pluL.writeLock();
             try {
@@ -3070,7 +3083,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removePlu(int id) throws IOException, JTillException, SQLException {
         String query = "DELETE FROM PLUS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
             long stamp = pluL.writeLock();
@@ -3098,7 +3111,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Plu getPlu(int id) throws IOException, JTillException, SQLException {
         String query = "SELECT * FROM PLUS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Plu> plus = new ArrayList<>();
             long stamp = pluL.readLock();
@@ -3124,7 +3137,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
         String query = "SELECT * FROM PLUS WHERE CODE='" + code + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Plu> plus = new ArrayList<>();
             long stamp = pluL.readLock();
@@ -3150,7 +3163,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Plu> getAllPlus() throws IOException, SQLException {
         String query = "SELECT * FROM PLUS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Plu> plus = new ArrayList<>();
             long stamp = pluL.readLock();
@@ -3173,7 +3186,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
         String query = "UPDATE PLUS SET CODE='" + p.getCode() + "' WHERE ID=" + p.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = pluL.writeLock();
@@ -3202,13 +3215,14 @@ public class DBConnect implements DataConnect {
     @Override
     public boolean checkUsername(String username) throws IOException, SQLException {
         String query = "SELECT * FROM STAFF WHERE USERNAME='" + username.toLowerCase() + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = stL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
+                boolean used = set.next();
                 con.commit();
-                return set.next();
+                return used;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
@@ -3248,7 +3262,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO APP.WASTEREPORTS (VALUE, TIMESTAMP) values (" + wr.getTotalValue().doubleValue() + "," + wr.getDate().getTime() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = wasL.writeLock();
             try {
@@ -3276,7 +3290,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeWasteReport(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM WASTEREPORTS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
             long stamp = wasL.writeLock();
@@ -3299,7 +3313,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM WASTEREPORTS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReport> wrs = new ArrayList<>();
             long stamp = wasL.readLock();
@@ -3327,7 +3341,7 @@ public class DBConnect implements DataConnect {
 
     private List<WasteItem> getWasteItemsInReport(int id) throws SQLException {
         String query = "SELECT * FROM WASTEITEMS WHERE REPORT_ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteItem> wis = new ArrayList<>();
             long stamp = wasItL.readLock();
@@ -3349,7 +3363,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<WasteReport> getAllWasteReports() throws IOException, SQLException {
         String query = "SELECT * FROM WASTEREPORTS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReport> wrs = new ArrayList<>();
             long stamp = wasL.readLock();
@@ -3374,7 +3388,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
         String query = "UPDATE WASTEREPORTS SET VALUE=" + wr.getTotalValue().doubleValue() + ", TIMESTAMP=" + wr.getDate().getTime() + " WHERE ID=" + wr.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = wasL.writeLock();
@@ -3419,7 +3433,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + "," + wi.getReason().getId() + ")";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = wasItL.writeLock();
             try {
@@ -3444,7 +3458,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeWasteItem(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM WASTEITEMS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
             long stamp = wasItL.writeLock();
@@ -3467,7 +3481,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM WASTEITEMS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteItem> wis = new ArrayList<>();
             long stamp = wasItL.readLock();
@@ -3494,7 +3508,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<WasteItem> getAllWasteItems() throws IOException, SQLException {
         String query = "SELECT * FROM WASTEITEMS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteItem> wis = new ArrayList<>();
             long stamp = wasItL.readLock();
@@ -3517,7 +3531,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
         String query = "UPDATE WASTEREPORTS SET PRODUCT=" + wi.getProduct().getId() + ", quantity=" + wi.getQuantity() + ", REASON='" + wi.getReason() + "', WHERE ID=" + wi.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = wasItL.writeLock();
@@ -3551,7 +3565,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO APP.WASTEREASONS (REASON) values ('" + wr.getReason() + "')";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = wasReL.writeLock();
             try {
@@ -3576,7 +3590,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeWasteReason(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM WATSEREASONS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
             long stamp = wasReL.writeLock();
@@ -3599,7 +3613,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM WASTEREASONS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReason> wrs = new ArrayList<>();
             long stamp = wasReL.readLock();
@@ -3625,7 +3639,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<WasteReason> getAllWasteReasons() throws IOException, SQLException {
         String query = "SELECT * FROM WASTEREASONS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReason> wrs = new ArrayList<>();
             long stamp = wasReL.readLock();
@@ -3648,7 +3662,7 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
         String query = "UPDATE WASTEREASONS SET REASON='" + wr.getReason() + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
             long stamp = wasReL.writeLock();
@@ -3672,7 +3686,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO SUPPLIERS (NAME, ADDRESS, PHONE) VALUES ('" + s.getName() + "','" + s.getAddress() + "','" + s.getContactNumber() + "')";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = supL.writeLock();
             try {
@@ -3697,7 +3711,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeSupplier(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM SUPPLIERS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = supL.writeLock();
             try {
@@ -3716,7 +3730,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Supplier getSupplier(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM SUPPLIERS WHERE ID=" + id;
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = supL.readLock();
             try {
@@ -3743,7 +3757,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Supplier> getAllSuppliers() throws IOException, SQLException {
         String query = "SELECT * FROM SUPPLIERS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = supL.readLock();
             try {
@@ -3772,7 +3786,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException {
         String query = "UPDATE SUPPLIERS SET NAME='" + s.getName() + "' ADDRESS='" + s.getAddress() + "', PHONE='" + s.getContactNumber() + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             long stamp = supL.writeLock();
             try {
@@ -3792,7 +3806,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Department addDepartment(Department d) throws IOException, SQLException {
         String query = "INSERT INTO DEPARTMENTS (NAME) VALUES('" + d.getName() + "')";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             try {
                 PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
                 stmt.executeUpdate();
@@ -3814,7 +3828,7 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeDepartment(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM DEPARTMENTS WHERE ID='" + id + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
                 int value = stmt.executeUpdate(query);
@@ -3833,7 +3847,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Department getDepartment(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM DEPARTMENT WHERE ID='" + id + "'";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
@@ -3855,7 +3869,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Department> getAllDepartments() throws IOException, SQLException {
         String query = "SELECT * FROM DEPARTMENTS";
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
@@ -3878,7 +3892,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Department updateDepartment(Department d) throws IOException, SQLException, JTillException {
         String query = "UPDATE DEPARTMENTS SET NAME='" + d.getName() + "' WHERE ID=" + d.getId();
-        try (Connection con = getConnection()) {
+        try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
                 stmt.executeUpdate(query);
