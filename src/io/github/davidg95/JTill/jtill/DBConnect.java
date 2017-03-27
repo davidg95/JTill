@@ -1965,17 +1965,6 @@ public class DBConnect implements DataConnect {
                     int id = set.getInt(1);
                     s.setId(id);
                 }
-                for (SaleItem p : s.getSaleItems()) {
-                    addSaleItem(s, p);
-                    try {
-                        if (p.getItem() instanceof Product) {
-                            purchaseProduct((Product) p.getItem(), p.getQuantity());
-                        }
-                    } catch (OutOfStockException ex) {
-                        g.log(ex);
-                    } catch (ProductNotFoundException ex) {
-                    }
-                }
                 if (s.isChargeAccount()) {
                     new Thread("Charge To Account") {
                         @Override
@@ -1991,6 +1980,17 @@ public class DBConnect implements DataConnect {
                 throw ex;
             } finally {
                 salL.unlockWrite(stamp);
+            }
+        }
+        for (SaleItem p : s.getSaleItems()) {
+            addSaleItem(s, p);
+            try {
+                if (p.getItem() instanceof Product) {
+                    purchaseProduct((Product) p.getItem(), p.getQuantity());
+                }
+            } catch (OutOfStockException ex) {
+                g.log(ex);
+            } catch (ProductNotFoundException ex) {
             }
         }
         return s;
