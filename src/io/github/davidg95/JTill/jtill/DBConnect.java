@@ -46,11 +46,7 @@ import org.apache.derby.jdbc.EmbeddedDriver;
 public class DBConnect implements DataConnect {
 
     private static final Logger LOG = Logger.getGlobal();
-
-    /**
-     * The database connection.
-     */
-    private Connection con;
+    
     /**
      * The database driver.
      */
@@ -138,12 +134,18 @@ public class DBConnect implements DataConnect {
      */
     public void connect(String database_address, String username, String password) throws SQLException {
         LOG.log(Level.INFO, "Connecting to database {0}", database_address);
-        con = DriverManager.getConnection(database_address, username, password);
-        con.setAutoCommit(false);
         this.address = database_address;
         this.username = username;
         this.password = password;
         connected = true;
+    }
+
+    private Connection getConnection() throws SQLException {
+        LOG.log(Level.INFO, "Connecting to database {0}", address);
+        Connection connection = DriverManager.getConnection(address, username, password);
+        connection.setAutoCommit(false);
+        connected = true;
+        return connection;
     }
 
     /**
@@ -158,6 +160,7 @@ public class DBConnect implements DataConnect {
         LOG.log(Level.INFO, "The database does not exists, so it is getting created");
         embedded = new EmbeddedDriver();
         DriverManager.registerDriver(embedded);
+        Connection con;
         con = DriverManager.getConnection(address, username, password);
         con.setAutoCommit(false);
 
@@ -165,6 +168,7 @@ public class DBConnect implements DataConnect {
         this.username = username;
         this.password = password;
         connected = true;
+        con.close();
         createTables();
     }
 
@@ -346,151 +350,152 @@ public class DBConnect implements DataConnect {
                 + "     ADDRESS VARCHAR(100),\n"
                 + "     PHONE VARCHAR(20)\n"
                 + ")";
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            try {
+                stmt.execute(tills);
+                LOG.log(Level.INFO, "Created tills table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(tax);
+                LOG.log(Level.INFO, "Created tax table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(plus);
+                LOG.log(Level.INFO, "Created plus table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(categorys);
+                LOG.log(Level.INFO, "Created categorys table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(configs);
+                LOG.log(Level.INFO, "Created configs table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(sales);
+                LOG.log(Level.INFO, "Created sales table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(customers);
+                LOG.log(Level.INFO, "Created customers table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(products);
+                LOG.log(Level.INFO, "Created products table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(discounts);
+                LOG.log(Level.INFO, "Created discounts table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(saleItems);
+                LOG.log(Level.INFO, "Created saleItems table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(staff);
+                LOG.log(Level.INFO, "Created staff table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(screens);
+                LOG.log(Level.INFO, "Created screens table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(buttons);
+                LOG.log(Level.INFO, "Created buttons table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(wasteReports);
+                LOG.log(Level.INFO, "Created waste reports table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(wasteReasons);
+                LOG.log(Level.INFO, "Created table waste reasons");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(wasteItems);
+                LOG.log(Level.INFO, "Created table waste items");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(suppliers);
+                LOG.log(Level.INFO, "Created table suppliers");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
 
-        Statement stmt = con.createStatement();
-        try {
-            stmt.execute(tills);
-            LOG.log(Level.INFO, "Created tills table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
+            String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
+            String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
+            String addReason = "INSERT INTO WASTEREASONS (REASON) VALUES ('DEFAULT')";
+            stmt.executeUpdate(addCategory);
+            stmt.executeUpdate(addTax);
+            stmt.executeUpdate(addReason);
         }
-        try {
-            stmt.execute(tax);
-            LOG.log(Level.INFO, "Created tax table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(plus);
-            LOG.log(Level.INFO, "Created plus table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(categorys);
-            LOG.log(Level.INFO, "Created categorys table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(configs);
-            LOG.log(Level.INFO, "Created configs table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(sales);
-            LOG.log(Level.INFO, "Created sales table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(customers);
-            LOG.log(Level.INFO, "Created customers table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(products);
-            LOG.log(Level.INFO, "Created products table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(discounts);
-            LOG.log(Level.INFO, "Created discounts table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(saleItems);
-            LOG.log(Level.INFO, "Created saleItems table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(staff);
-            LOG.log(Level.INFO, "Created staff table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(screens);
-            LOG.log(Level.INFO, "Created screens table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(buttons);
-            LOG.log(Level.INFO, "Created buttons table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(wasteReports);
-            LOG.log(Level.INFO, "Created waste reports table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(wasteReasons);
-            LOG.log(Level.INFO, "Created table waste reasons");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(wasteItems);
-            LOG.log(Level.INFO, "Created table waste items");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-        try {
-            stmt.execute(suppliers);
-            LOG.log(Level.INFO, "Created table suppliers");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            error(ex);
-        }
-
-        String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
-        String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
-        String addReason = "INSERT INTO WASTEREASONS (REASON) VALUES ('DEFAULT')";
-        stmt.executeUpdate(addCategory);
-        stmt.executeUpdate(addTax);
-        stmt.executeUpdate(addReason);
     }
 
     private void error(SQLException ex) {
@@ -515,15 +520,9 @@ public class DBConnect implements DataConnect {
      * and close the connection.
      */
     @Override
+    @Deprecated
     public void close() {
-        try {
-            LOG.log(Level.INFO, "Disconnecting from database");
-            con.close();
-            LOG.log(Level.INFO, "Database disconnected");
-            connected = false;
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, "ERROR DISCONNECTING DATABASE");
-        }
+        
     }
 
     /**
@@ -539,47 +538,51 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Product> getAllProducts() throws SQLException {
         String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID";
-        Statement stmt = con.createStatement();
-        List<Product> products = new ArrayList<>();
-        long stamp = prL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            products = new ArrayList<>();
-            while (set.next()) {
-                int code = set.getInt("pId");
-                int pluID = set.getInt("plId");
-                String pluCode = set.getString("plCode");
-                Plu plu = new Plu(pluID, pluCode);
-                String name = set.getString("pName");
-                boolean open = set.getBoolean("OPEN_PRICE");
-                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                int stock = set.getInt("STOCK");
-                String comments = set.getString("COMMENTS");
-                String shortName = set.getString("SHORT_NAME");
-                int id = set.getInt("cId");
-                String catName = set.getString("cName");
-                Time start = set.getTime("SELL_START");
-                Time end = set.getTime("SELL_END");
-                boolean restrict = set.getBoolean("TIME_RESTRICT");
-                int minAge = set.getInt("MINIMUM_AGE");
-                Category category = new Category(id, catName, start, end, restrict, minAge);
-                int taxID = set.getInt("tId");
-                String taxName = set.getString("tName");
-                double taxValue = set.getDouble("tValue");
-                Tax tax = new Tax(taxID, taxName, taxValue);
-                BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
-                int minStock = set.getInt("MIN_PRODUCT_LEVEL");
-                int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
+        List<Product> products;
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = prL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                products = new ArrayList<>();
+                while (set.next()) {
+                    int code = set.getInt("pId");
+                    int pluID = set.getInt("plId");
+                    String pluCode = set.getString("plCode");
+                    Plu plu = new Plu(pluID, pluCode);
+                    String name = set.getString("pName");
+                    boolean open = set.getBoolean("OPEN_PRICE");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    int stock = set.getInt("STOCK");
+                    String comments = set.getString("COMMENTS");
+                    String shortName = set.getString("SHORT_NAME");
+                    int id = set.getInt("cId");
+                    String catName = set.getString("cName");
+                    Time start = set.getTime("SELL_START");
+                    Time end = set.getTime("SELL_END");
+                    boolean restrict = set.getBoolean("TIME_RESTRICT");
+                    int minAge = set.getInt("MINIMUM_AGE");
+                    Category category = new Category(id, catName, start, end, restrict, minAge);
+                    int taxID = set.getInt("tId");
+                    String taxName = set.getString("tName");
+                    double taxValue = set.getDouble("tValue");
+                    Tax tax = new Tax(taxID, taxName, taxValue);
+                    BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
+                    int minStock = set.getInt("MIN_PRODUCT_LEVEL");
+                    int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-                Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
+                    Product p = new Product(name, shortName, category, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
 
-                products.add(p);
+                    products.add(p);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockRead(stamp);
         }
         return products;
     }
@@ -630,46 +633,50 @@ public class DBConnect implements DataConnect {
     @Override
     public Product addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (PLU, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
-        long stamp = prL.writeLock();
-        try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                p.setId(id);
+        try (Connection con = getConnection()) {
+            long stamp = prL.writeLock();
+            try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    p.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockWrite(stamp);
+            LOG.log(Level.INFO, "New Product {0} added", p.getId());
         }
-        LOG.log(Level.INFO, "New Product {0} added", p.getId());
         return p;
     }
 
     @Override
     public Product updateProduct(Product p) throws SQLException, ProductNotFoundException {
         String query = p.getSQlUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = prL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new ProductNotFoundException("Product id " + p.getId() + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = prL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                if (value == 0) {
+                    throw new ProductNotFoundException("Product id " + p.getId() + " could not be found");
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockWrite(stamp);
+            LOG.log(Level.INFO, "Product {0} updated", p.getId());
         }
-        LOG.log(Level.INFO, "Product {0} updated", p.getId());
         return p;
     }
 
@@ -684,21 +691,25 @@ public class DBConnect implements DataConnect {
     public boolean checkBarcode(String barcode) throws SQLException {
         String query = "SELECT * FROM PLUS WHERE CODE = '" + barcode + "'";
         ResultSet res;
-        Statement stmt = con.createStatement();
-        long stamp = prL.readLock();
-        try {
-            res = stmt.executeQuery(query);
-            if (res.next()) {
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = prL.readLock();
+            try {
+                res = stmt.executeQuery(query);
+                if (res.next()) {
+                    res.close();
+                    return false;
+                }
                 res.close();
-                return false;
+                con.commit();
+                return true;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockRead(stamp);
             }
-            res.close();
-            return true;
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockRead(stamp);
         }
     }
 
@@ -725,32 +736,34 @@ public class DBConnect implements DataConnect {
     public void removeProduct(int id) throws SQLException, ProductNotFoundException {
         String query = "DELETE FROM PRODUCTS WHERE PRODUCTS.ID = " + id + "";
         String iQuery = "DELETE FROM WASTEITEMS WHERE PRODUCT = " + id;
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = wasItL.writeLock();
-        try {
-            stmt.executeUpdate(iQuery);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasItL.unlockWrite(stamp);
-        }
-        stamp = prL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new ProductNotFoundException(id + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = wasItL.writeLock();
+            try {
+                stmt.executeUpdate(iQuery);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasItL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockWrite(stamp);
+            stamp = prL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                if (value == 0) {
+                    throw new ProductNotFoundException(id + "");
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockWrite(stamp);
+            }
         }
         LOG.log(Level.INFO, "Product {0} removed", id);
     }
@@ -768,31 +781,33 @@ public class DBConnect implements DataConnect {
     @Override
     public int purchaseProduct(Product p, int amount) throws SQLException, OutOfStockException, ProductNotFoundException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + p.getId();
-        Statement stmt = con.createStatement();
-        long stamp = prL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Purchase product {0}", p.getId());
-            ResultSet res = stmt.executeQuery(query);
-            while (res.next()) {
-                int stock = res.getInt("STOCK");
-                res.close();
-                stock -= amount;
-                String update = "UPDATE PRODUCTS SET STOCK=" + stock + " WHERE PRODUCTS.ID=" + p.getId();
-                stmt = con.createStatement();
-                stmt.executeUpdate(update);
-                if (stock < p.getMinStockLevel()) {
-                    LOG.log(Level.WARNING, "{0} is below minimum stock level", p.getId());
-                    g.logWarning("WARNING- Product " + p.getId() + " is below is minimum level!");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = prL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Purchase product {0}", p.getId());
+                ResultSet res = stmt.executeQuery(query);
+                while (res.next()) {
+                    int stock = res.getInt("STOCK");
+                    res.close();
+                    stock -= amount;
+                    String update = "UPDATE PRODUCTS SET STOCK=" + stock + " WHERE PRODUCTS.ID=" + p.getId();
+                    stmt = con.createStatement();
+                    stmt.executeUpdate(update);
+                    if (stock < p.getMinStockLevel()) {
+                        LOG.log(Level.WARNING, "{0} is below minimum stock level", p.getId());
+                        g.logWarning("WARNING- Product " + p.getId() + " is below is minimum level!");
+                    }
+                    con.commit();
+                    return stock;
                 }
-                return stock;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockWrite(stamp);
         }
         throw new ProductNotFoundException(p.getId() + " could not be found");
     }
@@ -808,24 +823,27 @@ public class DBConnect implements DataConnect {
     @Override
     public Product getProduct(int code) throws SQLException, ProductNotFoundException {
         String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND p.ID=" + code;
-        Statement stmt = con.createStatement();
-        List<Product> products = new ArrayList<>();
-        long stamp = prL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get product {0}", code);
-            ResultSet res = stmt.executeQuery(query);
-
-            products = getProductsFromResultSet(res);
-            if (products.isEmpty()) {
-                throw new ProductNotFoundException("Product " + code + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Product> products = new ArrayList<>();
+            long stamp = prL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get product {0}", code);
+                ResultSet res = stmt.executeQuery(query);
+                products = getProductsFromResultSet(res);
+                con.commit();
+                if (products.isEmpty()) {
+                    throw new ProductNotFoundException("Product " + code + " could not be found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockRead(stamp);
+            return products.get(0);
         }
-        return products.get(0);
     }
 
     /**
@@ -839,21 +857,25 @@ public class DBConnect implements DataConnect {
     @Override
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
         String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND pl.CODE='" + barcode + "'";
-        Statement stmt = con.createStatement();
         List<Product> products = new ArrayList<>();
-        long stamp = prL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get Product {0}", barcode);
-            ResultSet res = stmt.executeQuery(query);
-            products = getProductsFromResultSet(res);
-            if (products.isEmpty()) {
-                throw new ProductNotFoundException(barcode + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = prL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get Product {0}", barcode);
+                ResultSet res = stmt.executeQuery(query);
+                products = getProductsFromResultSet(res);
+                con.commit();
+                if (products.isEmpty()) {
+                    throw new ProductNotFoundException(barcode + " could not be found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockRead(stamp);
         }
         return products.get(0);
     }
@@ -861,22 +883,26 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Discount> getProductsDiscount(Product p) throws SQLException {
         String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getId() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
-        Statement stmt = con.createStatement();
-        List<Discount> discounts = new ArrayList<>();
-        long pStamp = prL.readLock();
-        long dStamp = disL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get discounts for product {0}", p.getId());
-            ResultSet res = stmt.executeQuery(query);
-            discounts = getDiscountsFromResultSet(res);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockRead(pStamp);
-            disL.unlockRead(dStamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Discount> discounts = new ArrayList<>();
+            long pStamp = prL.readLock();
+            long dStamp = disL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get discounts for product {0}", p.getId());
+                ResultSet res = stmt.executeQuery(query);
+                discounts = getDiscountsFromResultSet(res);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockRead(pStamp);
+                disL.unlockRead(dStamp);
+            }
+            return discounts;
         }
-        return discounts;
     }
 
     @Override
@@ -893,39 +919,42 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Customer> getAllCustomers() throws SQLException {
         String query = "SELECT * FROM CUSTOMERS";
-        Statement stmt = con.createStatement();
-        List<Customer> customers = new ArrayList<>();
-        long stamp = cusL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get all customers");
-            ResultSet set = stmt.executeQuery(query);
-            customers = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                String phone = set.getString("PHONE");
-                String mobile = set.getString("MOBILE");
-                String email = set.getString("EMAIL");
-                String address1 = set.getString("ADDRESS_LINE_1");
-                String address2 = set.getString("ADDRESS_LINE_2");
-                String town = set.getString("TOWN");
-                String county = set.getString("COUNTY");
-                String country = set.getString("COUNTRY");
-                String postcode = set.getString("POSTCODE");
-                String notes = set.getString("NOTES");
-                int loyaltyPoints = set.getInt("LOYALTY_POINTS");
-                BigDecimal moneyDue = new BigDecimal(Double.toString(set.getDouble("MONEY_DUE")));
-                Customer c = new Customer(id, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
-                customers.add(c);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Customer> customers = new ArrayList<>();
+            long stamp = cusL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get all customers");
+                ResultSet set = stmt.executeQuery(query);
+                customers = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    String phone = set.getString("PHONE");
+                    String mobile = set.getString("MOBILE");
+                    String email = set.getString("EMAIL");
+                    String address1 = set.getString("ADDRESS_LINE_1");
+                    String address2 = set.getString("ADDRESS_LINE_2");
+                    String town = set.getString("TOWN");
+                    String county = set.getString("COUNTY");
+                    String country = set.getString("COUNTRY");
+                    String postcode = set.getString("POSTCODE");
+                    String notes = set.getString("NOTES");
+                    int loyaltyPoints = set.getInt("LOYALTY_POINTS");
+                    BigDecimal moneyDue = new BigDecimal(Double.toString(set.getDouble("MONEY_DUE")));
+                    Customer c = new Customer(id, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
+                    customers.add(c);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                cusL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            cusL.unlockRead(stamp);
+            return customers;
         }
-
-        return customers;
     }
 
     public List<Customer> getCustomersFromResultSet(ResultSet set) throws SQLException {
@@ -950,7 +979,6 @@ public class DBConnect implements DataConnect {
 
             customers.add(c);
         }
-
         return customers;
     }
 
@@ -965,48 +993,52 @@ public class DBConnect implements DataConnect {
     @Override
     public Customer addCustomer(Customer c) throws SQLException {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = cusL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Add customer {0}", c.getId());
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                c.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = cusL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Add customer {0}", c.getId());
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    c.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                cusL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            cusL.unlockWrite(stamp);
+            return c;
         }
-        return c;
     }
 
     @Override
     public Customer updateCustomer(Customer c) throws SQLException, CustomerNotFoundException {
         String query = c.getSQLUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = cusL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Update customer {0}", c.getId());
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new CustomerNotFoundException(c.getId() + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = cusL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Update customer {0}", c.getId());
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new CustomerNotFoundException(c.getId() + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                cusL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            cusL.unlockWrite(stamp);
+            return c;
         }
-        return c;
     }
 
     @Override
@@ -1017,123 +1049,141 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "DELETE FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = cusL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Remove customer {0}", id);
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new CustomerNotFoundException(id + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = cusL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Remove customer {0}", id);
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new CustomerNotFoundException(id + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                cusL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            cusL.unlockWrite(stamp);
         }
     }
 
     @Override
     public Customer getCustomer(int id) throws SQLException, CustomerNotFoundException {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Customer> customers = new ArrayList<>();
-        long stamp = cusL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get customer {0}", id);
-            ResultSet res = stmt.executeQuery(query);
-            customers = getCustomersFromResultSet(res);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            cusL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Customer> customers = new ArrayList<>();
+            long stamp = cusL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get customer {0}", id);
+                ResultSet res = stmt.executeQuery(query);
+                customers = getCustomersFromResultSet(res);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                cusL.unlockRead(stamp);
+            }
+            if (customers.isEmpty()) {
+                throw new CustomerNotFoundException("Customer " + id + " could not be found");
+            }
+            return customers.get(0);
         }
-        if (customers.isEmpty()) {
-            throw new CustomerNotFoundException("Customer " + id + " could not be found");
-        }
-        return customers.get(0);
     }
 
     @Override
     public List<Customer> getCustomerByName(String name) throws SQLException, CustomerNotFoundException {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.NAME = " + name;
-        Statement stmt = con.createStatement();
-        List<Customer> customers = new ArrayList<>();
-        long stamp = cusL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get customer {0}", name);
-            ResultSet res = stmt.executeQuery(query);
-            customers = getCustomersFromResultSet(res);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            cusL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Customer> customers = new ArrayList<>();
+            long stamp = cusL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get customer {0}", name);
+                ResultSet res = stmt.executeQuery(query);
+                customers = getCustomersFromResultSet(res);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                cusL.unlockRead(stamp);
+            }
+            if (customers.isEmpty()) {
+                throw new CustomerNotFoundException("Customer " + name + " could not be found");
+            }
+            return customers;
         }
-        if (customers.isEmpty()) {
-            throw new CustomerNotFoundException("Customer " + name + " could not be found");
-        }
-        return customers;
     }
 
     @Override
     public List<Customer> customerLookup(String terms) throws IOException, SQLException {
         String query = "SELECT * FROM CUSTOMERS";
-        Statement stmt = con.createStatement();
-        List<Customer> customers = new ArrayList<>();
-        long stamp = cusL.readLock();
-        try {
-            LOG.log(Level.INFO, "Search customers for {0}", terms);
-            ResultSet res = stmt.executeQuery(query);
-            customers = getCustomersFromResultSet(res);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            cusL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Customer> customers = new ArrayList<>();
+            long stamp = cusL.readLock();
+            try {
+                LOG.log(Level.INFO, "Search customers for {0}", terms);
+                ResultSet res = stmt.executeQuery(query);
+                customers = getCustomersFromResultSet(res);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                cusL.unlockRead(stamp);
+            }
+
+            List<Customer> newList = new ArrayList<>();
+
+            customers.stream().filter((c) -> (c.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((c) -> {
+                newList.add(c);
+            });
+
+            return newList;
         }
-
-        List<Customer> newList = new ArrayList<>();
-
-        customers.stream().filter((c) -> (c.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((c) -> {
-            newList.add(c);
-        });
-
-        return newList;
     }
 
     //Staff Methods
     @Override
     public List<Staff> getAllStaff() throws SQLException {
         String query = "SELECT * FROM STAFF";
-        Statement stmt = con.createStatement();
-        List<Staff> staff = new ArrayList<>();
-        long stamp = stL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get all staff");
-            ResultSet set = stmt.executeQuery(query);
-            staff = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                int position = set.getInt("POSITION");
-                String uname = set.getString("USERNAME");
-                String pword = set.getString("PASSWORD");
-                Staff s = new Staff(id, name, position, uname, pword);
-                staff.add(s);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Staff> staff = new ArrayList<>();
+            long stamp = stL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get all staff");
+                ResultSet set = stmt.executeQuery(query);
+                staff = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    int position = set.getInt("POSITION");
+                    String uname = set.getString("USERNAME");
+                    String pword = set.getString("PASSWORD");
+                    Staff s = new Staff(id, name, position, uname, pword);
+                    staff.add(s);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockRead(stamp);
-        }
 
-        return staff;
+            return staff;
+        }
     }
 
     public List<Staff> getStaffFromResultSet(ResultSet set) throws SQLException {
@@ -1149,55 +1199,58 @@ public class DBConnect implements DataConnect {
 
             staff.add(s);
         }
-
         return staff;
     }
 
     @Override
     public Staff addStaff(Staff s) throws SQLException {
         String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = stL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Add staff {0}", s.getId());
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                s.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = stL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Add staff {0}", s.getId());
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    s.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockWrite(stamp);
+            return s;
         }
-        return s;
     }
 
     @Override
     public Staff updateStaff(Staff s) throws SQLException, StaffNotFoundException {
         String query = s.getSQLUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = stL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Update staff {0}", s.getId());
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new StaffNotFoundException(s.getId() + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = stL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Update staff {0}", s.getId());
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new StaffNotFoundException(s.getId() + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockWrite(stamp);
+            return s;
         }
-        return s;
     }
 
     @Override
@@ -1208,133 +1261,150 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "DELETE FROM STAFF WHERE STAFF.ID = " + id;
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = stL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Remove staff {0}", id);
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new StaffNotFoundException(id + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = stL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Remove staff {0}", id);
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new StaffNotFoundException(id + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockWrite(stamp);
         }
     }
 
     @Override
     public Staff getStaff(int id) throws SQLException, StaffNotFoundException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Staff> staff = new ArrayList<>();
-        long stamp = stL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get staff {0}", id);
-            ResultSet set = stmt.executeQuery(query);
-            staff = getStaffFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Staff> staff = new ArrayList<>();
+            long stamp = stL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get staff {0}", id);
+                ResultSet set = stmt.executeQuery(query);
+                staff = getStaffFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockRead(stamp);
+            }
 
-        if (staff.isEmpty()) {
-            throw new StaffNotFoundException(id + "");
-        }
+            if (staff.isEmpty()) {
+                throw new StaffNotFoundException(id + "");
+            }
 
-        return staff.get(0);
+            return staff.get(0);
+        }
     }
 
     @Override
     public Staff login(String username, String password) throws SQLException, LoginException {
         String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username.toLowerCase() + "'";
-        Statement stmt = con.createStatement();
-        List<Staff> staff = new ArrayList<>();
-        long stamp = stL.readLock();
-        try {
-            LOG.log(Level.INFO, "Login Staff {0}", username);
-            ResultSet res = stmt.executeQuery(query);
-            staff = getStaffFromResultSet(res);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Staff> staff = new ArrayList<>();
+            long stamp = stL.readLock();
+            try {
+                LOG.log(Level.INFO, "Login Staff {0}", username);
+                ResultSet res = stmt.executeQuery(query);
+                staff = getStaffFromResultSet(res);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockRead(stamp);
+            }
+
+            if (staff.isEmpty()) {
+                throw new LoginException(username + " could not be found");
+            }
+
+            Staff s = staff.get(0);
+
+            if (s.getPassword().equals(password)) {
+                return s;
+            }
+
+            throw new LoginException("Incorrect Password");
         }
-
-        if (staff.isEmpty()) {
-            throw new LoginException(username + " could not be found");
-        }
-
-        Staff s = staff.get(0);
-
-        if (s.getPassword().equals(password)) {
-            return s;
-        }
-
-        throw new LoginException("Incorrect Password");
     }
 
     @Override
     public int getStaffCount() throws SQLException {
         String query = "SELECT * FROM STAFF";
-        Statement stmt = con.createStatement();
-        List<Staff> staff = new ArrayList<>();
-        long stamp = stL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get staff count");
-            ResultSet res = stmt.executeQuery(query);
-            staff = getStaffFromResultSet(res);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Staff> staff = new ArrayList<>();
+            long stamp = stL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get staff count");
+                ResultSet res = stmt.executeQuery(query);
+                staff = getStaffFromResultSet(res);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockRead(stamp);
+            }
 
-        return staff.size();
+            return staff.size();
+        }
     }
 
     //Discount Methods
     @Override
     public List<Discount> getAllDiscounts() throws SQLException {
         String query = "SELECT * FROM DISCOUNTS";
-        Statement stmt = con.createStatement();
-        List<Discount> discounts = new ArrayList<>();
-        long stamp = disL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get all discounts");
-            ResultSet set = stmt.executeQuery(query);
-            discounts = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                double percentage = set.getDouble("PERCENTAGE");
-                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                Product p = null;
-                try {
-                    p = this.getProduct(set.getInt("TRIGGER"));
-                } catch (ProductNotFoundException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Discount> discounts = new ArrayList<>();
+            long stamp = disL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get all discounts");
+                ResultSet set = stmt.executeQuery(query);
+                discounts = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    double percentage = set.getDouble("PERCENTAGE");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    Product p = null;
+                    try {
+                        p = this.getProduct(set.getInt("TRIGGER"));
+                    } catch (ProductNotFoundException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                    Discount d = new Discount(id, name, percentage, price, p);
+
+                    discounts.add(d);
                 }
-                Discount d = new Discount(id, name, percentage, price, p);
-
-                discounts.add(d);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                disL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            disL.unlockRead(stamp);
+            return discounts;
         }
-
-        return discounts;
     }
 
     public List<Discount> getDiscountsFromResultSet(ResultSet set) throws SQLException {
@@ -1354,55 +1424,58 @@ public class DBConnect implements DataConnect {
 
             discounts.add(d);
         }
-
         return discounts;
     }
 
     @Override
     public Discount addDiscount(Discount d) throws SQLException {
         String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, TRIGGER) VALUES (" + d.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = disL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Add discount {0}", d.getId());
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                d.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = disL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Add discount {0}", d.getId());
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    d.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                disL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            disL.unlockWrite(stamp);
+            return d;
         }
-        return d;
     }
 
     @Override
     public Discount updateDiscount(Discount d) throws SQLException, DiscountNotFoundException {
         String query = d.getSQLUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = disL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Update discount {0}", d.getId());
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new DiscountNotFoundException(d.getId() + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = disL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Update discount {0}", d.getId());
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new DiscountNotFoundException(d.getId() + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                disL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            disL.unlockWrite(stamp);
+            return d;
         }
-        return d;
     }
 
     @Override
@@ -1413,76 +1486,84 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "DELETE FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = disL.writeLock();
-        try {
-            LOG.log(Level.INFO, "Remove discount {0}", id);
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new DiscountNotFoundException(id + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = disL.writeLock();
+            try {
+                LOG.log(Level.INFO, "Remove discount {0}", id);
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new DiscountNotFoundException(id + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                disL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            disL.unlockWrite(stamp);
         }
     }
 
     @Override
     public Discount getDiscount(int id) throws SQLException, DiscountNotFoundException {
         String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Discount> discounts = new ArrayList<>();
-        long stamp = disL.readLock();
-        try {
-            LOG.log(Level.INFO, "Get discount {0}", id);
-            ResultSet set = stmt.executeQuery(query);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Discount> discounts = new ArrayList<>();
+            long stamp = disL.readLock();
+            try {
+                LOG.log(Level.INFO, "Get discount {0}", id);
+                ResultSet set = stmt.executeQuery(query);
+                discounts = getDiscountsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                disL.unlockRead(stamp);
+            }
 
-            discounts = getDiscountsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            disL.unlockRead(stamp);
+            if (discounts.isEmpty()) {
+                throw new DiscountNotFoundException(id + "");
+            }
+
+            return discounts.get(0);
         }
-
-        if (discounts.isEmpty()) {
-            throw new DiscountNotFoundException(id + "");
-        }
-
-        return discounts.get(0);
     }
 
     //Tax Methods
     @Override
     public List<Tax> getAllTax() throws SQLException {
         String query = "SELECT * FROM TAX";
-        Statement stmt = con.createStatement();
-        List<Tax> tax = new ArrayList<>();
-        long stamp = taxL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            tax = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                double value = set.getDouble("VALUE");
-                Tax t = new Tax(id, name, value);
-
-                tax.add(t);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Tax> tax = new ArrayList<>();
+            long stamp = taxL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                tax = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    double value = set.getDouble("VALUE");
+                    Tax t = new Tax(id, name, value);
+                    tax.add(t);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                taxL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            taxL.unlockRead(stamp);
-        }
 
-        return tax;
+            return tax;
+        }
     }
 
     public List<Tax> getTaxFromResultSet(ResultSet set) throws SQLException {
@@ -1495,29 +1576,30 @@ public class DBConnect implements DataConnect {
 
             tax.add(t);
         }
-
         return tax;
     }
 
     @Override
     public Tax addTax(Tax t) throws SQLException {
         String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = taxL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                t.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = taxL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    t.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                taxL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            taxL.unlockWrite(stamp);
         }
         return t;
     }
@@ -1525,21 +1607,23 @@ public class DBConnect implements DataConnect {
     @Override
     public Tax updateTax(Tax t) throws SQLException, TaxNotFoundException {
         String query = t.getSQLUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = taxL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new TaxNotFoundException(t.getId() + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = taxL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new TaxNotFoundException(t.getId() + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                taxL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            taxL.unlockWrite(stamp);
         }
         return t;
     }
@@ -1561,96 +1645,109 @@ public class DBConnect implements DataConnect {
             }
         }
         String query = "DELETE FROM TAX WHERE TAX.ID = " + id;
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = taxL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new TaxNotFoundException(id + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = taxL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new TaxNotFoundException(id + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                taxL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            taxL.unlockWrite(stamp);
         }
     }
 
     @Override
     public Tax getTax(int id) throws SQLException, TaxNotFoundException {
         String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Tax> tax = new ArrayList<>();
-        long stamp = taxL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            tax = getTaxFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            taxL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Tax> tax = new ArrayList<>();
+            long stamp = taxL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                tax = getTaxFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                taxL.unlockRead(stamp);
+            }
 
-        if (tax.isEmpty()) {
-            throw new TaxNotFoundException(id + "");
-        }
+            if (tax.isEmpty()) {
+                throw new TaxNotFoundException(id + "");
+            }
 
-        return tax.get(0);
+            return tax.get(0);
+        }
     }
 
     @Override
     public List<Product> getProductsInTax(int id) throws SQLException {
         String query = "SELECT * FROM PRODUCTS, TAX WHERE TAX.ID = PRODUCTS.TAX_ID AND TAX.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Product> products = new ArrayList<>();
-        long tStamp = taxL.readLock();
-        long pStamp = prL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            products = getProductsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            taxL.unlockRead(tStamp);
-            prL.unlockRead(pStamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Product> products = new ArrayList<>();
+            long tStamp = taxL.readLock();
+            long pStamp = prL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                products = getProductsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                taxL.unlockRead(tStamp);
+                prL.unlockRead(pStamp);
+            }
 
-        return products;
+            return products;
+        }
     }
 
     //Category Methods
     @Override
     public List<Category> getAllCategorys() throws SQLException {
         String query = "SELECT * FROM CATEGORYS";
-        Statement stmt = con.createStatement();
-        List<Category> categorys = new ArrayList<>();
-        long stamp = catL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            categorys = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                Time startSell = set.getTime("SELL_START");
-                Time endSell = set.getTime("SELL_END");
-                boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
-                int minAge = set.getInt("MINIMUM_AGE");
-                Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
-                categorys.add(c);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Category> categorys = new ArrayList<>();
+            long stamp = catL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                categorys = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    Time startSell = set.getTime("SELL_START");
+                    Time endSell = set.getTime("SELL_END");
+                    boolean timeRestrict = set.getBoolean("TIME_RESTRICT");
+                    int minAge = set.getInt("MINIMUM_AGE");
+                    Category c = new Category(id, name, startSell, endSell, timeRestrict, minAge);
+                    categorys.add(c);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                catL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            catL.unlockRead(stamp);
+            return categorys;
         }
-
-        return categorys;
     }
 
     public List<Category> getCategorysFromResultSet(ResultSet set) throws SQLException {
@@ -1671,22 +1768,24 @@ public class DBConnect implements DataConnect {
     @Override
     public Category addCategory(Category c) throws SQLException {
         String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stmap = catL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                c.setID(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stmap = catL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    c.setID(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                catL.unlockWrite(stmap);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            catL.unlockWrite(stmap);
         }
         return c;
     }
@@ -1694,21 +1793,23 @@ public class DBConnect implements DataConnect {
     @Override
     public Category updateCategory(Category c) throws SQLException, CategoryNotFoundException {
         String query = c.getSQLUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = catL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new CategoryNotFoundException(c.getId() + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = catL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new CategoryNotFoundException(c.getId() + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                catL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            catL.unlockWrite(stamp);
         }
         return c;
     }
@@ -1730,64 +1831,74 @@ public class DBConnect implements DataConnect {
             }
         }
         String query = "DELETE FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = catL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new CategoryNotFoundException(id + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = catL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new CategoryNotFoundException(id + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                catL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            catL.unlockWrite(stamp);
         }
     }
 
     @Override
     public Category getCategory(int id) throws SQLException, CategoryNotFoundException {
         String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Category> categorys = new ArrayList<>();
-        long stamp = catL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            categorys = getCategorysFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            catL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Category> categorys = new ArrayList<>();
+            long stamp = catL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                categorys = getCategorysFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                catL.unlockRead(stamp);
+            }
 
-        if (categorys.isEmpty()) {
-            throw new CategoryNotFoundException(id + "");
-        }
+            if (categorys.isEmpty()) {
+                throw new CategoryNotFoundException(id + "");
+            }
 
-        return categorys.get(0);
+            return categorys.get(0);
+        }
     }
 
     @Override
     public List<Product> getProductsInCategory(int id) throws SQLException {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.CATEGORY_ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Product> products = new ArrayList<>();
-        long stamp = prL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            products = getProductsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            prL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Product> products = new ArrayList<>();
+            long stamp = prL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                products = getProductsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                prL.unlockRead(stamp);
+            }
 
-        return products;
+            return products;
+        }
     }
 
     public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
@@ -1829,41 +1940,43 @@ public class DBConnect implements DataConnect {
     @Override
     public Sale addSale(Sale s) throws SQLException {
         String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = salL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                s.setId(id);
-            }
-            for (SaleItem p : s.getSaleItems()) {
-                addSaleItem(s, p);
-                try {
-                    if (p.getItem() instanceof Product) {
-                        purchaseProduct((Product) p.getItem(), p.getQuantity());
-                    }
-                } catch (OutOfStockException ex) {
-                    g.log(ex);
-                } catch (ProductNotFoundException ex) {
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = salL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    s.setId(id);
                 }
-            }
-            if (s.isChargeAccount()) {
-                new Thread("Charge To Account") {
-                    @Override
-                    public void run() {
-                        chargeCustomerAccount(s.getCustomer(), s.getTotal());
+                for (SaleItem p : s.getSaleItems()) {
+                    addSaleItem(s, p);
+                    try {
+                        if (p.getItem() instanceof Product) {
+                            purchaseProduct((Product) p.getItem(), p.getQuantity());
+                        }
+                    } catch (OutOfStockException ex) {
+                        g.log(ex);
+                    } catch (ProductNotFoundException ex) {
                     }
-                }.start();
+                }
+                if (s.isChargeAccount()) {
+                    new Thread("Charge To Account") {
+                        @Override
+                        public void run() {
+                            chargeCustomerAccount(s.getCustomer(), s.getTotal());
+                        }
+                    }.start();
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                salL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            salL.unlockWrite(stamp);
         }
         return s;
     }
@@ -1880,144 +1993,158 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Sale> getAllSales() throws SQLException {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
-        Statement stmt = con.createStatement();
-        List<Sale> sales = new ArrayList<>();
-        long sStamp = salL.readLock();
-        long cStamp = cusL.readLock();
-        long stStamp = stL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            sales = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                int customerid = set.getInt("cId");
-                String name = set.getString("cName");
-                String phone = set.getString("PHONE");
-                String mobile = set.getString("MOBILE");
-                String email = set.getString("EMAIL");
-                String add_1 = set.getString("ADDRESS_LINE_1");
-                String add_2 = set.getString("ADDRESS_LINE_2");
-                String town = set.getString("TOWN");
-                String county = set.getString("COUNTRY");
-                String country = set.getString("COUNTRY");
-                String postcode = set.getString("POSTCODE");
-                String notes = set.getString("NOTES");
-                int loyalty_points = set.getInt("LOYALTY_POINTS");
-                BigDecimal money_due = new BigDecimal(set.getDouble("MONEY_DUE"));
-                Customer customer = new Customer(customerid, name, phone, mobile, email, add_1, add_2, town, county, country, postcode, notes, loyalty_points, money_due);
-                Date date = new Date(set.getLong("TIMESTAMP"));
-                String terminal = set.getString("TERMINAL");
-                boolean cashed = set.getBoolean("CASHED");
-                int sId = set.getInt("stId");
-                String stName = set.getString("stName");
-                int position = set.getInt("POSITION");
-                String stUsername = set.getString("USERNAME");
-                String stPassword = set.getString("PASSWORD");
-                Staff staff = new Staff(sId, stName, position, stUsername, stPassword);
-                Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
-                s.setProducts(getItemsInSale(s));
-                sales.add(s);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Sale> sales = new ArrayList<>();
+            long sStamp = salL.readLock();
+            long cStamp = cusL.readLock();
+            long stStamp = stL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                sales = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    int customerid = set.getInt("cId");
+                    String name = set.getString("cName");
+                    String phone = set.getString("PHONE");
+                    String mobile = set.getString("MOBILE");
+                    String email = set.getString("EMAIL");
+                    String add_1 = set.getString("ADDRESS_LINE_1");
+                    String add_2 = set.getString("ADDRESS_LINE_2");
+                    String town = set.getString("TOWN");
+                    String county = set.getString("COUNTRY");
+                    String country = set.getString("COUNTRY");
+                    String postcode = set.getString("POSTCODE");
+                    String notes = set.getString("NOTES");
+                    int loyalty_points = set.getInt("LOYALTY_POINTS");
+                    BigDecimal money_due = new BigDecimal(set.getDouble("MONEY_DUE"));
+                    Customer customer = new Customer(customerid, name, phone, mobile, email, add_1, add_2, town, county, country, postcode, notes, loyalty_points, money_due);
+                    Date date = new Date(set.getLong("TIMESTAMP"));
+                    String terminal = set.getString("TERMINAL");
+                    boolean cashed = set.getBoolean("CASHED");
+                    int sId = set.getInt("stId");
+                    String stName = set.getString("stName");
+                    int position = set.getInt("POSITION");
+                    String stUsername = set.getString("USERNAME");
+                    String stPassword = set.getString("PASSWORD");
+                    Staff staff = new Staff(sId, stName, position, stUsername, stPassword);
+                    Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
+                    s.setProducts(getItemsInSale(s));
+                    sales.add(s);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                salL.unlockRead(sStamp);
+                cusL.unlockRead(cStamp);
+                stL.unlockRead(stStamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            salL.unlockRead(sStamp);
-            cusL.unlockRead(cStamp);
-            stL.unlockRead(stStamp);
+            return sales;
         }
-
-        return sales;
     }
 
     @Override
     public BigDecimal getTillTakings(String t) throws SQLException {
         String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = '" + t + "'";
-        Statement stmt = con.createStatement();
-        BigDecimal result = new BigDecimal("0");
-        long stamp = salL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            while (set.next()) {
-                int id = set.getInt("ID");
-                BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                int customerid = set.getInt("CUSTOMER");
-                Customer customer = null;
-                try {
-                    customer = getCustomer(customerid);
-                } catch (CustomerNotFoundException ex) {
-                }
-                Date date = new Date(set.getLong("TIMESTAMP"));
-                String terminal = set.getString("TERMINAL");
-                boolean cashed = set.getBoolean("CASHED");
-                int sId = set.getInt("STAFF");
-                Staff staff = null;
-                try {
-                    staff = getStaff(sId);
-                } catch (StaffNotFoundException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-                Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
-                s.setProducts(getItemsInSale(s));
-                if (!s.isCashed()) {
-                    result = result.add(s.getTotal());
-                    s.setCashed(true);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            BigDecimal result = new BigDecimal("0");
+            long stamp = salL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    int customerid = set.getInt("CUSTOMER");
+                    Customer customer = null;
                     try {
-                        updateSaleNoSem(s);
-                    } catch (SaleNotFoundException ex) {
+                        customer = getCustomer(customerid);
+                    } catch (CustomerNotFoundException ex) {
+                    }
+                    Date date = new Date(set.getLong("TIMESTAMP"));
+                    String terminal = set.getString("TERMINAL");
+                    boolean cashed = set.getBoolean("CASHED");
+                    int sId = set.getInt("STAFF");
+                    Staff staff = null;
+                    try {
+                        staff = getStaff(sId);
+                    } catch (StaffNotFoundException ex) {
                         LOG.log(Level.WARNING, null, ex);
                     }
+                    Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
+                    s.setProducts(getItemsInSale(s));
+                    if (!s.isCashed()) {
+                        result = result.add(s.getTotal());
+                        s.setCashed(true);
+                        try {
+                            updateSaleNoSem(s);
+                        } catch (SaleNotFoundException ex) {
+                            LOG.log(Level.WARNING, null, ex);
+                        }
+                    }
                 }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                salL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            salL.unlockRead(stamp);
+            return result;
         }
-        return result;
     }
 
     @Override
     public List<Sale> getUncashedSales(String t) throws SQLException {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS-LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND TERMINAL = '" + t + "'";
-        Statement stmt = con.createStatement();
-        List<Sale> sales = new ArrayList<>();
-        long stamp = salL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            sales = getSalesFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            salL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Sale> sales = new ArrayList<>();
+            long stamp = salL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                sales = getSalesFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                salL.unlockRead(stamp);
+            }
+            return sales;
         }
-
-        return sales;
     }
 
     private void addSaleItem(Sale s, SaleItem p) throws SQLException {
-        try {
-            p.setSale(s);
-            String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
-            Statement sstmt = con.createStatement();
-            sstmt.executeUpdate(secondQuery);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            throw ex;
+        try (Connection con = getConnection()) {
+            try {
+                p.setSale(s);
+                String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
+                Statement sstmt = con.createStatement();
+                sstmt.executeUpdate(secondQuery);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
         }
     }
 
     private List<SaleItem> getItemsInSale(Sale sale) throws SQLException {
         String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getId();
-        Statement stmt = con.createStatement();
-        List<SaleItem> items;
-        ResultSet set = stmt.executeQuery(query);
-        items = getSaleItemsFromResultSet(set, sale);
-        return items;
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<SaleItem> items;
+            ResultSet set = stmt.executeQuery(query);
+            items = getSaleItemsFromResultSet(set, sale);
+            return items;
+        }
     }
 
     private List<SaleItem> getSaleItemsFromResultSet(ResultSet set, Sale sale) throws SQLException {
@@ -2050,62 +2177,69 @@ public class DBConnect implements DataConnect {
     @Override
     public Sale getSale(int id) throws SQLException, SaleNotFoundException {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS-LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
-        Statement stmt = con.createStatement();
-        List<Sale> sales = new ArrayList<>();
-        long stamp = salL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            sales = getSalesFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            salL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Sale> sales = new ArrayList<>();
+            long stamp = salL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                sales = getSalesFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                salL.unlockRead(stamp);
+            }
 
-        if (sales.isEmpty()) {
-            throw new SaleNotFoundException(id + "");
+            if (sales.isEmpty()) {
+                throw new SaleNotFoundException(id + "");
+            }
+            return sales.get(0);
         }
-
-        return sales.get(0);
     }
 
     @Override
     public Sale updateSale(Sale s) throws SQLException, SaleNotFoundException {
         String query = s.getSQLUpdateStatement();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = salL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new SaleNotFoundException(s.getId() + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = salL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new SaleNotFoundException(s.getId() + "");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                salL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            salL.unlockWrite(stamp);
         }
         return s;
     }
 
     public Sale updateSaleNoSem(Sale s) throws SQLException, SaleNotFoundException {
         String query = s.getSQLUpdateStatement();
-        Statement stmt = con.createStatement();
-        int value;
-        try {
-            value = stmt.executeUpdate(query);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        }
-        if (value == 0) {
-            throw new SaleNotFoundException(s.getId() + "");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+            if (value == 0) {
+                throw new SaleNotFoundException(s.getId() + "");
+            }
         }
         return s;
     }
@@ -2137,41 +2271,45 @@ public class DBConnect implements DataConnect {
     @Override
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Staff> staff = new ArrayList<>();
-        long stamp = stL.readLock();
-        try {
-            ResultSet res = stmt.executeQuery(query);
-            staff = getStaffFromResultSet(res);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockRead(stamp);
-        }
-
-        if (staff.isEmpty()) {
-            throw new LoginException(id + " could not be found");
-        }
-
-        Staff s = staff.get(0);
-
-        try {
-            loggedInSem.acquire();
-
-            if (loggedIn.contains(s)) {
-                loggedInSem.release();
-                throw new LoginException("You are already logged in elsewhere");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Staff> staff = new ArrayList<>();
+            long stamp = stL.readLock();
+            try {
+                ResultSet res = stmt.executeQuery(query);
+                staff = getStaffFromResultSet(res);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockRead(stamp);
             }
 
-            loggedIn.add(s);
-        } catch (InterruptedException ex) {
-            LOG.log(Level.SEVERE, "There has been an error loggin " + id + " into the system", ex);
-        } finally {
-            loggedInSem.release();
-        }
+            if (staff.isEmpty()) {
+                throw new LoginException(id + " could not be found");
+            }
 
-        return s;
+            Staff s = staff.get(0);
+
+            try {
+                loggedInSem.acquire();
+
+                if (loggedIn.contains(s)) {
+                    loggedInSem.release();
+                    throw new LoginException("You are already logged in elsewhere");
+                }
+
+                loggedIn.add(s);
+            } catch (InterruptedException ex) {
+                LOG.log(Level.SEVERE, "There has been an error loggin " + id + " into the system", ex);
+            } finally {
+                loggedInSem.release();
+            }
+
+            return s;
+        }
     }
 
     @Override
@@ -2183,7 +2321,6 @@ public class DBConnect implements DataConnect {
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
         try {
             loggedInSem.acquire();
-
             loggedIn.remove(s);
             return;
         } catch (InterruptedException ex) {
@@ -2238,22 +2375,24 @@ public class DBConnect implements DataConnect {
     @Override
     public Screen addScreen(Screen s) throws SQLException {
         String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR) VALUES (" + s.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = scrL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                s.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = scrL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    s.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockWrite(stamp);
         }
         return s;
     }
@@ -2261,22 +2400,24 @@ public class DBConnect implements DataConnect {
     @Override
     public TillButton addButton(TillButton b) throws SQLException {
         String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = scrL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                b.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = scrL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    b.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockWrite(stamp);
         }
         return b;
     }
@@ -2285,127 +2426,142 @@ public class DBConnect implements DataConnect {
     public void removeScreen(Screen s) throws SQLException, ScreenNotFoundException {
         String query = "DELETE FROM SCREENS WHERE SCREENS.ID = " + s.getId();
         String buttonsQuery = "DELETE FROM BUTTONS WHERE BUTTONS.SCREEN_ID = " + s.getId();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = scrL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            stmt.executeUpdate(buttonsQuery);
-            if (value == 0) {
-                throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = scrL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                stmt.executeUpdate(buttonsQuery);
+                con.commit();
+                if (value == 0) {
+                    throw new ScreenNotFoundException("Screen " + s + " could not be found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockWrite(stamp);
         }
     }
 
     @Override
     public void removeButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = "DELETE FROM BUTTONS WHERE BUTTONS.ID = " + b.getId();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = scrL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new ButtonNotFoundException("Button " + b + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = scrL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new ButtonNotFoundException("Button " + b + " could not be found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockWrite(stamp);
         }
     }
 
     @Override
     public Screen getScreen(int s) throws SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + s;
-        Statement stmt = con.createStatement();
-        List<Screen> screens = new ArrayList<>();
-        long stamp = scrL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            screens = getScreensFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Screen> screens = new ArrayList<>();
+            long stamp = scrL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                screens = getScreensFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockRead(stamp);
+            }
+            if (screens.isEmpty()) {
+                throw new ScreenNotFoundException("Screen " + s + " could not be found");
+            }
+            return screens.get(0);
         }
-        if (screens.isEmpty()) {
-            throw new ScreenNotFoundException("Screen " + s + " could not be found");
-        }
-        return screens.get(0);
     }
 
     private Screen getScreenNoSem(int id) throws SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + id;
-        Statement stmt = con.createStatement();
-        List<Screen> screens;
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            screens = getScreensFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Screen> screens;
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                screens = getScreensFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+            }
+            if (screens.isEmpty()) {
+                throw new ScreenNotFoundException("Screen " + id + " could not be found");
+            }
+            return screens.get(0);
         }
-        if (screens.isEmpty()) {
-            throw new ScreenNotFoundException("Screen " + id + " could not be found");
-        }
-        return screens.get(0);
     }
 
     @Override
     public TillButton getButton(int b) throws SQLException, ButtonNotFoundException {
         String query = "SELECT * FROM SCREENS WHERE BUTTONS.ID = " + b;
-        Statement stmt = con.createStatement();
-        List<TillButton> buttons = new ArrayList<>();
-        long stamp = scrL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-
-            buttons = getButtonsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<TillButton> buttons = new ArrayList<>();
+            long stamp = scrL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                buttons = getButtonsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockRead(stamp);
+            }
+            if (buttons.isEmpty()) {
+                throw new ButtonNotFoundException("Button " + b + " could not be found");
+            }
+            return buttons.get(0);
         }
-
-        if (buttons.isEmpty()) {
-            throw new ButtonNotFoundException("Button " + b + " could not be found");
-        }
-
-        return buttons.get(0);
     }
 
     @Override
     public Screen updateScreen(Screen s) throws SQLException, ScreenNotFoundException {
         String query = s.getSQLUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = scrL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new ScreenNotFoundException("Screen " + s + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = scrL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new ScreenNotFoundException("Screen " + s + " could not be found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockWrite(stamp);
         }
         return s;
     }
@@ -2413,21 +2569,23 @@ public class DBConnect implements DataConnect {
     @Override
     public TillButton updateButton(TillButton b) throws SQLException, ButtonNotFoundException {
         String query = b.getSQLUpdateString();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = scrL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new ButtonNotFoundException("Button " + b + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = scrL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new ButtonNotFoundException("Button " + b + " could not be found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockWrite(stamp);
         }
         return b;
     }
@@ -2435,140 +2593,151 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Screen> getAllScreens() throws SQLException {
         String query = "SELECT * FROM SCREENS";
-        Statement stmt = con.createStatement();
-        List<Screen> screens = new ArrayList<>();
-        long stamp = scrL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            screens = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                int order = set.getInt("POSITION");
-                int color = set.getInt("COLOR");
-                Screen s = new Screen(name, order, color, id);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Screen> screens = new ArrayList<>();
+            long stamp = scrL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                screens = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    int order = set.getInt("POSITION");
+                    int color = set.getInt("COLOR");
+                    Screen s = new Screen(name, order, color, id);
 
-                screens.add(s);
+                    screens.add(s);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockRead(stamp);
+            return screens;
         }
-
-        return screens;
     }
 
     @Override
     public List<TillButton> getAllButtons() throws SQLException {
         String query = "SELECT * FROM BUTTONS";
-        Statement stmt = con.createStatement();
-        List<TillButton> buttons = new ArrayList<>();
-        long stamp = scrL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            buttons = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                Product p = null;
-                try {
-                    p = getProduct(set.getInt("PRODUCT"));
-                } catch (ProductNotFoundException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-                int color = set.getInt("COLOR");
-                Screen s = null;
-                try {
-                    s = getScreenNoSem(set.getInt("SCREEN_ID"));
-                } catch (ScreenNotFoundException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
-                TillButton b = new TillButton(name, p, s, color, id);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<TillButton> buttons = new ArrayList<>();
+            long stamp = scrL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                buttons = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    Product p = null;
+                    try {
+                        p = getProduct(set.getInt("PRODUCT"));
+                    } catch (ProductNotFoundException ex) {
+                        LOG.log(Level.WARNING, null, ex);
+                    }
+                    int color = set.getInt("COLOR");
+                    Screen s = null;
+                    try {
+                        s = getScreenNoSem(set.getInt("SCREEN_ID"));
+                    } catch (ScreenNotFoundException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                    TillButton b = new TillButton(name, p, s, color, id);
 
-                buttons.add(b);
+                    buttons.add(b);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockRead(stamp);
+            return buttons;
         }
-
-        return buttons;
     }
 
     @Override
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         String query = "SELECT * FROM BUTTONS WHERE BUTTONS.SCREEN_ID=" + s.getId();
-        Statement stmt = con.createStatement();
-        List<TillButton> buttons = new ArrayList<>();
-        long stamp = scrL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            buttons = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                Item i = null;
-                if (!name.equals("[SPACE]")) {
-                    try {
-                        i = getProduct(set.getInt("PRODUCT"));
-                    } catch (ProductNotFoundException ex) {
-                        LOG.log(Level.WARNING, null, ex);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<TillButton> buttons = new ArrayList<>();
+            long stamp = scrL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                buttons = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    Item i = null;
+                    if (!name.equals("[SPACE]")) {
+                        try {
+                            i = getProduct(set.getInt("PRODUCT"));
+                        } catch (ProductNotFoundException ex) {
+                            LOG.log(Level.WARNING, null, ex);
+                        }
                     }
+                    int color = set.getInt("COLOR");
+                    TillButton b = new TillButton(name, i, s, color, id);
+
+                    buttons.add(b);
                 }
-                int color = set.getInt("COLOR");
-                TillButton b = new TillButton(name, i, s, color, id);
-
-                buttons.add(b);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                scrL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            scrL.unlockRead(stamp);
+            return buttons;
         }
-
-        return buttons;
     }
 
     @Override
     public void deleteAllScreensAndButtons() throws IOException, SQLException {
-        try {
-            String buttons = "DROP TABLE BUTTONS";
-            String screens = "DROP TABLE SCREENS";
-            Statement stmt = con.createStatement();
-            stmt.execute(buttons);
-            stmt.execute(screens);
-            String cscreens = "create table \"APP\".SCREENS\n"
-                    + "(\n"
-                    + "     ID INT not null primary key\n"
-                    + "         GENERATED ALWAYS AS IDENTITY\n"
-                    + "         (START WITH 1, INCREMENT BY 1),\n"
-                    + "     NAME VARCHAR(50) not null,\n"
-                    + "     POSITION INTEGER,\n"
-                    + "     COLOR INT\n"
-                    + ")";
-            String cbuttons = "create table \"APP\".BUTTONS\n"
-                    + "(\n"
-                    + "     ID INT not null primary key\n"
-                    + "         GENERATED ALWAYS AS IDENTITY\n"
-                    + "         (START WITH 1, INCREMENT BY 1),\n"
-                    + "     NAME VARCHAR(50) not null,\n"
-                    + "     PRODUCT INT not null,\n"
-                    + "     COLOR INT,\n"
-                    + "     SCREEN_ID INT not null references SCREENS(ID)\n"
-                    + ")";
-            stmt.execute(cscreens);
-            LOG.log(Level.INFO, "Created screens table");
-            stmt.execute(cbuttons);
-            LOG.log(Level.INFO, "Created buttons table");
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            throw ex;
+        try (Connection con = getConnection()) {
+            try {
+                String buttons = "DROP TABLE BUTTONS";
+                String screens = "DROP TABLE SCREENS";
+                Statement stmt = con.createStatement();
+                stmt.execute(buttons);
+                stmt.execute(screens);
+                String cscreens = "create table \"APP\".SCREENS\n"
+                        + "(\n"
+                        + "     ID INT not null primary key\n"
+                        + "         GENERATED ALWAYS AS IDENTITY\n"
+                        + "         (START WITH 1, INCREMENT BY 1),\n"
+                        + "     NAME VARCHAR(50) not null,\n"
+                        + "     POSITION INTEGER,\n"
+                        + "     COLOR INT\n"
+                        + ")";
+                String cbuttons = "create table \"APP\".BUTTONS\n"
+                        + "(\n"
+                        + "     ID INT not null primary key\n"
+                        + "         GENERATED ALWAYS AS IDENTITY\n"
+                        + "         (START WITH 1, INCREMENT BY 1),\n"
+                        + "     NAME VARCHAR(50) not null,\n"
+                        + "     PRODUCT INT not null,\n"
+                        + "     COLOR INT,\n"
+                        + "     SCREEN_ID INT not null references SCREENS(ID)\n"
+                        + ")";
+                stmt.execute(cscreens);
+                LOG.log(Level.INFO, "Created screens table");
+                stmt.execute(cbuttons);
+                LOG.log(Level.INFO, "Created buttons table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
         }
     }
 
@@ -2682,22 +2851,24 @@ public class DBConnect implements DataConnect {
     @Override
     public Till addTill(Till t) throws IOException, SQLException {
         String query = "INSERT INTO TILLS (NAME, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = tilL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                t.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = tilL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    t.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                tilL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            tilL.unlockWrite(stamp);
         }
         return t;
     }
@@ -2705,65 +2876,72 @@ public class DBConnect implements DataConnect {
     @Override
     public void removeTill(int id) throws IOException, SQLException, TillNotFoundException {
         String query = "DELETE FROM TILLS WHERE TILLS.ID = " + id;
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = tilL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new TillNotFoundException(id + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = tilL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new TillNotFoundException(id + " could not be found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                tilL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            tilL.unlockWrite(stamp);
         }
     }
 
     @Override
     public Till getTill(int id) throws IOException, SQLException, TillNotFoundException {
         String query = "SELECT * FROM TILLS WHERE TILLS.ID = " + id;
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Till> tills = new ArrayList<>();
+            long stamp = tilL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                tills = getTillsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                tilL.unlockRead(stamp);
+            }
 
-        Statement stmt = con.createStatement();
-        List<Till> tills = new ArrayList<>();
-        long stamp = tilL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            tills = getTillsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            tilL.unlockRead(stamp);
+            if (tills.isEmpty()) {
+                throw new TillNotFoundException(id + " could not be found");
+            }
+            return tills.get(0);
         }
-
-        if (tills.isEmpty()) {
-            throw new TillNotFoundException(id + " could not be found");
-        }
-
-        return tills.get(0);
     }
 
     @Override
     public List<Till> getAllTills() throws SQLException {
         String query = "SELECT * FROM TILLS";
-        Statement stmt = con.createStatement();
-        List<Till> tills = new ArrayList<>();
-        long stamp = tilL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            tills = getTillsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            tilL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Till> tills = new ArrayList<>();
+            long stamp = tilL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                tills = getTillsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                tilL.unlockRead(stamp);
+            }
+            return tills;
         }
-
-        return tills;
     }
 
     @Override
@@ -2805,25 +2983,28 @@ public class DBConnect implements DataConnect {
 
     private Till getTillByName(String t) throws SQLException, TillNotFoundException {
         String query = "SELECT * FROM TILLS WHERE TILLS.NAME = '" + t + "'";
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Till> tills = new ArrayList<>();
+            long stamp = tilL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                tills = getTillsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                tilL.unlockRead(stamp);
+            }
 
-        Statement stmt = con.createStatement();
-        List<Till> tills = new ArrayList<>();
-        long stamp = tilL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            tills = getTillsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            tilL.unlockRead(stamp);
+            if (tills.isEmpty()) {
+                throw new TillNotFoundException(t + " could not be found");
+            }
+
+            return tills.get(0);
         }
-
-        if (tills.isEmpty()) {
-            throw new TillNotFoundException(t + " could not be found");
-        }
-
-        return tills.get(0);
     }
 
     @Override
@@ -2849,45 +3030,48 @@ public class DBConnect implements DataConnect {
     @Override
     public Plu addPlu(Plu plu) throws IOException, SQLException {
         String query = "INSERT INTO APP.PLUS (CODE) values ('" + plu.getCode() + "')";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = pluL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                plu.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = pluL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    plu.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                pluL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            pluL.unlockWrite(stamp);
         }
-
         return plu;
     }
 
     @Override
     public void removePlu(int id) throws IOException, JTillException, SQLException {
         String query = "DELETE FROM PLUS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        int value = 0;
-        long stamp = pluL.writeLock();
-        try {
-            stmt.executeUpdate(query);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            pluL.unlockWrite(stamp);
-        }
-        if (value == 0) {
-            throw new JTillException(id + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value = 0;
+            long stamp = pluL.writeLock();
+            try {
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                pluL.unlockWrite(stamp);
+            }
+            if (value == 0) {
+                throw new JTillException(id + " could not be found");
+            }
         }
     }
 
@@ -2899,85 +3083,98 @@ public class DBConnect implements DataConnect {
     @Override
     public Plu getPlu(int id) throws IOException, JTillException, SQLException {
         String query = "SELECT * FROM PLUS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        List<Plu> plus = new ArrayList<>();
-        long stamp = pluL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            plus = getPlusFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            pluL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Plu> plus = new ArrayList<>();
+            long stamp = pluL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                plus = getPlusFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                pluL.unlockRead(stamp);
+            }
 
-        if (plus.isEmpty()) {
-            throw new JTillException(id + " could not be found");
+            if (plus.isEmpty()) {
+                throw new JTillException(id + " could not be found");
+            }
+            return plus.get(0);
         }
-
-        return plus.get(0);
     }
 
     @Override
     public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
         String query = "SELECT * FROM PLUS WHERE CODE='" + code + "'";
-        Statement stmt = con.createStatement();
-        List<Plu> plus = new ArrayList<>();
-        long stamp = pluL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            plus = getPlusFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            pluL.unlockRead(stamp);
-        }
-        if (plus.isEmpty()) {
-            throw new JTillException("Plu " + code + " not found");
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Plu> plus = new ArrayList<>();
+            long stamp = pluL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                plus = getPlusFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                pluL.unlockRead(stamp);
+            }
+            if (plus.isEmpty()) {
+                throw new JTillException("Plu " + code + " not found");
+            }
 
-        return plus.get(0);
+            return plus.get(0);
+        }
     }
 
     @Override
     public List<Plu> getAllPlus() throws IOException, SQLException {
         String query = "SELECT * FROM PLUS";
-        Statement stmt = con.createStatement();
-        List<Plu> plus = new ArrayList<>();
-        long stamp = pluL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            plus = getPlusFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            pluL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<Plu> plus = new ArrayList<>();
+            long stamp = pluL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                plus = getPlusFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                pluL.unlockRead(stamp);
+            }
 
-        return plus;
+            return plus;
+        }
     }
 
     @Override
     public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
         String query = "UPDATE PLUS SET CODE='" + p.getCode() + "' WHERE ID=" + p.getId();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = pluL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new JTillException("Plu " + p.getId() + " not found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = pluL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new JTillException("Plu " + p.getId() + " not found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                pluL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            pluL.unlockWrite(stamp);
         }
         return p;
     }
@@ -2990,17 +3187,20 @@ public class DBConnect implements DataConnect {
     @Override
     public boolean checkUsername(String username) throws IOException, SQLException {
         String query = "SELECT * FROM STAFF WHERE USERNAME='" + username.toLowerCase() + "'";
-        Statement stmt = con.createStatement();
-        long stamp = stL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-
-            return set.next();
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            stL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = stL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                con.commit();
+                return set.next();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                stL.unlockRead(stamp);
+            }
         }
     }
 
@@ -3033,134 +3233,149 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO APP.WASTEREPORTS (VALUE, TIMESTAMP) values (" + wr.getTotalValue().doubleValue() + "," + wr.getDate().getTime() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = wasL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                wr.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = wasL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    wr.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasL.unlockWrite(stamp);
             }
-            for (WasteItem wi : wr.getItems()) {
-                addWasteItem(wr, wi);
-            }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasL.unlockWrite(stamp);
         }
-
+        for (WasteItem wi : wr.getItems()) {
+            addWasteItem(wr, wi);
+        }
         return wr;
     }
 
     @Override
     public void removeWasteReport(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM WASTEREPORTS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        int value = 0;
-        long stamp = wasL.writeLock();
-        try {
-            stmt.executeUpdate(query);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasL.unlockWrite(stamp);
-        }
-        if (value == 0) {
-            throw new JTillException(id + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value = 0;
+            long stamp = wasL.writeLock();
+            try {
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasL.unlockWrite(stamp);
+            }
+            if (value == 0) {
+                throw new JTillException(id + " could not be found");
+            }
         }
     }
 
     @Override
     public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM WASTEREPORTS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        List<WasteReport> wrs = new ArrayList<>();
-        long stamp = wasL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            wrs = getWasteReportsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<WasteReport> wrs = new ArrayList<>();
+            long stamp = wasL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                wrs = getWasteReportsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasL.unlockRead(stamp);
+            }
 
-        if (wrs.isEmpty()) {
-            throw new JTillException(id + " could not be found");
-        }
+            if (wrs.isEmpty()) {
+                throw new JTillException(id + " could not be found");
+            }
 
-        WasteReport wr = wrs.get(0);
-        wr.setItems(getWasteItemsInReport(id));
-        return wr;
+            WasteReport wr = wrs.get(0);
+            wr.setItems(getWasteItemsInReport(id));
+            return wr;
+        }
     }
 
     private List<WasteItem> getWasteItemsInReport(int id) throws SQLException {
         String query = "SELECT * FROM WASTEITEMS WHERE REPORT_ID=" + id;
-        Statement stmt = con.createStatement();
-        List<WasteItem> wis = new ArrayList<>();
-        long stamp = wasItL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            wis = getWasteItemsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasItL.unlockRead(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<WasteItem> wis = new ArrayList<>();
+            long stamp = wasItL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                wis = getWasteItemsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasItL.unlockRead(stamp);
+            }
+            return wis;
         }
-
-        return wis;
     }
 
     @Override
     public List<WasteReport> getAllWasteReports() throws IOException, SQLException {
         String query = "SELECT * FROM WASTEREPORTS";
-        Statement stmt = con.createStatement();
-        List<WasteReport> wrs = new ArrayList<>();
-        long stamp = wasL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            wrs = getWasteReportsFromResultSet(set);
-            for (WasteReport wr : wrs) {
-                wr.setItems(getWasteItemsInReport(wr.getId()));
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<WasteReport> wrs = new ArrayList<>();
+            long stamp = wasL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                wrs = getWasteReportsFromResultSet(set);
+                for (WasteReport wr : wrs) {
+                    wr.setItems(getWasteItemsInReport(wr.getId()));
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasL.unlockRead(stamp);
+            return wrs;
         }
-
-        return wrs;
     }
 
     @Override
     public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
         String query = "UPDATE WASTEREPORTS SET VALUE=" + wr.getTotalValue().doubleValue() + ", TIMESTAMP=" + wr.getDate().getTime() + " WHERE ID=" + wr.getId();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = wasL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new JTillException("Waste Report " + wr.getId() + " not found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = wasL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new JTillException("Waste Report " + wr.getId() + " not found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasL.unlockWrite(stamp);
         }
         return wr;
     }
@@ -3189,108 +3404,121 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + "," + wi.getReason().getId() + ")";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = wasItL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                wi.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = wasItL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    wi.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasItL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasItL.unlockWrite(stamp);
         }
-
         return wi;
     }
 
     @Override
     public void removeWasteItem(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM WASTEITEMS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        int value = 0;
-        long stamp = wasItL.writeLock();
-        try {
-            stmt.executeUpdate(query);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasItL.unlockWrite(stamp);
-        }
-        if (value == 0) {
-            throw new JTillException(id + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value = 0;
+            long stamp = wasItL.writeLock();
+            try {
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasItL.unlockWrite(stamp);
+            }
+            if (value == 0) {
+                throw new JTillException(id + " could not be found");
+            }
         }
     }
 
     @Override
     public WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM WASTEITEMS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        List<WasteItem> wis = new ArrayList<>();
-        long stamp = wasItL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            wis = getWasteItemsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasItL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<WasteItem> wis = new ArrayList<>();
+            long stamp = wasItL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                wis = getWasteItemsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasItL.unlockRead(stamp);
+            }
 
-        if (wis.isEmpty()) {
-            throw new JTillException(id + " could not be found");
-        }
+            if (wis.isEmpty()) {
+                throw new JTillException(id + " could not be found");
+            }
 
-        return wis.get(0);
+            return wis.get(0);
+        }
     }
 
     @Override
     public List<WasteItem> getAllWasteItems() throws IOException, SQLException {
         String query = "SELECT * FROM WASTEITEMS";
-        Statement stmt = con.createStatement();
-        List<WasteItem> wis = new ArrayList<>();
-        long stamp = wasItL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            wis = getWasteItemsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasItL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<WasteItem> wis = new ArrayList<>();
+            long stamp = wasItL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                wis = getWasteItemsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasItL.unlockRead(stamp);
+            }
 
-        return wis;
+            return wis;
+        }
     }
 
     @Override
     public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
         String query = "UPDATE WASTEREPORTS SET PRODUCT=" + wi.getProduct().getId() + ", quantity=" + wi.getQuantity() + ", REASON='" + wi.getReason() + "', WHERE ID=" + wi.getId();
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = wasItL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new JTillException("Waste Report " + wi.getId() + " not found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = wasItL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new JTillException("Waste Report " + wi.getId() + " not found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasItL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasItL.unlockWrite(stamp);
         }
         return wi;
     }
@@ -3308,108 +3536,120 @@ public class DBConnect implements DataConnect {
     @Override
     public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO APP.WASTEREASONS (REASON) values ('" + wr.getReason() + "')";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = wasReL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                wr.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = wasReL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    wr.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasReL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasReL.unlockWrite(stamp);
         }
-
         return wr;
     }
 
     @Override
     public void removeWasteReason(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM WATSEREASONS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        int value = 0;
-        long stamp = wasReL.writeLock();
-        try {
-            stmt.executeUpdate(query);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasReL.unlockWrite(stamp);
-        }
-        if (value == 0) {
-            throw new JTillException(id + " could not be found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value = 0;
+            long stamp = wasReL.writeLock();
+            try {
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasReL.unlockWrite(stamp);
+            }
+            if (value == 0) {
+                throw new JTillException(id + " could not be found");
+            }
         }
     }
 
     @Override
     public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM WASTEREASONS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        List<WasteReason> wrs = new ArrayList<>();
-        long stamp = wasReL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            wrs = getWasteReasonsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasReL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<WasteReason> wrs = new ArrayList<>();
+            long stamp = wasReL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                wrs = getWasteReasonsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasReL.unlockRead(stamp);
+            }
 
-        if (wrs.isEmpty()) {
-            throw new JTillException(id + " could not be found");
+            if (wrs.isEmpty()) {
+                throw new JTillException(id + " could not be found");
+            }
+            return wrs.get(0);
         }
-
-        return wrs.get(0);
     }
 
     @Override
     public List<WasteReason> getAllWasteReasons() throws IOException, SQLException {
         String query = "SELECT * FROM WASTEREASONS";
-        Statement stmt = con.createStatement();
-        List<WasteReason> wrs = new ArrayList<>();
-        long stamp = wasReL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            wrs = getWasteReasonsFromResultSet(set);
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasReL.unlockRead(stamp);
-        }
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            List<WasteReason> wrs = new ArrayList<>();
+            long stamp = wasReL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                wrs = getWasteReasonsFromResultSet(set);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasReL.unlockRead(stamp);
+            }
 
-        return wrs;
+            return wrs;
+        }
     }
 
     @Override
     public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
         String query = "UPDATE WASTEREASONS SET REASON='" + wr.getReason() + "'";
-        Statement stmt = con.createStatement();
-        int value;
-        long stamp = wasReL.writeLock();
-        try {
-            value = stmt.executeUpdate(query);
-            if (value == 0) {
-                throw new JTillException("Waste Reason " + wr.getId() + " not found");
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            long stamp = wasReL.writeLock();
+            try {
+                value = stmt.executeUpdate(query);
+                con.commit();
+                if (value == 0) {
+                    throw new JTillException("Waste Reason " + wr.getId() + " not found");
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                wasReL.unlockWrite(stamp);
             }
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            wasReL.unlockWrite(stamp);
         }
         return wr;
     }
@@ -3417,62 +3657,70 @@ public class DBConnect implements DataConnect {
     @Override
     public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException {
         String query = "INSERT INTO SUPPLIERS (NAME, ADDRESS, PHONE) VALUES ('" + s.getName() + "','" + s.getAddress() + "','" + s.getContactNumber() + "')";
-        PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-        long stamp = supL.writeLock();
-        try {
-            stmt.executeUpdate();
-            ResultSet set = stmt.getGeneratedKeys();
-            while (set.next()) {
-                int id = set.getInt(1);
-                s.setId(id);
+        try (Connection con = getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            long stamp = supL.writeLock();
+            try {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    s.setId(id);
+                }
+                con.commit();
+                return s;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                supL.unlockWrite(stamp);
             }
-            con.commit();
-            return s;
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            supL.unlockWrite(stamp);
         }
     }
 
     @Override
     public void removeSupplier(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM SUPPLIERS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        long stamp = supL.writeLock();
-        try {
-            stmt.executeUpdate(query);
-            con.commit();
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            supL.unlockWrite(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = supL.writeLock();
+            try {
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                supL.unlockWrite(stamp);
+            }
         }
     }
 
     @Override
     public Supplier getSupplier(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM SUPPLIERS WHERE ID=" + id;
-        Statement stmt = con.createStatement();
-        long stamp = supL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            while (set.next()) {
-                String name = set.getString("NAME");
-                String addrs = set.getString("ADDRESS");
-                String phone = set.getString("PHONE");
-                Supplier sup = new Supplier(id, name, addrs, phone);
-                return sup;
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = supL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                while (set.next()) {
+                    String name = set.getString("NAME");
+                    String addrs = set.getString("ADDRESS");
+                    String phone = set.getString("PHONE");
+                    Supplier sup = new Supplier(id, name, addrs, phone);
+                    return sup;
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                supL.unlockRead(stamp);
             }
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            supL.unlockRead(stamp);
         }
         throw new JTillException("Supplier ID " + id + " not found");
     }
@@ -3480,43 +3728,49 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Supplier> getAllSuppliers() throws IOException, SQLException {
         String query = "SELECT * FROM SUPPLIERS";
-        Statement stmt = con.createStatement();
-        long stamp = supL.readLock();
-        try {
-            ResultSet set = stmt.executeQuery(query);
-            List<Supplier> suppliers = new ArrayList<>();
-            while (set.next()) {
-                int id = set.getInt("ID");
-                String name = set.getString("NAME");
-                String addrs = set.getString("ADDRESS");
-                String phone = set.getString("PHONE");
-                Supplier sup = new Supplier(id, name, addrs, phone);
-                suppliers.add(sup);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = supL.readLock();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                List<Supplier> suppliers = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    String addrs = set.getString("ADDRESS");
+                    String phone = set.getString("PHONE");
+                    Supplier sup = new Supplier(id, name, addrs, phone);
+                    suppliers.add(sup);
+                }
+                con.commit();
+                return suppliers;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                supL.unlockRead(stamp);
             }
-            return suppliers;
-        } catch (SQLException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            supL.unlockRead(stamp);
         }
     }
 
     @Override
     public Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException {
         String query = "UPDATE SUPPLIERS SET NAME='" + s.getName() + "' ADDRESS='" + s.getAddress() + "', PHONE='" + s.getContactNumber() + "'";
-        Statement stmt = con.createStatement();
-        long stamp = supL.writeLock();
-        try {
-            stmt.executeUpdate(query);
-            con.commit();
-            return s;
-        } catch (SQLException ex) {
-            con.rollback();
-            LOG.log(Level.SEVERE, null, ex);
-            throw ex;
-        } finally {
-            supL.unlockWrite(stamp);
+        try (Connection con = getConnection()) {
+            Statement stmt = con.createStatement();
+            long stamp = supL.writeLock();
+            try {
+                stmt.executeUpdate(query);
+                con.commit();
+                return s;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            } finally {
+                supL.unlockWrite(stamp);
+            }
         }
     }
 }
