@@ -1935,7 +1935,7 @@ public class DBConnect implements DataConnect {
     public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
         List<Sale> sales = new ArrayList<>();
         while (set.next()) {
-            int id = set.getInt("ID");
+            int id = set.getInt("sId");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
             int customerid = set.getInt("cId");
             String name = set.getString("cName");
@@ -2212,7 +2212,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale getSale(int id) throws SQLException, SaleNotFoundException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS-LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
@@ -4029,7 +4029,7 @@ public class DBConnect implements DataConnect {
             for (SaleItem i : items) {
                 try {
                     Item it;
-                    if (type.equals("PRODUCT")) {
+                    if (type.equals("product")) {
                         it = this.getProduct(product_id);
                     } else {
                         it = this.getDiscount(product_id);

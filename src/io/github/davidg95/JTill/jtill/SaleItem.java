@@ -33,8 +33,10 @@ public class SaleItem implements Serializable, JTillObject {
         this.sale = sale;
         this.item = item;
         this.quantity = quantity;
-        this.price = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
-        this.price = price.setScale(2, 2);
+        if (item != null) {
+            this.price = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
+            this.price = price.setScale(2, 2);
+        }
     }
 
     public SaleItem(Sale sale, Product product) {
@@ -96,7 +98,7 @@ public class SaleItem implements Serializable, JTillObject {
     public String getName() {
         return this.item.getName();
     }
-    
+
     @Override
     public int getId() {
         return id;
