@@ -663,7 +663,7 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public Product addProduct(Product p) throws SQLException {
-        String query = "INSERT INTO PRODUCTS (PLU, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
+        String query = "INSERT INTO PRODUCTS (PLU, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, DEPARTMENT_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             long stamp = prL.writeLock();
             try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
@@ -3855,7 +3855,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Department getDepartment(int id) throws IOException, SQLException, JTillException {
-        String query = "SELECT * FROM DEPARTMENT WHERE ID='" + id + "'";
+        String query = "SELECT * FROM DEPARTMENTS WHERE ID=" + id;
         try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
