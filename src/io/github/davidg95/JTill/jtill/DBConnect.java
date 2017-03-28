@@ -144,7 +144,7 @@ public class DBConnect implements DataConnect {
      * @return new Connection.
      * @throws SQLException if there was an error getting the connection.
      */
-    private Connection getNewConnection() throws SQLException {
+    public Connection getNewConnection() throws SQLException {
         LOG.log(Level.INFO, "Connecting to database {0}", address);
         Connection connection = DriverManager.getConnection(address, username, password);
         connection.setAutoCommit(false);
@@ -853,7 +853,7 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public Product getProduct(int code) throws SQLException, ProductNotFoundException {
-        String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND p.ID=" + code;
+        String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue, d.ID as dId, d.NAME as dName FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t, DEPARTMENTS d WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND p.DEPARTMENT_ID = d.ID AND p.ID=" + code;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
@@ -887,7 +887,7 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
-        String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND pl.CODE='" + barcode + "'";
+        String query = "SELECT p.ID as pId, p.PLU, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, c.ID as cId, c.NAME as cName, c.SELL_START, c.SELL_END, c.TIME_RESTRICT, c.MINIMUM_AGE, pl.ID as plId, pl.CODE as plCode, t.ID as tId, t.NAME as tName, t.VALUE as tValue, d.ID as dId, d.NAME as dName FROM PRODUCTS p, CATEGORYS c, PLUS pl, TAX t DEPARTMENTS d WHERE p.CATEGORY_ID = c.ID AND p.PLU = pl.ID AND p.TAX_ID = t.ID AND d.ID = p.DEPARTMENT_ID AND pl.CODE='" + barcode + "'";
         List<Product> products = new ArrayList<>();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -1969,7 +1969,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Sale addSale(Sale s) throws SQLException {
+    public Sale addSale(Sale s) throws SQLException, IOException {
         String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -2152,21 +2152,20 @@ public class DBConnect implements DataConnect {
         }
     }
 
-    private void addSaleItem(Sale s, SaleItem p) throws SQLException {
-        try (Connection con = getNewConnection()) {
-            try {
-                p.setSale(s);
-                String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
-                Statement sstmt = con.createStatement();
-                sstmt.executeUpdate(secondQuery);
-                con.commit();
-            } catch (SQLException ex) {
-                con.rollback();
-                throw ex;
-            }
-        }
-    }
-
+//    private void addSaleItem(Sale s, SaleItem p) throws SQLException {
+//        try (Connection con = getNewConnection()) {
+//            try {
+//                p.setSale(s);
+//                String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
+//                Statement sstmt = con.createStatement();
+//                sstmt.executeUpdate(secondQuery);
+//                con.commit();
+//            } catch (SQLException ex) {
+//                con.rollback();
+//                throw ex;
+//            }
+//        }
+//    }
     private List<SaleItem> getItemsInSale(Sale sale) throws SQLException {
         String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getId();
         try (Connection con = getNewConnection()) {
@@ -3913,5 +3912,201 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         }
+    }
+
+    @Override
+    public SaleItem addSaleItem(Sale s, SaleItem i) throws IOException, SQLException {
+        i.setSale(s);
+        String query = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES(" + i.getSQLInsertStatement() + ")";
+        try (Connection con = getNewConnection()) {
+            try {
+                PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    i.setId(id);
+                }
+                con.commit();
+                return i;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public void removeSaleItem(int id) throws IOException, SQLException, JTillException {
+        String query = "DELETE FROM SALEITEMS WHERE ID=" + id;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public SaleItem getSaleItem(int id) throws IOException, SQLException, JTillException {
+        String query = "SELECT * FROM SALEITEMS WHERE ID = " + id;
+        SaleItem i = null;
+        int product_id = 0;
+        int sale_id = 0;
+        String type = "";
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                while (set.next()) {
+                    product_id = set.getInt("PRODUCT_ID");
+                    type = set.getString("TYPE");
+                    int quantity = set.getInt("QUANTITY");
+                    BigDecimal price = new BigDecimal(set.getDouble("PRICE"));
+                    sale_id = set.getInt("SALE_ID");
+                    i = new SaleItem(null, null, quantity, id, price);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        if (i != null) {
+            try {
+                Item it;
+                if (type.equals("PRODUCT")) {
+                    it = this.getProduct(product_id);
+                } else {
+                    it = this.getDiscount(product_id);
+                }
+                Sale s = this.getSale(sale_id);
+                i.setItem(it);
+                i.setSale(s);
+            } catch (ProductNotFoundException | SaleNotFoundException | DiscountNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return i;
+    }
+
+    @Override
+    public List<SaleItem> getAllSaleItems() throws IOException, SQLException {
+        String query = "SELECT * FROM SALEITEMS";
+        List<SaleItem> items = new ArrayList<>();
+        int product_id = 0;
+        int sale_id = 0;
+        String type = "";
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    product_id = set.getInt("PRODUCT_ID");
+                    type = set.getString("TYPE");
+                    int quantity = set.getInt("QUANTITY");
+                    BigDecimal price = new BigDecimal(set.getDouble("PRICE"));
+                    sale_id = set.getInt("SALE_ID");
+                    SaleItem i = new SaleItem(null, null, quantity, id, price);
+                    items.add(i);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        if (!items.isEmpty()) {
+            for (SaleItem i : items) {
+                try {
+                    Item it;
+                    if (type.equals("PRODUCT")) {
+                        it = this.getProduct(product_id);
+                    } else {
+                        it = this.getDiscount(product_id);
+                    }
+                    Sale s = this.getSale(sale_id);
+                    i.setItem(it);
+                    i.setSale(s);
+                } catch (ProductNotFoundException | SaleNotFoundException | DiscountNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return items;
+    }
+    
+    @Override
+    public List<SaleItem> submitSaleItemQuery(String q) throws SQLException{
+        String query = "SELECT * FROM SALEITEMS " + q;
+        List<SaleItem> items = new ArrayList<>();
+        int product_id = 0;
+        int sale_id = 0;
+        String type = "";
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    product_id = set.getInt("PRODUCT_ID");
+                    type = set.getString("TYPE");
+                    int quantity = set.getInt("QUANTITY");
+                    BigDecimal price = new BigDecimal(set.getDouble("PRICE"));
+                    sale_id = set.getInt("SALE_ID");
+                    SaleItem i = new SaleItem(null, null, quantity, id, price);
+                    items.add(i);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        if (!items.isEmpty()) {
+            for (SaleItem i : items) {
+                try {
+                    Item it;
+                    if (type.equals("PRODUCT")) {
+                        it = this.getProduct(product_id);
+                    } else {
+                        it = this.getDiscount(product_id);
+                    }
+                    Sale s = this.getSale(sale_id);
+                    i.setItem(it);
+                    i.setSale(s);
+                } catch (ProductNotFoundException | SaleNotFoundException | DiscountNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return items;
+    }
+
+    @Override
+    public SaleItem updateSaleItem(SaleItem i) throws IOException, SQLException, JTillException {
+        String query = "UPDATE SALEITEMS SET PRODUCT_ID=" + i.getItem().getId() + ",TYPE='" + (i.getItem() instanceof Product ? "PRODUCT" : "DISCOUNT") + ",QUANTITY=" + i.getQuantity() + ",PRICE=" + i.getPrice() + ",SALE_ID=" + i.getSale().getId();
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        return i;
     }
 }

@@ -444,6 +444,69 @@ public interface DataConnect {
      */
     public List<Sale> getUncashedSales(String t) throws IOException, SQLException;
 
+    //Sale Items
+    /**
+     * Add a new sale item.
+     *
+     * @param s the sale the item is from.
+     * @param i the sale item to add.
+     * @return the sale item with its ID assigned.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public SaleItem addSaleItem(Sale s, SaleItem i) throws IOException, SQLException;
+
+    /**
+     * Remove a sale item.
+     *
+     * @param id the id of the item to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the item was not found.
+     */
+    public void removeSaleItem(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Get a sale item.
+     *
+     * @param id the sale item to get.
+     * @return the sale item.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the item was not found.
+     */
+    public SaleItem getSaleItem(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Get all sale items.
+     *
+     * @return a List of all the sale items.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public List<SaleItem> getAllSaleItems() throws IOException, SQLException;
+
+    /**
+     * Method to submit a query to the sale items table.
+     *
+     * @param query the WHERE clause.
+     * @return a List.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public List<SaleItem> submitSaleItemQuery(String query) throws IOException, SQLException;
+
+    /**
+     * Update a sale item.
+     *
+     * @param i the item to update.
+     * @return the item after being updated.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the item was not found.
+     */
+    public SaleItem updateSaleItem(SaleItem i) throws IOException, SQLException, JTillException;
+
     //Staff
     /**
      * Method to add a member of staff.
