@@ -581,13 +581,13 @@ public class DBConnect implements DataConnect {
                     int stock = set.getInt("STOCK");
                     String comments = set.getString("COMMENTS");
                     String shortName = set.getString("SHORT_NAME");
-                    int id = set.getInt("cId");
+                    int cid = set.getInt("cId");
                     String catName = set.getString("cName");
                     Time start = set.getTime("SELL_START");
                     Time end = set.getTime("SELL_END");
                     boolean restrict = set.getBoolean("TIME_RESTRICT");
                     int minAge = set.getInt("MINIMUM_AGE");
-                    Category category = new Category(id, catName, start, end, restrict, minAge);
+                    Category category = new Category(cid, catName, start, end, restrict, minAge);
                     int dId = set.getInt("dId");
                     String dName = set.getString("dName");
                     Department department = new Department(dId, dName);
@@ -599,7 +599,7 @@ public class DBConnect implements DataConnect {
                     int minStock = set.getInt("MIN_PRODUCT_LEVEL");
                     int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-                    Product p = new Product(name, shortName, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
+                    Product p = new Product(name, shortName, cid, dId, comments, taxID, open, price, costPrice, stock, minStock, maxStock, pluID, code);
 
                     products.add(p);
                 }
@@ -646,7 +646,7 @@ public class DBConnect implements DataConnect {
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
-            Product p = new Product(name, shortName, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu, code);
+            Product p = new Product(name, shortName, categoryID, dId, comments, taxID, open, price, costPrice, stock, minStock, maxStock, pluID, code);
 
             products.add(p);
         }
@@ -1416,12 +1416,7 @@ public class DBConnect implements DataConnect {
                     String name = set.getString("NAME");
                     double percentage = set.getDouble("PERCENTAGE");
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                    Product p = null;
-                    try {
-                        p = this.getProduct(set.getInt("TRIGGER"));
-                    } catch (ProductNotFoundException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
+                    int p = set.getInt("TRIGGER");
                     Discount d = new Discount(id, name, percentage, price, p);
 
                     discounts.add(d);
@@ -1445,12 +1440,7 @@ public class DBConnect implements DataConnect {
             String name = set.getString("NAME");
             double percentage = set.getDouble("PERCENTAGE");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            Product p = null;
-            try {
-                p = this.getProduct(set.getInt("DISCOUNTS.TRIGGER"));
-            } catch (ProductNotFoundException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+            int p = set.getInt("DISCOUNTS.TRIGGER");
             Discount d = new Discount(id, name, percentage, price, p);
 
             discounts.add(d);
@@ -1669,7 +1659,7 @@ public class DBConnect implements DataConnect {
         List<Product> products = this.getProductsInTax(id);
         final Tax DEFAULT_TAX = this.getTax(1);
         for (Product p : products) {
-            p.setTax(DEFAULT_TAX);
+            p.setTax(DEFAULT_TAX.getId());
             try {
                 this.updateProduct(p);
             } catch (ProductNotFoundException ex) {
@@ -1855,7 +1845,7 @@ public class DBConnect implements DataConnect {
         List<Product> products = getProductsInCategory(id);
         final Category DEFAULT_CATEGORY = getCategory(1);
         for (Product p : products) {
-            p.setCategory(DEFAULT_CATEGORY);
+            p.setCategory(DEFAULT_CATEGORY.getId());
             try {
                 updateProduct(p);
             } catch (ProductNotFoundException ex) {
@@ -1961,7 +1951,7 @@ public class DBConnect implements DataConnect {
             String stUsername = set.getString("USERNAME");
             String stPassword = set.getString("PASSWORD");
             Staff staff = new Staff(sId, stName, position, stUsername, stPassword);
-            Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
+            Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1985,7 +1975,12 @@ public class DBConnect implements DataConnect {
                     new Thread("Charge To Account") {
                         @Override
                         public void run() {
-                            chargeCustomerAccount(s.getCustomer(), s.getTotal());
+                            try {
+                                final Customer c = DBConnect.this.getCustomer(s.getCustomer());
+                                chargeCustomerAccount(c, s.getTotal());
+                            } catch (SQLException | CustomerNotFoundException ex) {
+                                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                         }
                     }.start();
                 }
@@ -2060,7 +2055,7 @@ public class DBConnect implements DataConnect {
                     String stUsername = set.getString("USERNAME");
                     String stPassword = set.getString("PASSWORD");
                     Staff staff = new Staff(sId, stName, position, stUsername, stPassword);
-                    Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     s.setProducts(getItemsInSale(s));
                     sales.add(s);
                 }
@@ -2106,7 +2101,7 @@ public class DBConnect implements DataConnect {
                     } catch (StaffNotFoundException ex) {
                         LOG.log(Level.WARNING, null, ex);
                     }
-                    Sale s = new Sale(id, price, customer, date, terminal, cashed, staff);
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     s.setProducts(getItemsInSale(s));
                     if (!s.isCashed()) {
                         result = result.add(s.getTotal());
@@ -2858,14 +2853,19 @@ public class DBConnect implements DataConnect {
         if (sale.isChargeAccount()) {
             text += "You will be invoiced for this sale\n";
         }
-        text += "You were served by " + sale.getStaff().getName() + "\n";
-        text += "Thank you for your custom";
+        try {
+            final Staff staff = getStaff(sale.getStaff());
+            text += "You were served by " + staff.getName() + "\n";
+            text += "Thank you for your custom";
 
-        message.setFrom(new InternetAddress(systemSettings.getSetting("OUTGOING_MAIL_ADDRESS")));
-        message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
-        message.setSubject("Receipt for sale " + sale.getId());
-        message.setText(text);
-        Transport.send(message);
+            message.setFrom(new InternetAddress(systemSettings.getSetting("OUTGOING_MAIL_ADDRESS")));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+            message.setSubject("Receipt for sale " + sale.getId());
+            message.setText(text);
+            Transport.send(message);
+        } catch (SQLException | StaffNotFoundException ex) {
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private List<Till> getTillsFromResultSet(ResultSet set) throws SQLException {
@@ -3424,12 +3424,7 @@ public class DBConnect implements DataConnect {
                 int id = set.getInt("ID");
                 Product p = this.getProduct(set.getInt("PRODUCT"));
                 int quantity = set.getInt("QUANTITY");
-                WasteReason wreason = null;
-                try {
-                    wreason = this.getWasteReason(set.getInt("REASON"));
-                } catch (IOException | JTillException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                }
+                int wreason = set.getInt("REASON");
                 wis.add(new WasteItem(id, p, quantity, wreason));
             } catch (ProductNotFoundException ex) {
                 LOG.log(Level.SEVERE, null, ex);
@@ -3440,7 +3435,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
-        String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + "," + wi.getReason().getId() + ")";
+        String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + "," + wi.getReason() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = wasItL.writeLock();
@@ -4044,9 +4039,9 @@ public class DBConnect implements DataConnect {
         }
         return items;
     }
-    
+
     @Override
-    public List<SaleItem> submitSaleItemQuery(String q) throws SQLException{
+    public List<SaleItem> submitSaleItemQuery(String q) throws SQLException {
         String query = "SELECT * FROM SALEITEMS " + q;
         List<SaleItem> items = new ArrayList<>();
         int product_id = 0;
@@ -4111,8 +4106,110 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public int getTotalSolfOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
-        String query = "SELECT * FROM SALEITEMS WHERE PRODUCT_ID=" + id;
-        return 0;
+    public int getTotalSoldOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        String query = "SELECT QUANTITY, PRODUCT_ID FROM SALEITEMS WHERE PRODUCT_ID=" + id;
+        int quantity = 0;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                boolean found = false;
+                while (set.next()) {
+                    found = true;
+                    quantity += set.getInt("QUANTITY");
+                }
+                con.commit();
+                if (!found) {
+                    throw new ProductNotFoundException("Product " + id + " not found");
+                }
+                return quantity;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException, ProductNotFoundException {
+        String query = "SELECT PRICE, PRODUCT_ID FROM SALEITEMS WHERE PRODUCT_ID=" + id;
+        BigDecimal val = BigDecimal.ZERO;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                boolean found = false;
+                while (set.next()) {
+                    found = true;
+                    String value = Double.toString(set.getDouble("PRICE"));
+                    val = val.add(new BigDecimal(value));
+                }
+                if (!found) {
+                    throw new ProductNotFoundException("Product " + id + " not found");
+                }
+                con.commit();
+                return val;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public int getTotalWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        String query = "SELECT PRODUCT, QUANTITY FROM WASTEITEMS WHERE PRODUCT=" + id;
+        int quantity = 0;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                boolean found = false;
+                while (set.next()) {
+                    found = true;
+                    quantity += set.getInt("QUANTITY");
+                }
+                if (!found) {
+                    throw new ProductNotFoundException("Product " + id + " not found");
+                }
+                con.commit();
+                return quantity;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        String query = "SELECT WASTEITEMS.ID AS wId, PRODUCT, QUANTITY, PRODUCTS.ID as pId, PRICE FROM PRODUCTS, WASTEITEMS WHERE WASTEITEMS.PRODUCT = PRODUCTS.ID AND WASTEITEMS.PRODUCT=" + id;
+        BigDecimal val = BigDecimal.ZERO;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                boolean found = false;
+                while (set.next()) {
+                    found = true;
+                    double dval = set.getDouble("PRICE");
+                    dval *= set.getInt("QUANTITY");
+                    String value = Double.toString(dval);
+                    val = val.add(new BigDecimal(value));
+                }
+                if (!found) {
+                    throw new ProductNotFoundException("Product " + id + " not found");
+                }
+                con.commit();
+                return val;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
     }
 }

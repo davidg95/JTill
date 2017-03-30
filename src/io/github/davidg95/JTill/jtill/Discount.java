@@ -20,7 +20,7 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
     private double percentage;
     private BigDecimal price;
     private boolean open;
-    private Product trigger;
+    private int trigger;
 
     /**
      * Constructor for discount which takes in all values.
@@ -31,7 +31,7 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param price the price.
      * @param trigger the product that triggers this discount.
      */
-    public Discount(int id, String name, double percentage, BigDecimal price, Product trigger) {
+    public Discount(int id, String name, double percentage, BigDecimal price, int trigger) {
         this(name, percentage, price, trigger);
         this.id = id;
     }
@@ -44,7 +44,7 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param price the price.
      * @param trigger the product that triggers this discount.
      */
-    public Discount(String name, double percentage, BigDecimal price, Product trigger) {
+    public Discount(String name, double percentage, BigDecimal price, int trigger) {
         this.name = name;
         this.percentage = percentage;
         this.price = price;
@@ -83,11 +83,11 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
         this.percentage = percentage;
     }
 
-    public Product getTrigger() {
+    public int getTrigger() {
         return trigger;
     }
 
-    public void setTrigger(Product trigger) {
+    public void setTrigger(int trigger) {
         this.trigger = trigger;
     }
 
@@ -95,7 +95,7 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
         return "'" + this.name
                 + "'," + this.percentage
                 + "," + this.price.doubleValue()
-                + "," + this.trigger.getId();
+                + "," + this.trigger;
     }
 
     public String getSQLUpdateString() {
@@ -103,7 +103,7 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
                 + " SET NAME='" + this.getName()
                 + "', PERCENTAGE=" + this.getPercentage()
                 + ", PRICE=" + this.price.doubleValue()
-                + ", TRIGGER=" + this.trigger.getId()
+                + ", TRIGGER=" + this.trigger
                 + " WHERE DISCOUNTS.ID=" + this.getId();
     }
 

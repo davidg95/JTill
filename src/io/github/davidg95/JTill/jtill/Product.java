@@ -17,12 +17,12 @@ import java.math.BigDecimal;
 public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     private int productCode;
-    private Plu plu;
+    private int plu;
     private String name;
     private String shortName;
-    private Category category;
-    private Department department;
-    private Tax tax;
+    private int category;
+    private int department;
+    private int tax;
     private boolean open;
     private BigDecimal price;
     private BigDecimal costPrice;
@@ -44,7 +44,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param plu the products plu.
      * @param open if the price is open.
      */
-    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, Plu plu, boolean open) {
+    public Product(String name, String shortName, int category, int department, String comments, int tax, int plu, boolean open) {
         this.name = name;
         this.shortName = shortName;
         this.category = category;
@@ -69,7 +69,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, Plu plu, boolean open, int productCode) {
+    public Product(String name, String shortName, int category, int department, String comments, int tax, int plu, boolean open, int productCode) {
         this(name, shortName, category, department, comments, tax, plu, open);
         this.productCode = productCode;
     }
@@ -91,7 +91,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu) {
+    public Product(String name, String shortName, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu) {
         this(name, shortName, category, department, comments, tax, plu, open);
         this.price = price;
         this.costPrice = costPrice;
@@ -118,7 +118,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, Category category, Department department, String comments, Tax tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, Plu plu, int productCode) {
+    public Product(String name, String shortName, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu, int productCode) {
         this(name, shortName, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu);
         this.productCode = productCode;
     }
@@ -191,11 +191,11 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.stock = stock;
     }
 
-    public Plu getPlu() {
+    public int getPlu() {
         return plu;
     }
 
-    public void setPlu(Plu plu) {
+    public void setPlu(int plu) {
         this.plu = plu;
     }
 
@@ -217,19 +217,19 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.shortName = shortName;
     }
 
-    public Category getCategory() {
+    public int getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(int category) {
         this.category = category;
     }
 
-    public Tax getTax() {
+    public int getTax() {
         return tax;
     }
 
-    public void setTax(Tax tax) {
+    public void setTax(int tax) {
         this.tax = tax;
     }
 
@@ -257,11 +257,11 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.maxStockLevel = maxStockLevel;
     }
 
-    public Department getDepartment() {
+    public int getDepartment() {
         return department;
     }
 
-    public void setDepartment(Department department) {
+    public void setDepartment(int department) {
         this.department = department;
     }
 
@@ -276,16 +276,16 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     }
 
     public String getSQLInsertString() {
-        return +this.plu.getId()
+        return +this.plu
                 + ",'" + this.name
                 + "'," + this.open
                 + "," + this.price
                 + "," + this.stock
                 + ",'" + this.comments
                 + "','" + this.shortName
-                + "'," + this.category.getId()
-                + "," + this.department.getId()
-                + "," + this.tax.getId()
+                + "'," + this.category
+                + "," + this.department
+                + "," + this.tax
                 + "," + this.costPrice
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel;
@@ -293,16 +293,16 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
-                + " SET PRODUCTS.PLU=" + this.getPlu().getId()
+                + " SET PRODUCTS.PLU=" + this.getPlu()
                 + ", PRODUCTS.NAME='" + this.getLongName()
                 + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
                 + ", PRODUCTS.PRICE=" + this.getPrice()
                 + ", PRODUCTS.STOCK=" + this.getStock()
                 + ", PRODUCTS.COMMENTS='" + this.getComments()
                 + "', PRODUCTS.SHORT_NAME='" + this.getName()
-                + "', PRODUCTS.CATEGORY_ID=" + this.getCategory().getId()
-                + ", PRODUCTS.DEPARTMENT_ID=" + this.getDepartment().getId()
-                + ", PRODUCTS.TAX_ID=" + this.getTax().getId()
+                + "', PRODUCTS.CATEGORY_ID=" + this.getCategory()
+                + ", PRODUCTS.DEPARTMENT_ID=" + this.getDepartment()
+                + ", PRODUCTS.TAX_ID=" + this.getTax()
                 + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()

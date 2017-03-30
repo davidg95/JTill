@@ -16,14 +16,14 @@ public class WasteItem implements Serializable, JTillObject {
     private int id;
     private Product product;
     private int quantity;
-    private WasteReason reason;
+    private int reason;
 
-    public WasteItem(int id, Product product, int quantity, WasteReason reason) {
+    public WasteItem(int id, Product product, int quantity, int reason) {
         this(product, quantity, reason);
         this.id = id;
     }
 
-    public WasteItem(Product product, int quantity, WasteReason reason) {
+    public WasteItem(Product product, int quantity, int reason) {
         this.product = product;
         this.quantity = quantity;
         this.reason = reason;
@@ -59,11 +59,11 @@ public class WasteItem implements Serializable, JTillObject {
         this.quantity = quantity;
     }
 
-    public WasteReason getReason() {
+    public int getReason() {
         return reason;
     }
 
-    public void setReason(WasteReason reason) {
+    public void setReason(int reason) {
         this.reason = reason;
     }
 

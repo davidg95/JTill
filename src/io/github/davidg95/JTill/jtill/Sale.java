@@ -21,11 +21,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private int id;
     private List<SaleItem> saleItems;
     private BigDecimal total;
-    private Customer customer;
+    private int customer;
     private Date date;
     private String terminal;
     private boolean cashed;
-    private Staff staff;
+    private int staff;
     private boolean chargeAccount;
 
     private SaleItem lastAdded;
@@ -37,7 +37,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param terminal the name of the terminal the sale is done it.
      * @param s the staff member the sale is done by.
      */
-    public Sale(String terminal, Staff s) {
+    public Sale(String terminal, int s) {
         saleItems = new ArrayList<>();
         total = new BigDecimal("0.00");
         this.terminal = terminal;
@@ -57,7 +57,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
      */
-    public Sale(int id, BigDecimal total, Customer customer, Date date, String terminal, boolean cashed, Staff staff, List<SaleItem> saleItems) {
+    public Sale(int id, BigDecimal total, int customer, Date date, String terminal, boolean cashed, int staff, List<SaleItem> saleItems) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -79,7 +79,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
      */
-    public Sale(int id, BigDecimal total, Customer customer, Date date, String terminal, boolean cashed, Staff staff) {
+    public Sale(int id, BigDecimal total, int customer, Date date, String terminal, boolean cashed, int staff) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -260,11 +260,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.total = total;
     }
 
-    public Customer getCustomer() {
+    public int getCustomer() {
         return customer;
     }
 
-    public void setCustomer(Customer customer) {
+    public void setCustomer(int customer) {
         this.customer = customer;
     }
 
@@ -310,53 +310,53 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.cashed = cashed;
     }
 
-    public Staff getStaff() {
+    public int getStaff() {
         return staff;
     }
 
-    public void setStaff(Staff staff) {
+    public void setStaff(int staff) {
         this.staff = staff;
     }
 
     public String getSQLInsertStatement() {
-        if (this.customer == null) { //If no customer was assigned then set the customer ID to -1
+        if (this.customer == 0) { //If no customer was assigned then set the customer ID to -1
             return this.total
                     + ",-1"
                     + "," + this.date.getTime()
                     + ",'" + this.terminal
                     + "'," + this.cashed
-                    + "," + this.staff.getId()
+                    + "," + this.staff
                     + "," + this.chargeAccount;
         } else {
             return this.total
-                    + "," + this.customer.getId()
+                    + "," + this.customer
                     + "," + this.date.getTime()
                     + ",'" + this.terminal
                     + "'," + this.cashed
-                    + "," + this.staff.getId()
+                    + "," + this.staff
                     + "," + this.chargeAccount;
         }
     }
 
     public String getSQLUpdateStatement() {
-        if (this.customer == null) {
+        if (this.customer == 0) {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=-1"
                     + ", TIMESTAMP=" + this.date.getTime()
                     + ", TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
-                    + ", STAFF=" + this.staff.getId()
+                    + ", STAFF=" + this.staff
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.id;
         } else {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
-                    + ", CUSTOMER=" + this.customer.getId()
+                    + ", CUSTOMER=" + this.customer
                     + ", TIMESTAMP=" + this.date.getTime()
                     + ", TERMINAL='" + this.terminal
                     + "', CASHED=" + this.cashed
-                    + ", STAFF=" + this.staff.getId()
+                    + ", STAFF=" + this.staff
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.id;
         }

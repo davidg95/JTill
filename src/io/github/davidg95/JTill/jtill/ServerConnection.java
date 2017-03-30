@@ -3087,7 +3087,74 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public int getTotalSolfOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
-        return 0;
+    public int getTotalSoldOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        try{
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETTOTALSOLDITEM", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if(data.getFlag().equals("FAIL")){
+                throw new IOException(data.getData().toString());
+            } else{
+                int val = (int) data.getData();
+                return val;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException, ProductNotFoundException {
+        try{
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETVALUESOLDITEM", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if(data.getFlag().equals("FAIL")){
+                throw new IOException(data.getData().toString());
+            } else{
+                BigDecimal val = (BigDecimal) data.getData();
+                return val;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public int getTotalWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        try{
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETTOTALWASTEDITEM", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if(data.getFlag().equals("FAIL")){
+                throw new IOException(data.getData().toString());
+            } else{
+                int val = (int) data.getData();
+                return val;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        try{
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETVALUEWASTEDITEM", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if(data.getFlag().equals("FAIL")){
+                throw new IOException(data.getData().toString());
+            } else{
+                BigDecimal val = (BigDecimal) data.getData();
+                return val;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 }
