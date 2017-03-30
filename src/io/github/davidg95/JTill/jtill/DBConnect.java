@@ -4109,4 +4109,10 @@ public class DBConnect implements DataConnect {
         }
         return i;
     }
+
+    @Override
+    public int getTotalSolfOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        String query = "SELECT * FROM SALEITEMS WHERE PRODUCT_ID=" + id;
+        return 0;
+    }
 }

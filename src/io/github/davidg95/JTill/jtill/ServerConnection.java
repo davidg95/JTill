@@ -3085,4 +3085,9 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required)");
     }
+
+    @Override
+    public int getTotalSolfOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        return 0;
+    }
 }

@@ -485,6 +485,8 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      */
     public List<SaleItem> getAllSaleItems() throws IOException, SQLException;
+    
+    public int getTotalSolfOfItem(int id) throws IOException, SQLException, ProductNotFoundException;
 
     /**
      * Method to submit a query to the sale items table.
