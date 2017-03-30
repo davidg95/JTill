@@ -358,6 +358,15 @@ public class DBConnect implements DataConnect {
                 + "     ADDRESS VARCHAR(100),\n"
                 + "     PHONE VARCHAR(20)\n"
                 + ")";
+        String receivedItems = "create table \"APP\".RECEIVEDITEMS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     PRODUCT INT not null references PRODUCTS(ID),\n"
+                + "     PRICE DOUBLE,\n"
+                + "     QUANTITY INT\n"
+                + ")";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
@@ -499,6 +508,14 @@ public class DBConnect implements DataConnect {
             try {
                 stmt.execute(suppliers);
                 LOG.log(Level.INFO, "Created table suppliers");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(receivedItems);
+                LOG.log(Level.INFO, "Created table recevied items");
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -4205,6 +4222,49 @@ public class DBConnect implements DataConnect {
                 }
                 con.commit();
                 return val;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public void addReceivedItem(ReceivedItem i) throws IOException, SQLException {
+        String query = "INSERT INTO RECEIVEDITEMS (PRODUCT, QUANTITY, PRICE) VALUES (" + i.getProduct() + "," + i.getQuantity() + "," + i.getPrice().doubleValue() + ")";
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        String query = "SELECT * FROM RECEIVEDITEMS WHERE PRODUCT=" + id;
+        BigDecimal value = BigDecimal.ZERO;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                boolean found = false;
+                while (set.next()) {
+                    found = true;
+                    String p = Double.toString(set.getDouble("PRICE"));
+                    value = value.add(new BigDecimal(p).multiply(new BigDecimal(set.getInt("QUANTITY"))));
+                }
+                con.commit();
+                if (!found) {
+                    throw new ProductNotFoundException("Product " + id + " not found");
+                }
+                return value;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);

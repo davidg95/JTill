@@ -1142,4 +1142,24 @@ public interface DataConnect {
      * @throws JTillException if the Supplier was not found.
      */
     public Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to add a received item to the database.
+     *
+     * @param i the item to add.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
+    public void addReceivedItem(ReceivedItem i) throws IOException, SQLException;
+
+    /**
+     * Gets the total spend on an item.
+     *
+     * @param id the item to get.
+     * @return the total spent on the item.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws ProductNotFoundException if the product was not found.
+     */
+    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException;
 }

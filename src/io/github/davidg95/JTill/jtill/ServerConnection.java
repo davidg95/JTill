@@ -3157,4 +3157,13 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required)");
     }
+
+    @Override
+    public void addReceivedItem(ReceivedItem i) throws IOException, SQLException {
+    }
+
+    @Override
+    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException {
+        return BigDecimal.ZERO;
+    }
 }
