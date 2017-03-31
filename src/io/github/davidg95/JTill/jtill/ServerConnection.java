@@ -459,11 +459,11 @@ public class ServerConnection implements DataConnect {
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public int purchaseProduct(Product p, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
+    public int purchaseProduct(int id, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         String input = null;
         try {
             sem.acquire();
-            obOut.writeObject(ConnectionData.create("PURCHASE", p.getId(), amount));
+            obOut.writeObject(ConnectionData.create("PURCHASE", id, amount));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
 

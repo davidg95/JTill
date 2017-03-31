@@ -104,12 +104,23 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     public boolean addItem(Item i, int quantity) {
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
-            if (item.getItem().getId() == i.getId() && (item.getItem() instanceof Discount) == (i instanceof Discount)) {
+            int type;
+            if (i instanceof Product) {
+                type = SaleItem.PRODUCT;
+            } else {
+                type = SaleItem.DISCOUNT;
+            }
+            if (item.getItem() == i.getId() && item.getType() == type) {
+                //The item has been added
                 if (i.isOpen()) {
-                    if (i.getPrice().compareTo(item.getItem().getPrice()) == 0) {
-                        BigDecimal inc = item.increaseQuantity(quantity);
-                        this.total = total.add(inc);
-                        this.lastAdded = new SaleItem(this, i, quantity);
+                    if (i.getPrice().compareTo(item.getPrice()) == 0) {
+                        item.increaseQuantity(quantity);
+                        this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+                        if (i instanceof Discount) {
+                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.DISCOUNT);
+                        } else {
+                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.PRODUCT);
+                        }
                         updateTotal();
                         return true; //The product is open price and the same price so increase the quantity and exit
                     } else {
@@ -117,16 +128,29 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     }
                 }
                 //Product is not open price and does already exist
-                BigDecimal inc = item.increaseQuantity(quantity);
-                this.total = total.add(inc);
-                this.lastAdded = new SaleItem(this, i, quantity);
+                item.increaseQuantity(quantity);
+                item.setName(i.getName());
+                item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString());
+                this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity)));
+                if (i instanceof Discount) {
+                    this.lastAdded = new SaleItem(this.id, i.getId(), quantity, item.getPrice(), SaleItem.DISCOUNT);
+                } else {
+                    this.lastAdded = new SaleItem(this.id, i.getId(), quantity, item.getPrice(), SaleItem.PRODUCT);
+                }
                 return true;
             }
         }
         //If the item is not already in the sale
-        SaleItem item = new SaleItem(this, i, quantity);
+        SaleItem item;
+        if (i instanceof Discount) {
+            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.DISCOUNT);
+        } else {
+            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.PRODUCT);
+        }
 
         this.total = total.add(item.getPrice());
+        item.setName(i.getName());
+        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString());
         saleItems.add(item);
         this.lastAdded = item;
         updateTotal();
@@ -194,16 +218,9 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      */
     public void halfPriceItem(SaleItem item) {
         for (SaleItem i : saleItems) {
-            if (i.getItem().getId() == item.getItem().getId()) {
-                if (i.getItem().getPrice().compareTo(new BigDecimal("0.01")) != 0) {
-                    if (i.getItem().isOpen()) {
-                        if (i.getItem().getPrice().compareTo(item.getItem().getPrice()) == 0) {
-                            BigDecimal val = i.getPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);
-                            i.setPrice(val);
-                            updateTotal();
-                            return;
-                        }
-                    } else {
+            if (i.getItem() == item.getItem()) {
+                if (i.getPrice().compareTo(new BigDecimal("0.01")) != 0) { //Check it is not at 1p.
+                    if (i.getPrice().compareTo(item.getPrice()) == 0) {
                         BigDecimal val = i.getPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);
                         i.setPrice(val);
                         updateTotal();

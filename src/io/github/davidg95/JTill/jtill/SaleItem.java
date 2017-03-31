@@ -14,33 +14,41 @@ import java.text.DecimalFormat;
  *
  * @author David
  */
-public class SaleItem implements Serializable, JTillObject {
+public class SaleItem implements Serializable {
 
     private int id;
-    private Item item;
+    private int item;
+    private String name;
     private int quantity;
     private BigDecimal price;
-    private Sale sale;
+    private String totalPrice;
+    private int sale;
+    private int type;
 
-    public SaleItem(Sale sale, Item item, int quantity, int id, BigDecimal price) {
-        this(sale, item, quantity);
+    /**
+     * Indicates the sale item is a Product.
+     *
+     * Value = 1.
+     */
+    public static int PRODUCT = 1;
+    /**
+     * Indicates the sale item is a discount.
+     *
+     * Value = 2.
+     */
+    public static int DISCOUNT = 2;
+
+    public SaleItem(int sale, int item, int quantity, int id, BigDecimal price, int type) {
+        this(sale, item, quantity, price, type);
         this.id = id;
-        this.price = price;
-        this.price = price.setScale(2, 2);
     }
 
-    public SaleItem(Sale sale, Item item, int quantity) {
+    public SaleItem(int sale, int item, int quantity, BigDecimal price, int type) {
         this.sale = sale;
         this.item = item;
         this.quantity = quantity;
-        if (item != null) {
-            this.price = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
-        this.price = price.setScale(2, 2);
-    }
-    }
-
-    public SaleItem(Sale sale, Product product) {
-        this(sale, product, 1);
+        this.price = price;
+        this.type = type;
     }
 
     /**
@@ -49,11 +57,9 @@ public class SaleItem implements Serializable, JTillObject {
      * @param quantity the quantity to add.
      * @return the new quantity.
      */
-    public BigDecimal increaseQuantity(int quantity) {
+    public int increaseQuantity(int quantity) {
         this.quantity += quantity;
-        BigDecimal inc = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
-        this.price = this.price.add(inc);
-        return inc;
+        return quantity;
     }
 
     /**
@@ -62,19 +68,33 @@ public class SaleItem implements Serializable, JTillObject {
      * @param quantity the quantity to remove.
      * @return the new quantity.
      */
-    public BigDecimal decreaseQuantity(int quantity) {
+    public int decreaseQuantity(int quantity) {
         this.quantity -= quantity;
-        BigDecimal dec = item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
-        this.price = this.price.subtract(dec);
-        return dec;
+        return quantity;
     }
 
-    public Item getItem() {
+    public int getItem() {
         return item;
     }
 
-    public void setItem(Item item) {
+    public void setItem(int item) {
         this.item = item;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(String totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
     public int getQuantity() {
@@ -83,7 +103,6 @@ public class SaleItem implements Serializable, JTillObject {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-        this.price = this.item.getPrice().multiply(new BigDecimal(Integer.toString(quantity)));
     }
 
     public BigDecimal getPrice() {
@@ -93,13 +112,7 @@ public class SaleItem implements Serializable, JTillObject {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
-
-    @Override
-    public String getName() {
-        return this.item.getName();
-    }
-
-    @Override
+    
     public int getId() {
         return id;
     }
@@ -108,24 +121,28 @@ public class SaleItem implements Serializable, JTillObject {
         this.id = id;
     }
 
-    public Sale getSale() {
+    public int getSale() {
         return sale;
     }
 
-    public void setSale(Sale sale) {
+    public void setSale(int sale) {
         this.sale = sale;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     public String getSQLInsertStatement() {
-        String type = "product";
-        if (this.item instanceof Discount) {
-            type = "discount";
-        }
-        return this.item.getId()
-                + ",'" + type
-                + "'," + this.quantity
+        return this.item
+                + "," + type
+                + "," + this.quantity
                 + "," + this.price.doubleValue()
-                + "," + this.sale.getId();
+                + "," + this.sale;
     }
 
     @Override
@@ -147,21 +164,18 @@ public class SaleItem implements Serializable, JTillObject {
             return false;
         }
         final SaleItem other = (SaleItem) obj;
-        return this.item.getId() == other.item.getId() && (this.item instanceof Discount) == (other.item instanceof Discount);
+        return this.item == other.item && this.type == other.type;
     }
 
     @Override
     public String toString() {
         DecimalFormat df;
-        if (item.getPrice().compareTo(BigDecimal.ZERO) > 1) {
+        if (price.multiply(new BigDecimal(quantity)).compareTo(BigDecimal.ZERO) > 1) {
             df = new DecimalFormat("#.00");
         } else {
             df = new DecimalFormat("0.00");
         }
-        if (this.getItem().getName().length() < 4) {
-            return "Qty. " + this.getQuantity() + "\t" + this.getItem().getName() + "\t\t\t£" + df.format(this.getPrice());
-        } else {
-            return "Qty. " + this.getQuantity() + "\t" + this.getItem().getName() + "\t£" + df.format(this.getPrice());
-        }
+        return "Qty. " + this.getQuantity() + "\t" + this.getItem() + "\t\t\t£" + df.format(this.getPrice());
+
     }
 }

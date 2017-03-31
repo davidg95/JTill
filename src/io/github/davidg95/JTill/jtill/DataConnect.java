@@ -123,7 +123,7 @@ public interface DataConnect {
     /**
      * Method to purchase a product and reduce its stock level by 1.
      *
-     * @param p the product to purchase.
+     * @param id the product to purchase.
      * @param amount the amount of the product to purchase.
      * @return the new stock level.
      * @throws IOException if there was a network error.
@@ -131,7 +131,7 @@ public interface DataConnect {
      * @throws OutOfStockException if the product is out of stock.
      * @throws ProductNotFoundException if the product was not found.
      */
-    public int purchaseProduct(Product p, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
+    public int purchaseProduct(int id, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
 
     /**
      * Method to get a product by its code.
