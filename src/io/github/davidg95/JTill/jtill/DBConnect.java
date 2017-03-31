@@ -815,9 +815,9 @@ public class DBConnect implements DataConnect {
                 ResultSet res = stmt.executeQuery(query);
                 while (res.next()) {
                     int stock = res.getInt("STOCK");
-                    res.close();
                     stock -= amount;
-                    int minStock = res.getInt("MINIMUM_STOCK_LEVEL");
+                    int minStock = res.getInt("MIN_PRODUCT_LEVEL");
+                    res.close();
                     String update = "UPDATE PRODUCTS SET STOCK=" + stock + " WHERE PRODUCTS.ID=" + id;
                     stmt = con.createStatement();
                     stmt.executeUpdate(update);

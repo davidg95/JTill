@@ -148,7 +148,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
             item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.PRODUCT);
         }
 
-        this.total = total.add(item.getPrice());
+        this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity)));
         item.setName(i.getName());
         item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString());
         saleItems.add(item);
@@ -243,7 +243,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     public void updateTotal() {
         total = new BigDecimal("0");
         saleItems.forEach((item) -> {
-            total = total.add(item.getPrice());
+            total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
         });
     }
 
