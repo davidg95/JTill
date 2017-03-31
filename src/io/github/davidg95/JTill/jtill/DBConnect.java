@@ -2035,7 +2035,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Sale> getAllSales() throws SQLException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT FROM SALES s";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
@@ -2048,30 +2048,11 @@ public class DBConnect implements DataConnect {
                 while (set.next()) {
                     int id = set.getInt("sId");
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                    int customerid = set.getInt("cId");
-                    String name = set.getString("cName");
-                    String phone = set.getString("PHONE");
-                    String mobile = set.getString("MOBILE");
-                    String email = set.getString("EMAIL");
-                    String add_1 = set.getString("ADDRESS_LINE_1");
-                    String add_2 = set.getString("ADDRESS_LINE_2");
-                    String town = set.getString("TOWN");
-                    String county = set.getString("COUNTRY");
-                    String country = set.getString("COUNTRY");
-                    String postcode = set.getString("POSTCODE");
-                    String notes = set.getString("NOTES");
-                    int loyalty_points = set.getInt("LOYALTY_POINTS");
-                    BigDecimal money_due = new BigDecimal(set.getDouble("MONEY_DUE"));
-                    Customer customer = new Customer(customerid, name, phone, mobile, email, add_1, add_2, town, county, country, postcode, notes, loyalty_points, money_due);
+                    int customerid = set.getInt("sCus");
                     Date date = new Date(set.getLong("TIMESTAMP"));
                     String terminal = set.getString("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
-                    int sId = set.getInt("stId");
-                    String stName = set.getString("stName");
-                    int position = set.getInt("POSITION");
-                    String stUsername = set.getString("USERNAME");
-                    String stPassword = set.getString("PASSWORD");
-                    Staff staff = new Staff(sId, stName, position, stUsername, stPassword);
+                    int sId = set.getInt("STAFF");
                     Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     s.setProducts(getItemsInSale(s));
                     sales.add(s);
