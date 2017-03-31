@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
+import java.util.Date;
 import java.util.List;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -485,6 +486,20 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      */
     public List<SaleItem> getAllSaleItems() throws IOException, SQLException;
+
+    /**
+     * Method to get all ale items using the given search terms, nulls are
+     * allowed.
+     *
+     * @param depId the department id.
+     * @param catId the category id.
+     * @param start the start date.
+     * @param end the end date.
+     * @return a list of sale items matching the search terms.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public List<SaleItem> getSaleItemsSearchTerms(int depId, int catId, Date start, Date end) throws IOException, SQLException;
 
     /**
      * Method which gets the total units sold of a particular item.

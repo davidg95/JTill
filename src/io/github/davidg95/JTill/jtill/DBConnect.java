@@ -625,17 +625,17 @@ public class DBConnect implements DataConnect {
         List<Product> products = new ArrayList<>();
         while (set.next()) {
             int code = set.getInt("pId");
-            int pluID = set.getInt("p.PLU");
-            int order_code = set.getInt("p.ORDER_CODE");
+            int pluID = set.getInt("PLU");
+            int order_code = set.getInt("ORDER_CODE");
             String name = set.getString("pName");
             boolean open = set.getBoolean("OPEN_PRICE");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
             int stock = set.getInt("STOCK");
             String comments = set.getString("COMMENTS");
             String shortName = set.getString("SHORT_NAME");
-            int categoryID = set.getInt("p.CATEGORY_ID");
-            int dId = set.getInt("p.DEPARTMENT_ID");
-            int taxID = set.getInt("p.TAX_ID");
+            int categoryID = set.getInt("CATEGORY_ID");
+            int dId = set.getInt("DEPARTMENT_ID");
+            int taxID = set.getInt("TAX_ID");
             BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
             int minStock = set.getInt("MIN_PRODUCT_LEVEL");
             int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
@@ -723,11 +723,12 @@ public class DBConnect implements DataConnect {
                 res = stmt.executeQuery(query);
                 if (res.next()) {
                     res.close();
-                    return false;
+                    con.commit();
+                    return true;
                 }
                 res.close();
                 con.commit();
-                return true;
+                return false;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
@@ -4229,5 +4230,55 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         }
+    }
+
+    @Override
+    public List<SaleItem> getSaleItemsSearchTerms(int depId, int catId, Date start, Date end) throws IOException, SQLException {
+        String sales = "create table APP.SALES\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "        GENERATED ALWAYS AS IDENTITY\n"
+                + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "     PRICE DOUBLE,\n"
+                + "     CUSTOMER int,\n"
+                + "     DISCOUNT int,\n"
+                + "     TIMESTAMP bigint,\n"
+                + "     TERMINAL VARCHAR(20),\n"
+                + "     CASHED boolean not null,\n"
+                + "     STAFF int,\n"
+                + "     CHARGE_ACCOUNT boolean\n"
+                + ")";
+        String saleItems = "create table APP.SALEITEMS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "        GENERATED ALWAYS AS IDENTITY\n"
+                + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "     PRODUCT_ID INT not null references PRODUCTS(ID),\n"
+                + "	TYPE VARCHAR(15),\n"
+                + "     QUANTITY INT not null,\n"
+                + "     PRICE double not null,\n"
+                + "     SALE_ID INT not null references SALES(ID)\n"
+                + ")";
+        String query = "SELECT i.ID as iId, PRODUCT_ID, QUANTITY, i.PRICE as iPrice, SALE_ID, s.ID as sId, s.PRICE as sPrice, CUSTOMER, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT FROM SALEITEMS i, SALES s, DEPARTMENTS d, Products p, Categorys c WHERE c.ID = p.CATEGORY_ID AND d.ID = p.DEPARTMENT_ID AND i.PRODUCT = p.ID AND i.SALE_ID = s.ID AND d.ID = " + depId + " AND c.ID = " + catId;
+        try(Connection con = getNewConnection()){
+            try{
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<SaleItem> items = new ArrayList<>();
+                while(set.next()){
+                    int id = set.getInt("iId");
+                    int pId = set.getInt("pId");
+                    int quantity = set.getInt("QUANTITY");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("iPrice")));
+                    int saleId = set.getInt("SALE_ID");
+//                    items.add(new SaleItem(saleId, pId, quantity, id, price));
+                }
+            } catch(SQLException ex){
+                con.rollback();
+                LOG.log(Level.INFO, null, ex);
+                throw ex;
+            }
+        }
+        return null;
     }
 }
