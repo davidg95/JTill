@@ -18,6 +18,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     private int productCode;
     private int plu;
+    private int order_code;
     private String name;
     private String shortName;
     private int category;
@@ -37,6 +38,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      *
      * @param name the name of the product.
      * @param shortName the shortened name of the product.
+     * @param order_code the re order code for the product.
      * @param category the category this will belong to.
      * @param department the department the product belongs to.
      * @param comments the comments.
@@ -44,9 +46,10 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param plu the products plu.
      * @param open if the price is open.
      */
-    public Product(String name, String shortName, int category, int department, String comments, int tax, int plu, boolean open) {
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, int plu, boolean open) {
         this.name = name;
         this.shortName = shortName;
+        this.order_code = order_code;
         this.category = category;
         this.department = department;
         this.comments = comments;
@@ -61,6 +64,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      *
      * @param name the name of the product.
      * @param shortName the shortened name of the product.
+     * @param order_code the re order code for the product.
      * @param category the category this will belong to.
      * @param department the department the product belongs to.
      * @param comments the comments.
@@ -69,8 +73,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int category, int department, String comments, int tax, int plu, boolean open, int productCode) {
-        this(name, shortName, category, department, comments, tax, plu, open);
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, int plu, boolean open, int productCode) {
+        this(name, shortName, order_code, category, department, comments, tax, plu, open);
         this.productCode = productCode;
     }
 
@@ -79,6 +83,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      *
      * @param name the name for the product.
      * @param shortName the shortened name of the product.
+     * @param order_code the re order code for the product.
      * @param category the category this will belong to.
      * @param department the department the product belongs to.
      * @param price the price for the product.
@@ -91,8 +96,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu) {
-        this(name, shortName, category, department, comments, tax, plu, open);
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu) {
+        this(name, shortName, order_code, category, department, comments, tax, plu, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -105,6 +110,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      *
      * @param name the name for the product.
      * @param shortName the shortened name of the product.
+     * @param order_code the re order code for the product.
      * @param category the category this will belong to.
      * @param department the department the product belongs to.
      * @param price the price for the product.
@@ -118,8 +124,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu, int productCode) {
-        this(name, shortName, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu);
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu, int productCode) {
+        this(name, shortName, order_code, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu);
         this.productCode = productCode;
     }
 
@@ -171,6 +177,14 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     public void setLongName(String name) {
         this.name = name;
+    }
+
+    public int getOrder_code() {
+        return order_code;
+    }
+
+    public void setOrder_code(int order_code) {
+        this.order_code = order_code;
     }
 
     @Override
@@ -277,6 +291,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     public String getSQLInsertString() {
         return +this.plu
+                +"," + this.order_code
                 + ",'" + this.name
                 + "'," + this.open
                 + "," + this.price
@@ -294,6 +309,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
                 + " SET PRODUCTS.PLU=" + this.getPlu()
+                + " SET PRODUCTS.ORDER_CODE=" + this.getOrder_code()
                 + ", PRODUCTS.NAME='" + this.getLongName()
                 + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
                 + ", PRODUCTS.PRICE=" + this.getPrice()
