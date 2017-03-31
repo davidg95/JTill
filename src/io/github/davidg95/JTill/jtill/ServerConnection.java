@@ -3089,13 +3089,13 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public int getTotalSoldOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
-        try{
+        try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETTOTALSOLDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
-            if(data.getFlag().equals("FAIL")){
+            if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
-            } else{
+            } else {
                 int val = (int) data.getData();
                 return val;
             }
@@ -3107,13 +3107,13 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public BigDecimal getTotalValueSold(int id) throws IOException, SQLException, ProductNotFoundException {
-        try{
+        try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETVALUESOLDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
-            if(data.getFlag().equals("FAIL")){
+            if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
-            } else{
+            } else {
                 BigDecimal val = (BigDecimal) data.getData();
                 return val;
             }
@@ -3125,13 +3125,13 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public int getTotalWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
-        try{
+        try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETTOTALWASTEDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
-            if(data.getFlag().equals("FAIL")){
+            if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
-            } else{
+            } else {
                 int val = (int) data.getData();
                 return val;
             }
@@ -3143,13 +3143,13 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
-        try{
+        try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETVALUEWASTEDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
-            if(data.getFlag().equals("FAIL")){
+            if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
-            } else{
+            } else {
                 BigDecimal val = (BigDecimal) data.getData();
                 return val;
             }
@@ -3178,7 +3178,22 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException {
-        return BigDecimal.ZERO;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETSPENTONITEM", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            } else {
+                BigDecimal val = (BigDecimal) data.getData();
+                return val;
+            }
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
