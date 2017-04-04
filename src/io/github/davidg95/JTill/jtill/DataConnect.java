@@ -1177,4 +1177,45 @@ public interface DataConnect {
      * @throws ProductNotFoundException if the product was not found.
      */
     public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException;
+
+    /**
+     * Clocks on a member of staff.
+     *
+     * @param id the id to clock on.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws StaffNotFoundException if the member of staff was not found.
+     */
+    public void clockOn(int id) throws IOException, SQLException, StaffNotFoundException;
+
+    /**
+     * Clocks off a member of staff.
+     *
+     * @param id the id to clock off.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws StaffNotFoundException if the member of staff was not found.
+     */
+    public void clockOff(int id) throws IOException, SQLException, StaffNotFoundException;
+
+    /**
+     * Method to get all clock items for a staff member.
+     *
+     * @param id the staff member to get.
+     * @return a list of all clock items.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws StaffNotFoundException if the member of staff was not found.
+     */
+    public List<ClockItem> getAllClocks(int id) throws IOException, SQLException, StaffNotFoundException;
+
+    /**
+     * Method to clear the clock entries for a member of staff.
+     *
+     * @param id the staff member to clear.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws StaffNotFoundException if the member of staff was not found.
+     */
+    public void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException;
 }

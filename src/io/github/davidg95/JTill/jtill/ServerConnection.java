@@ -3200,4 +3200,76 @@ public class ServerConnection implements DataConnect {
     public List<SaleItem> getSaleItemsSearchTerms(int depId, int catId, Date start, Date end) throws IOException, SQLException {
         return null;
     }
+
+    @Override
+    public void clockOn(int id) throws IOException, SQLException, StaffNotFoundException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("CLOCKON", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return;
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public void clockOff(int id) throws IOException, SQLException, StaffNotFoundException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("CLOCKOFF", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return;
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public List<ClockItem> getAllClocks(int id) throws IOException, SQLException, StaffNotFoundException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETCLOCKS", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (List) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("CLEARCLOCKS", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return;
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
 }

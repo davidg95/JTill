@@ -88,6 +88,9 @@ public class DBConnect implements DataConnect {
 
     private final ObservableList<Till> connectedTills; //List of connected tills.
 
+    private final List<Integer> clockedOn;
+    private final StampedLock clockLock;
+
     private final String symbol; //Symbol to use for currency.
 
     /**
@@ -119,6 +122,8 @@ public class DBConnect implements DataConnect {
         });
         handler = LogFileHandler.getInstance();
         Logger.getGlobal().addHandler(handler);
+        clockedOn = new ArrayList<>();
+        clockLock = new StampedLock();
         symbol = Settings.getInstance().getSetting("CURRENCY_SYMBOL");
     }
 
@@ -368,6 +373,15 @@ public class DBConnect implements DataConnect {
                 + "     PRICE DOUBLE,\n"
                 + "     QUANTITY INT\n"
                 + ")";
+        String clockOnOff = "create table \"APP\".CLOCKONOFF\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     STAFF int not null references STAFF(ID),\n"
+                + "     TIMESTAMP BIGINT,\n"
+                + "     ONOFF int\n"
+                + ")";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
@@ -517,6 +531,14 @@ public class DBConnect implements DataConnect {
             try {
                 stmt.execute(receivedItems);
                 LOG.log(Level.INFO, "Created table recevied items");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(clockOnOff);
+                LOG.log(Level.INFO, "Created table clockonoff");
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -4186,31 +4208,6 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<SaleItem> getSaleItemsSearchTerms(int depId, int catId, Date start, Date end) throws IOException, SQLException {
-        String sales = "create table APP.SALES\n"
-                + "(\n"
-                + "     ID INT not null primary key\n"
-                + "        GENERATED ALWAYS AS IDENTITY\n"
-                + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "     PRICE DOUBLE,\n"
-                + "     CUSTOMER int,\n"
-                + "     DISCOUNT int,\n"
-                + "     TIMESTAMP bigint,\n"
-                + "     TERMINAL VARCHAR(20),\n"
-                + "     CASHED boolean not null,\n"
-                + "     STAFF int,\n"
-                + "     CHARGE_ACCOUNT boolean\n"
-                + ")";
-        String saleItems = "create table APP.SALEITEMS\n"
-                + "(\n"
-                + "     ID INT not null primary key\n"
-                + "        GENERATED ALWAYS AS IDENTITY\n"
-                + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "     PRODUCT_ID INT not null references PRODUCTS(ID),\n"
-                + "	TYPE VARCHAR(15),\n"
-                + "     QUANTITY INT not null,\n"
-                + "     PRICE double not null,\n"
-                + "     SALE_ID INT not null references SALES(ID)\n"
-                + ")";
         String query = "SELECT i.ID as iId, PRODUCT_ID, QUANTITY, i.PRICE as iPrice, SALE_ID, s.ID as sId, s.PRICE as sPrice, CUSTOMER, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT FROM SALEITEMS i, SALES s, DEPARTMENTS d, Products p, Categorys c WHERE c.ID = p.CATEGORY_ID AND d.ID = p.DEPARTMENT_ID AND i.PRODUCT = p.ID AND i.SALE_ID = s.ID AND d.ID = " + depId + " AND c.ID = " + catId;
         try (Connection con = getNewConnection()) {
             try {
@@ -4232,5 +4229,99 @@ public class DBConnect implements DataConnect {
             }
         }
         return null;
+    }
+
+    @Override
+    public void clockOn(int id) throws IOException, SQLException, StaffNotFoundException {
+        long stamp = clockLock.readLock();
+        try {
+            for (int i : clockedOn) {
+                if (i == id) {
+                    return;
+                }
+            }
+        } finally {
+            clockLock.unlockRead(stamp);
+        }
+        String query = "INSERT INTO CLOCKONOFF(STAFF, TIMESTAMP, ONOFF) VALUES (" + id + "," + new Date().getTime() + "," + 0 + ")";
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+                stamp = clockLock.writeLock();
+                clockedOn.add(id);
+                clockLock.unlockWrite(stamp);
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public void clockOff(int id) throws IOException, SQLException, StaffNotFoundException {
+        String query = "INSERT INTO CLOCKONOFF(STAFF, TIMESTAMP, ONOFF) VALUES (" + id + "," + new Date().getTime() + "," + 1 + ")";
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+                long stamp = clockLock.writeLock();
+                for (int i = 0; i < clockedOn.size(); i++) {
+                    int in = clockedOn.get(i);
+                    if (in == id) {
+                        clockedOn.remove(i);
+                    }
+                }
+                clockLock.unlockWrite(stamp);
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public List<ClockItem> getAllClocks(int sid) throws IOException, SQLException, StaffNotFoundException {
+        String query = "SELECT * FROM CLOCKONOFF WHERE STAFF=" + sid;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<ClockItem> items = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    long timestamp = set.getLong("TIMESTAMP");
+                    int type = set.getInt("ONOFF");
+                    Date date = new Date(timestamp);
+                    items.add(new ClockItem(id, sid, date, type));
+                }
+                con.commit();
+                return items;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException {
+        String query = "DELETE FROM CLOCKONOFF WHERE STAFF=" + id;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
     }
 }

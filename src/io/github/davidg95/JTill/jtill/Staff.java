@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Class which models a member of staff.
@@ -19,6 +20,7 @@ public class Staff implements Serializable, JTillObject {
     private int position;
     private String username;
     private String password;
+    private boolean clockedOn;
 
     /**
      * indicates whether they are currently logged into a till.
@@ -177,6 +179,14 @@ public class Staff implements Serializable, JTillObject {
 
     public boolean isTillLoggedIn() {
         return this.tillLogin;
+    }
+
+    public boolean getClockedOn() {
+        return clockedOn;
+    }
+
+    public void setClockedOn(boolean clockedOn) {
+        this.clockedOn = clockedOn;
     }
 
     public String getSQLInsertString() {
