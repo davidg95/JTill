@@ -6,7 +6,6 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * Class which models a member of staff.
@@ -20,7 +19,9 @@ public class Staff implements Serializable, JTillObject {
     private int position;
     private String username;
     private String password;
-    private boolean clockedOn;
+    private double wage;
+    private double pay;
+    private double hours;
 
     /**
      * indicates whether they are currently logged into a till.
@@ -62,11 +63,12 @@ public class Staff implements Serializable, JTillObject {
      * @param username their username.
      * @param password their password.
      */
-    public Staff(String name, int position, String username, String password) {
+    public Staff(String name, int position, String username, String password, double wage) {
         this.name = name;
         this.position = position;
         this.username = username;
         this.password = password;
+        this.wage = wage;
     }
 
     /**
@@ -79,8 +81,8 @@ public class Staff implements Serializable, JTillObject {
      * @param username their username.
      * @param password their password.
      */
-    public Staff(int id, String name, int position, String username, String password) {
-        this(name, position, username, password);
+    public Staff(int id, String name, int position, String username, String password, double wage) {
+        this(name, position, username, password, wage);
         this.id = id;
     }
 
@@ -181,19 +183,36 @@ public class Staff implements Serializable, JTillObject {
         return this.tillLogin;
     }
 
-    public boolean getClockedOn() {
-        return clockedOn;
+    public double getWage() {
+        return wage;
     }
 
-    public void setClockedOn(boolean clockedOn) {
-        this.clockedOn = clockedOn;
+    public void setWage(double wage) {
+        this.wage = wage;
+    }
+
+    public double getPay() {
+        return pay;
+    }
+
+    public void setPay(double pay) {
+        this.pay = pay;
+    }
+
+    public double getHours() {
+        return hours;
+    }
+
+    public void setHours(double hours) {
+        this.hours = hours;
     }
 
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.position
                 + ",'" + this.username.toLowerCase()
-                + "','" + this.password + "'";
+                + "','" + this.password
+                + "'," + wage;
     }
 
     public String getSQLUpdateString() {
@@ -202,7 +221,8 @@ public class Staff implements Serializable, JTillObject {
                 + "', POSITION=" + this.getPosition()
                 + ", USERNAME='" + this.getUsername().toLowerCase()
                 + "', PASSWORD='" + this.getPassword()
-                + "' WHERE STAFF.ID=" + this.getId();
+                + "', WAGE=" + wage
+                + " WHERE STAFF.ID=" + this.getId();
     }
 
     @Override

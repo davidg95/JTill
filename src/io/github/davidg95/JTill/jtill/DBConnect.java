@@ -309,7 +309,8 @@ public class DBConnect implements DataConnect {
                 + "	NAME VARCHAR(50) not null,\n"
                 + "	POSITION INTEGER not null,\n"
                 + "	USERNAME VARCHAR(20) not null,\n"
-                + "	PASSWORD VARCHAR(20) not null\n"
+                + "	PASSWORD VARCHAR(20) not null,\n"
+                + "     WAGE DOUBLE\n"
                 + ")";
         String screens = "create table \"APP\".SCREENS\n"
                 + "(\n"
@@ -1219,7 +1220,8 @@ public class DBConnect implements DataConnect {
                     int position = set.getInt("POSITION");
                     String uname = set.getString("USERNAME");
                     String pword = set.getString("PASSWORD");
-                    Staff s = new Staff(id, name, position, uname, pword);
+                    double wage = set.getDouble("WAGE");
+                    Staff s = new Staff(id, name, position, uname, pword, wage);
                     staff.add(s);
                 }
                 con.commit();
@@ -1243,8 +1245,8 @@ public class DBConnect implements DataConnect {
             int position = set.getInt("POSITION");
             String uname = set.getString("USERNAME");
             String pword = set.getString("PASSWORD");
-
-            Staff s = new Staff(id, name, position, uname, pword);
+            double wage = set.getDouble("WAGE");
+            Staff s = new Staff(id, name, position, uname, pword, wage);
 
             staff.add(s);
         }
@@ -1946,29 +1948,10 @@ public class DBConnect implements DataConnect {
             int id = set.getInt("sId");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
             int customerid = set.getInt("cId");
-            String name = set.getString("cName");
-            String phone = set.getString("PHONE");
-            String mobile = set.getString("MOBILE");
-            String email = set.getString("EMAIL");
-            String add_1 = set.getString("ADDRESS_LINE_1");
-            String add_2 = set.getString("ADDRESS_LINE_2");
-            String town = set.getString("TOWN");
-            String county = set.getString("COUNTRY");
-            String country = set.getString("COUNTRY");
-            String postcode = set.getString("POSTCODE");
-            String notes = set.getString("NOTES");
-            int loyalty_points = set.getInt("LOYALTY_POINTS");
-            BigDecimal money_due = new BigDecimal(set.getDouble("MONEY_DUE"));
-            Customer customer = new Customer(customerid, name, phone, mobile, email, add_1, add_2, town, county, country, postcode, notes, loyalty_points, money_due);
             Date date = new Date(set.getLong("TIMESTAMP"));
             String terminal = set.getString("TERMINAL");
             boolean cashed = set.getBoolean("CASHED");
             int sId = set.getInt("stId");
-            String stName = set.getString("stName");
-            int position = set.getInt("POSITION");
-            String stUsername = set.getString("USERNAME");
-            String stPassword = set.getString("PASSWORD");
-            Staff staff = new Staff(sId, stName, position, stUsername, stPassword);
             Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
@@ -2085,21 +2068,10 @@ public class DBConnect implements DataConnect {
                     int id = set.getInt("ID");
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                     int customerid = set.getInt("CUSTOMER");
-                    Customer customer = null;
-                    try {
-                        customer = getCustomer(customerid);
-                    } catch (CustomerNotFoundException ex) {
-                    }
                     Date date = new Date(set.getLong("TIMESTAMP"));
                     String terminal = set.getString("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
-                    Staff staff = null;
-                    try {
-                        staff = getStaff(sId);
-                    } catch (StaffNotFoundException ex) {
-                        LOG.log(Level.WARNING, null, ex);
-                    }
                     Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     s.setProducts(getItemsInSale(s));
                     if (!s.isCashed()) {
@@ -2145,21 +2117,7 @@ public class DBConnect implements DataConnect {
             return sales;
         }
     }
-
-//    private void addSaleItem(Sale s, SaleItem p) throws SQLException {
-//        try (Connection con = getNewConnection()) {
-//            try {
-//                p.setSale(s);
-//                String secondQuery = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES (" + p.getSQLInsertStatement() + ")";
-//                Statement sstmt = con.createStatement();
-//                sstmt.executeUpdate(secondQuery);
-//                con.commit();
-//            } catch (SQLException ex) {
-//                con.rollback();
-//                throw ex;
-//            }
-//        }
-//    }
+    
     private List<SaleItem> getItemsInSale(Sale sale) throws SQLException {
         String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getId();
         try (Connection con = getNewConnection()) {
