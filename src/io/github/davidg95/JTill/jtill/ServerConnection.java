@@ -2942,7 +2942,7 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
@@ -2962,7 +2962,7 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
@@ -3098,6 +3098,9 @@ public class ServerConnection implements DataConnect {
             obOut.writeObject(ConnectionData.create("GETTOTALSOLDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
+                if(data.getData() instanceof ProductNotFoundException){
+                    throw (ProductNotFoundException) data.getData();
+                }
                 throw new IOException(data.getData().toString());
             } else {
                 int val = (int) data.getData();
@@ -3105,7 +3108,7 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
@@ -3125,7 +3128,7 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
@@ -3138,6 +3141,9 @@ public class ServerConnection implements DataConnect {
             obOut.writeObject(ConnectionData.create("GETTOTALWASTEDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof ProductNotFoundException) {
+                    throw (ProductNotFoundException) data.getData();
+                }
                 throw new IOException(data.getData().toString());
             } else {
                 int val = (int) data.getData();
@@ -3145,7 +3151,7 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
@@ -3158,6 +3164,9 @@ public class ServerConnection implements DataConnect {
             obOut.writeObject(ConnectionData.create("GETVALUEWASTEDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
+                if (data.getData() instanceof ProductNotFoundException) {
+                    throw (ProductNotFoundException) data.getData();
+                }
                 throw new IOException(data.getData().toString());
             } else {
                 BigDecimal val = (BigDecimal) data.getData();
@@ -3165,7 +3174,7 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        } finally{
+        } finally {
             sem.release();
         }
         throw new IOException("Class error (Update may be required)");
