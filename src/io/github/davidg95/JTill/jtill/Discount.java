@@ -24,7 +24,7 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
     private int action;
     private int condition;
     private int conditionValue;
-    
+
     private List<Trigger> triggers;
 
     public static final int PERCENTAGE_OFF = 0;
@@ -142,11 +142,6 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
     }
 
     @Override
-    public String toString() {
-        return this.name;
-    }
-
-    @Override
     public BigDecimal getPrice() {
         return this.price;
     }
@@ -182,5 +177,10 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
         } catch (CloneNotSupportedException ex) {
             throw new AssertionError();
         }
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

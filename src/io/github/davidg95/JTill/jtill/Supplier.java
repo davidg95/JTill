@@ -86,7 +86,7 @@ public class Supplier implements Serializable {
 
     @Override
     public String toString() {
-        return "ID: " + this.id + " Name: " + this.name;
+        return this.id + " - " + this.name;
     }
 
 }

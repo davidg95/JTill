@@ -408,8 +408,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
 
     @Override
     public String toString() {
-        return this.id
-                + "\n" + this.saleItems.size()
-                + "\n" + this.total.toString();
+        return this.id + " - " + this.saleItems.size() + " - £" + this.total.toString();
     }
 }

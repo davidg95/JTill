@@ -96,6 +96,6 @@ public class ClockItem implements Serializable {
 
     @Override
     public String toString() {
-        return "ID=" + id + " Staff=" + staff + " Time=" + time + " Type=" + type;
+        return "ID- " + id + " Staff- " + staff + " Time- " + time + " Type- " + (type == ClockItem.CLOCK_ON ? "ON" : "OFF");
     }
 }

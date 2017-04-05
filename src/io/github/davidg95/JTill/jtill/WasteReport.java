@@ -100,7 +100,7 @@ public class WasteReport implements Serializable, JTillObject {
 
     @Override
     public String toString() {
-        return "" + id;
+        return id + "";
     }
 
 }

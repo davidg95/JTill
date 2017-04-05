@@ -94,7 +94,7 @@ public class WasteItem implements Serializable, JTillObject {
 
     @Override
     public String toString() {
-        return "" + id + " - " + reason;
+        return id + " - " + reason;
     }
 
 }

@@ -71,6 +71,6 @@ public class WasteReason implements Serializable, JTillObject {
 
     @Override
     public String toString() {
-        return reason;
+        return id + " - " + reason;
     }
 }

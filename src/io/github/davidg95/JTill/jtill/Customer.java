@@ -271,7 +271,7 @@ public class Customer implements Serializable, JTillObject {
 
     @Override
     public String toString() {
-        return "ID: " + this.id + "\nName: " + this.name;
+        return this.id + " - " + this.name;
     }
 
 }

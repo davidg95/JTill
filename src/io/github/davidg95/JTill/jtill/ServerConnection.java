@@ -2942,6 +2942,8 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            sem.release();
         }
         throw new IOException("Class error (Update may be required)");
     }
@@ -2960,6 +2962,8 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            sem.release();
         }
         throw new IOException("Class error (Update may be required)");
     }
@@ -3101,6 +3105,8 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            sem.release();
         }
         throw new IOException("Class error (Update may be required)");
     }
@@ -3119,6 +3125,8 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            sem.release();
         }
         throw new IOException("Class error (Update may be required)");
     }
@@ -3137,6 +3145,8 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            sem.release();
         }
         throw new IOException("Class error (Update may be required)");
     }
@@ -3155,6 +3165,8 @@ public class ServerConnection implements DataConnect {
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally{
+            sem.release();
         }
         throw new IOException("Class error (Update may be required)");
     }
