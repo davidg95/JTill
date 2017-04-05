@@ -869,6 +869,15 @@ public interface DataConnect {
      */
     public List<Discount> getAllDiscounts() throws IOException, SQLException;
 
+    /**
+     * Method to get all current valid discounts.
+     *
+     * @return list of valid discounts
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public List<Discount> getValidDiscounts() throws IOException, SQLException;
+
     //Tax
     public Tax addTax(Tax t) throws IOException, SQLException;
 

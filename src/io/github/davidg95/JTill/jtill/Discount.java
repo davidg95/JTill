@@ -24,6 +24,8 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
     private int action;
     private int condition;
     private int conditionValue;
+    private long start;
+    private long end;
 
     private List<Trigger> triggers;
 
@@ -40,9 +42,11 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param action the action the discount performs.
      * @param condition the condition that was chosen.
      * @param conditionValue the value for the condition.
+     * @param start the start date of the promotion.
+     * @param end the end date of the promotion.
      */
-    public Discount(int id, String name, double percentage, BigDecimal price, int action, int condition, int conditionValue) {
-        this(name, percentage, price, action, condition, conditionValue);
+    public Discount(int id, String name, double percentage, BigDecimal price, int action, int condition, int conditionValue, long start, long end) {
+        this(name, percentage, price, action, condition, conditionValue, start, end);
         this.id = id;
     }
 
@@ -56,13 +60,15 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param condition the condition that was chosen.
      * @param conditionValue the value for the condition.
      */
-    public Discount(String name, double percentage, BigDecimal price, int action, int condition, int conditionValue) {
+    public Discount(String name, double percentage, BigDecimal price, int action, int condition, int conditionValue, long start, long end) {
         this.name = name;
         this.percentage = percentage;
         this.price = price;
         this.action = action;
         this.condition = condition;
         this.conditionValue = conditionValue;
+        this.start = start;
+        this.end = end;
     }
 
     @Override
@@ -127,7 +133,9 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
                 + "," + this.price.doubleValue()
                 + "," + this.action
                 + "," + this.condition
-                + "," + this.conditionValue;
+                + "," + this.conditionValue
+                + "," + this.start
+                + "," + this.end;
     }
 
     public String getSQLUpdateString() {
@@ -138,6 +146,8 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
                 + ", ACTION=" + this.action
                 + ", CONDITION=" + this.condition
                 + ", CONDITIONVALUE=" + this.conditionValue
+                + ", STARTT=" + this.start
+                + ", ENDT=" + this.end
                 + " WHERE DISCOUNTS.ID=" + this.getId();
     }
 
@@ -167,6 +177,22 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
 
     public void setTriggers(List<Trigger> triggers) {
         this.triggers = triggers;
+    }
+
+    public long getStart() {
+        return start;
+    }
+
+    public void setStart(long start) {
+        this.start = start;
+    }
+
+    public long getEnd() {
+        return end;
+    }
+
+    public void setEnd(long end) {
+        this.end = end;
     }
 
     @Override

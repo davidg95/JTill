@@ -86,10 +86,7 @@ public class WasteItem implements Serializable, JTillObject {
             return false;
         }
         final WasteItem other = (WasteItem) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        return true;
+        return this.id == other.id;
     }
 
     @Override

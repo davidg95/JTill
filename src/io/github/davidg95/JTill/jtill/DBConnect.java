@@ -301,7 +301,9 @@ public class DBConnect implements DataConnect {
                 + "	PRICE DOUBLE not null,\n"
                 + "     ACTION INTEGER,\n"
                 + "     CONDITION INTEGER,\n"
-                + "     CONDITIONVALUE INTEGER\n"
+                + "     CONDITIONVALUE INTEGER,\n"
+                + "     STARTT BIGINT,\n"
+                + "     ENDT BIGINT\n"
                 + ")";
         String triggers = "create table \"APP\".TRIGGERS\n"
                 + "(\n"
@@ -1457,7 +1459,9 @@ public class DBConnect implements DataConnect {
                     int a = set.getInt("ACTION");
                     int c = set.getInt("CONDITION");
                     int cv = set.getInt("CONDITIONVALUE");
-                    Discount d = new Discount(id, name, percentage, price, a, c, cv);
+                    long start = set.getLong("STARTT");
+                    long end = set.getLong("ENDT");
+                    Discount d = new Discount(id, name, percentage, price, a, c, cv, start, end);
 
                     discounts.add(d);
                 }
@@ -1483,7 +1487,9 @@ public class DBConnect implements DataConnect {
             int a = set.getInt("ACTION");
             int c = set.getInt("CONDITION");
             int cv = set.getInt("CONDITIONVALUE");
-            Discount d = new Discount(id, name, percentage, price, a, c, cv);
+            long start = set.getLong("STARTT");
+            long end = set.getLong("ENDT");
+            Discount d = new Discount(id, name, percentage, price, a, c, cv, start, end);
 
             discounts.add(d);
         }
@@ -1492,7 +1498,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Discount addDiscount(Discount d) throws SQLException {
-        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, ACTION, CONDITION, CONDITIONVALUE) VALUES (" + d.getSQLInsertString() + ")";
+        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, ACTION, CONDITION, CONDITIONVALUE, START, END) VALUES (" + d.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = disL.writeLock();
@@ -2161,24 +2167,11 @@ public class DBConnect implements DataConnect {
         List<SaleItem> sales = new ArrayList<>();
         while (set.next()) {
             int id = set.getInt("ID");
-            Item item = null;
+            int item = set.getInt("PRODUCT_ID");
             int type = set.getInt("TYPE");
-            if (type == SaleItem.PRODUCT) {
-                try {
-                    item = getProduct(set.getInt("PRODUCT_ID"));
-                } catch (ProductNotFoundException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-            } else {
-                try {
-                    item = getDiscount(set.getInt("PRODUCT_ID"));
-                } catch (DiscountNotFoundException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
-            }
             int quantity = set.getInt("QUANTITY");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            SaleItem s = new SaleItem(sale.getId(), item.getId(), quantity, id, price, type);
+            SaleItem s = new SaleItem(sale.getId(), item, quantity, id, price, type);
             sales.add(s);
         }
         return sales;
@@ -3931,8 +3924,8 @@ public class DBConnect implements DataConnect {
     public SaleItem getSaleItem(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM SALEITEMS WHERE ID = " + id;
         SaleItem i = null;
-        int product_id = 0;
-        int sale_id = 0;
+        int product_id;
+        int sale_id;
         int type;
         try (Connection con = getNewConnection()) {
             try {
@@ -3960,8 +3953,8 @@ public class DBConnect implements DataConnect {
     public List<SaleItem> getAllSaleItems() throws IOException, SQLException {
         String query = "SELECT * FROM SALEITEMS";
         List<SaleItem> items = new ArrayList<>();
-        int product_id = 0;
-        int sale_id = 0;
+        int product_id;
+        int sale_id;
         int type;
         try (Connection con = getNewConnection()) {
             try {
@@ -3991,8 +3984,8 @@ public class DBConnect implements DataConnect {
     public List<SaleItem> submitSaleItemQuery(String q) throws SQLException {
         String query = "SELECT * FROM SALEITEMS " + q;
         List<SaleItem> items = new ArrayList<>();
-        int product_id = 0;
-        int sale_id = 0;
+        int product_id;
+        int sale_id;
         int type;
         try (Connection con = getNewConnection()) {
             try {
@@ -4358,6 +4351,40 @@ public class DBConnect implements DataConnect {
                 Statement stmt = con.createStatement();
                 stmt.executeQuery(query);
                 con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public List<Discount> getValidDiscounts() throws IOException, SQLException {
+        String query = "SELECT * FROM DISCOUNTS";
+        Date date = new Date();
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<Discount> discounts = new ArrayList<>();
+                while (set.next()) {
+                    int id = set.getInt("ID");
+                    String name = set.getString("NAME");
+                    double percentage = set.getDouble("PERCENTAGE");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    int a = set.getInt("ACTION");
+                    int c = set.getInt("CONDITION");
+                    int cv = set.getInt("CONDITIONVALUE");
+                    Date start = new Date(set.getLong("STARTT"));
+                    Date end = new Date(set.getLong("ENDT"));
+                    Discount d = new Discount(id, name, percentage, price, a, c, cv, start.getTime(), end.getTime());
+                    if (start.before(date) && end.after(date)) {
+                        discounts.add(d);
+                    }
+                }
+                con.commit();
+                return discounts;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
