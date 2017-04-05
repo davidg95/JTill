@@ -1218,4 +1218,35 @@ public interface DataConnect {
      * @throws StaffNotFoundException if the member of staff was not found.
      */
     public void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException;
+
+    /**
+     * Method to add a new trigger.
+     *
+     * @param t the trigger to add.
+     * @return the trigger that was added.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
+    public Trigger addTrigger(Trigger t) throws IOException, SQLException;
+
+    /**
+     * Method to get a list of all a discounts triggers.
+     *
+     * @param id the discount id to get the triggers for.
+     * @return a List of all the triggers.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws DiscountNotFoundException if the discount was not found.
+     */
+    public List<Trigger> getDiscountTriggers(int id) throws IOException, SQLException, DiscountNotFoundException;
+
+    /**
+     * Method to remove a trigger.
+     *
+     * @param id the trigger to remove.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the trigger was not found.
+     */
+    public void removeTrigger(int id) throws IOException, SQLException, JTillException;
 }

@@ -3272,4 +3272,58 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required)");
     }
+
+    @Override
+    public Trigger addTrigger(Trigger t) throws IOException, SQLException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("ADDTRIGGER", t));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (Trigger) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public List<Trigger> getDiscountTriggers(int id) throws IOException, SQLException, DiscountNotFoundException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETDISCOUNTTRIGGERS", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (List) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public void removeTrigger(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("REMOVETRIGGER", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return;
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
 }

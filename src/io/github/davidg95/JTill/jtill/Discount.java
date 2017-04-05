@@ -7,6 +7,7 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Class which models a discount.
@@ -20,7 +21,14 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
     private double percentage;
     private BigDecimal price;
     private boolean open;
-    private int trigger;
+    private int action;
+    private int condition;
+    private int conditionValue;
+    
+    private List<Trigger> triggers;
+
+    public static final int PERCENTAGE_OFF = 0;
+    public static final int MONEY_OFF = 1;
 
     /**
      * Constructor for discount which takes in all values.
@@ -29,10 +37,12 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param name the name.
      * @param percentage the percentage as a double from 0-100.
      * @param price the price.
-     * @param trigger the product that triggers this discount.
+     * @param action the action the discount performs.
+     * @param condition the condition that was chosen.
+     * @param conditionValue the value for the condition.
      */
-    public Discount(int id, String name, double percentage, BigDecimal price, int trigger) {
-        this(name, percentage, price, trigger);
+    public Discount(int id, String name, double percentage, BigDecimal price, int action, int condition, int conditionValue) {
+        this(name, percentage, price, action, condition, conditionValue);
         this.id = id;
     }
 
@@ -42,13 +52,17 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param name the name.
      * @param percentage the percentage as a double from 0-100.
      * @param price the price.
-     * @param trigger the product that triggers this discount.
+     * @param action the action the discount performs.
+     * @param condition the condition that was chosen.
+     * @param conditionValue the value for the condition.
      */
-    public Discount(String name, double percentage, BigDecimal price, int trigger) {
+    public Discount(String name, double percentage, BigDecimal price, int action, int condition, int conditionValue) {
         this.name = name;
         this.percentage = percentage;
         this.price = price;
-        this.trigger = trigger;
+        this.action = action;
+        this.condition = condition;
+        this.conditionValue = conditionValue;
     }
 
     @Override
@@ -83,19 +97,37 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
         this.percentage = percentage;
     }
 
-    public int getTrigger() {
-        return trigger;
+    public int getAction() {
+        return action;
     }
 
-    public void setTrigger(int trigger) {
-        this.trigger = trigger;
+    public void setAction(int action) {
+        this.action = action;
+    }
+
+    public int getCondition() {
+        return condition;
+    }
+
+    public void setCondition(int condition) {
+        this.condition = condition;
+    }
+
+    public int getConditionValue() {
+        return conditionValue;
+    }
+
+    public void setConditionValue(int conditionValue) {
+        this.conditionValue = conditionValue;
     }
 
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.percentage
                 + "," + this.price.doubleValue()
-                + "," + this.trigger;
+                + "," + this.action
+                + "," + this.condition
+                + "," + this.conditionValue;
     }
 
     public String getSQLUpdateString() {
@@ -103,7 +135,9 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
                 + " SET NAME='" + this.getName()
                 + "', PERCENTAGE=" + this.getPercentage()
                 + ", PRICE=" + this.price.doubleValue()
-                + ", TRIGGER=" + this.trigger
+                + ", ACTION=" + this.action
+                + ", CONDITION=" + this.condition
+                + ", CONDITIONVALUE=" + this.conditionValue
                 + " WHERE DISCOUNTS.ID=" + this.getId();
     }
 
@@ -130,6 +164,14 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
     @Override
     public void setOpen(boolean open) {
         this.open = open;
+    }
+
+    public List<Trigger> getTriggers() {
+        return triggers;
+    }
+
+    public void setTriggers(List<Trigger> triggers) {
+        this.triggers = triggers;
     }
 
     @Override

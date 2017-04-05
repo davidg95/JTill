@@ -299,7 +299,17 @@ public class DBConnect implements DataConnect {
                 + "	PLU INTEGER,\n"
                 + "	PERCENTAGE DOUBLE not null,\n"
                 + "	PRICE DOUBLE not null,\n"
-                + "     TRIGGER INTEGER not null references PRODUCTS(ID)"
+                + "     ACTION INTEGER,\n"
+                + "     CONDITION INTEGER,\n"
+                + "     CONDITIONVALUE INTEGER\n"
+                + ")";
+        String triggers = "create table \"APP\".TRIGGERS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     DISCOUNT INT not null references DISCOUNTS(ID),\n"
+                + "     PRODUCT INT not null references PRODUCTS(ID)\n"
                 + ")";
         String staff = "create table \"APP\".STAFF\n"
                 + "(\n"
@@ -460,6 +470,14 @@ public class DBConnect implements DataConnect {
             try {
                 stmt.execute(discounts);
                 LOG.log(Level.INFO, "Created discounts table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(triggers);
+                LOG.log(Level.INFO, "Create triggers table");
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -1255,7 +1273,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Staff addStaff(Staff s) throws SQLException {
-        String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD) VALUES (" + s.getSQLInsertString() + ")";
+        String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD, WAGE) VALUES (" + s.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = stL.writeLock();
@@ -1436,8 +1454,10 @@ public class DBConnect implements DataConnect {
                     String name = set.getString("NAME");
                     double percentage = set.getDouble("PERCENTAGE");
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                    int p = set.getInt("TRIGGER");
-                    Discount d = new Discount(id, name, percentage, price, p);
+                    int a = set.getInt("ACTION");
+                    int c = set.getInt("CONDITION");
+                    int cv = set.getInt("CONDITIONVALUE");
+                    Discount d = new Discount(id, name, percentage, price, a, c, cv);
 
                     discounts.add(d);
                 }
@@ -1460,8 +1480,10 @@ public class DBConnect implements DataConnect {
             String name = set.getString("NAME");
             double percentage = set.getDouble("PERCENTAGE");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            int p = set.getInt("DISCOUNTS.TRIGGER");
-            Discount d = new Discount(id, name, percentage, price, p);
+            int a = set.getInt("ACTION");
+            int c = set.getInt("CONDITION");
+            int cv = set.getInt("CONDITIONVALUE");
+            Discount d = new Discount(id, name, percentage, price, a, c, cv);
 
             discounts.add(d);
         }
@@ -1470,7 +1492,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Discount addDiscount(Discount d) throws SQLException {
-        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, TRIGGER) VALUES (" + d.getSQLInsertString() + ")";
+        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, ACTION, CONDITION, CONDITIONVALUE) VALUES (" + d.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = disL.writeLock();
@@ -2117,7 +2139,7 @@ public class DBConnect implements DataConnect {
             return sales;
         }
     }
-    
+
     private List<SaleItem> getItemsInSale(Sale sale) throws SQLException {
         String query = "SELECT * FROM APP.SALEITEMS WHERE SALEITEMS.SALE_ID = " + sale.getId();
         try (Connection con = getNewConnection()) {
@@ -4274,6 +4296,67 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public Trigger addTrigger(Trigger t) throws IOException, SQLException {
+        String query = "INSERT INTO TRIGGERS (DISCOUNT, PRODUCT) VALUES (" + t.getDiscount() + "," + t.getProduct() + ")";
+        try (Connection con = getNewConnection()) {
+            try {
+                PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    t.setId(id);
+                }
+                con.commit();
+                return t;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public List<Trigger> getDiscountTriggers(int id) throws IOException, SQLException, DiscountNotFoundException {
+        String query = "SELECT * FROM TRIGGERS WHERE DISCOUNT=" + id;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<Trigger> triggers = new ArrayList<>();
+                while (set.next()) {
+                    int tId = set.getInt("ID");
+                    int p = set.getInt("PRODUCT");
+                    triggers.add(new Trigger(tId, id, p));
+                }
+                con.commit();
+                return triggers;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public void removeTrigger(int id) throws IOException, SQLException, JTillException {
+        String query = "DELETE FROM TRIGGERS WHERE ID=" + id;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeQuery(query);
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
