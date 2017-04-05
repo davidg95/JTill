@@ -309,7 +309,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
                 + " SET PRODUCTS.PLU=" + this.getPlu()
-                + " SET PRODUCTS.ORDER_CODE=" + this.getOrder_code()
+                + ", PRODUCTS.ORDER_CODE=" + this.getOrder_code()
                 + ", PRODUCTS.NAME='" + this.getLongName()
                 + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
                 + ", PRODUCTS.PRICE=" + this.getPrice()
