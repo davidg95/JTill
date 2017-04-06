@@ -4486,7 +4486,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException {
-        String query = "UPDATE BUCKETS SET DISCOUNT=" + b.getDiscount() + ", TRIGGERSREQUIRED=" + b.getRequiredTriggers();
+        String query = "UPDATE BUCKETS SET TRIGGERSREQUIRED=" + b.getRequiredTriggers();
         try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
