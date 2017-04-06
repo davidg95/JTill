@@ -1239,15 +1239,15 @@ public interface DataConnect {
     public Trigger addTrigger(Trigger t) throws IOException, SQLException;
 
     /**
-     * Method to get a list of all a discounts triggers.
+     * Method to get a list of all a discounts buckets.
      *
-     * @param id the discount id to get the triggers for.
-     * @return a List of all the triggers.
+     * @param id the discount id to get the buckets for.
+     * @return a List of all the buckets.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      * @throws DiscountNotFoundException if the discount was not found.
      */
-    public List<Trigger> getDiscountTriggers(int id) throws IOException, SQLException, DiscountNotFoundException;
+    public List<DiscountBucket> getDiscountBuckets(int id) throws IOException, SQLException, DiscountNotFoundException;
 
     /**
      * Method to remove a trigger.
@@ -1258,4 +1258,57 @@ public interface DataConnect {
      * @throws JTillException if the trigger was not found.
      */
     public void removeTrigger(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to update a trigger.
+     *
+     * @param t the trigger.
+     * @return thr trigger.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the trigger was not found.
+     */
+    public Trigger updateTrigger(Trigger t) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to add a new DiscountBucket.
+     *
+     * @param b the bucket to add.
+     * @return the discount bucket.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
+    public DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException;
+
+    /**
+     * Method to remove a discount bucket.
+     *
+     * @param id the bucket to remove.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the bucket was not found.
+     */
+    public void removeBucket(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to update a discount bucket.
+     *
+     * @param b the bucket to updated.
+     * @return the bucket.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the bucket was not found.
+     */
+    public DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to get all the triggers for a bucket.
+     *
+     * @param id the bucket to get.
+     * @return a list of all the triggers.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if the bucket was not found.
+     */
+    public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException;
 }

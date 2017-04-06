@@ -28,7 +28,7 @@ import java.util.logging.Logger;
  */
 public class ServerConnection implements DataConnect {
 
-    private static final Logger log = Logger.getGlobal();
+    private static final Logger LOG = Logger.getGlobal();
 
     private Socket socket;
     private ObjectInputStream obIn;
@@ -293,7 +293,7 @@ public class ServerConnection implements DataConnect {
         try {
             obOut.writeObject(ConnectionData.create("DISCONNECTTILL", t));
         } catch (IOException ex) {
-            log.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -309,7 +309,7 @@ public class ServerConnection implements DataConnect {
                 return (List) data.getData();
             }
         } catch (ClassNotFoundException ex) {
-            log.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
         throw new IOException("Class error (Update may be required)");
     }
@@ -345,7 +345,7 @@ public class ServerConnection implements DataConnect {
                 throw new IOException(data.getData().toString());
             }
         } catch (ClassNotFoundException | InterruptedException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection while trying to set a setting", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection while trying to set a setting", ex);
         } finally {
             sem.release();
         }
@@ -364,7 +364,7 @@ public class ServerConnection implements DataConnect {
                 throw new IOException(data.getData().toString());
             }
         } catch (ClassNotFoundException | InterruptedException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection while trying to get a setting", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection while trying to get a setting", ex);
         } finally {
             sem.release();
         }
@@ -404,7 +404,7 @@ public class ServerConnection implements DataConnect {
                 throw (SQLException) data.getData();
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection while trying to add a product", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection while trying to add a product", ex);
         }
         return null;
     }
@@ -435,7 +435,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection while trying to remove a product", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection while trying to remove a product", ex);
         } finally {
             sem.release();
         }
@@ -450,7 +450,7 @@ public class ServerConnection implements DataConnect {
      * Method to purchase a product on the server and reduce is stock level by
      * one.
      *
-     * @param p the the product to purchase.
+     * @param id the product to purchase.
      * @param amount the amount of the product to purchase.
      * @return the new stock level;
      * @throws IOException if there was an error connecting.
@@ -481,7 +481,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection while trying to purchase a product", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection while trying to purchase a product", ex);
         } finally {
             sem.release();
         }
@@ -517,7 +517,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in server connection while trying to get a product", ex);
+            LOG.log(Level.SEVERE, "Error in server connection while trying to get a product", ex);
         } finally {
             sem.release();
         }
@@ -553,7 +553,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection while trying to get a product by barcode", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection while trying to get a product by barcode", ex);
         } finally {
             sem.release();
         }
@@ -580,7 +580,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -604,7 +604,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -630,7 +630,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -665,7 +665,7 @@ public class ServerConnection implements DataConnect {
 
             return (List<Product>) o;
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return new ArrayList<>();
     }
@@ -688,7 +688,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -719,7 +719,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -752,7 +752,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -792,7 +792,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -819,7 +819,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -854,7 +854,7 @@ public class ServerConnection implements DataConnect {
 
             return (List<Customer>) o;
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return new ArrayList<>();
     }
@@ -889,7 +889,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -922,7 +922,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -953,7 +953,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -981,7 +981,7 @@ public class ServerConnection implements DataConnect {
                 throw (SQLException) o;
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return null;
     }
@@ -1006,7 +1006,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1033,7 +1033,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1058,7 +1058,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
         return null;
     }
@@ -1088,7 +1088,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1121,7 +1121,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1161,7 +1161,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1193,7 +1193,7 @@ public class ServerConnection implements DataConnect {
 
             return (List<Staff>) o;
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1222,7 +1222,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1247,7 +1247,7 @@ public class ServerConnection implements DataConnect {
                 return Integer.parseInt(input);
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1284,7 +1284,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1320,7 +1320,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1351,7 +1351,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1381,7 +1381,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1405,7 +1405,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1433,7 +1433,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1464,7 +1464,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1490,7 +1490,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1519,7 +1519,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1547,7 +1547,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1571,7 +1571,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1599,7 +1599,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1630,7 +1630,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1657,7 +1657,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1684,7 +1684,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1708,7 +1708,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1739,7 +1739,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1766,7 +1766,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1794,7 +1794,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1821,7 +1821,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1853,7 +1853,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1894,7 +1894,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1919,7 +1919,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1944,7 +1944,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1968,7 +1968,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -1994,7 +1994,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2021,7 +2021,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2048,7 +2048,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2075,7 +2075,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2100,7 +2100,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2125,7 +2125,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2152,7 +2152,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2187,7 +2187,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2213,7 +2213,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2244,7 +2244,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2271,7 +2271,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2296,7 +2296,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2324,7 +2324,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2352,7 +2352,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2378,7 +2378,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2399,7 +2399,7 @@ public class ServerConnection implements DataConnect {
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2418,7 +2418,7 @@ public class ServerConnection implements DataConnect {
                 return (Settings) data.getData();
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2448,7 +2448,7 @@ public class ServerConnection implements DataConnect {
                 return (WasteReport) data.getData();
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2471,7 +2471,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2496,7 +2496,7 @@ public class ServerConnection implements DataConnect {
                 return wr;
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2520,7 +2520,7 @@ public class ServerConnection implements DataConnect {
                 return wrs;
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         } finally {
             sem.release();
         }
@@ -2571,7 +2571,7 @@ public class ServerConnection implements DataConnect {
                 return (WasteItem) data.getData();
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2594,7 +2594,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2619,7 +2619,7 @@ public class ServerConnection implements DataConnect {
                 return wi;
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2643,7 +2643,7 @@ public class ServerConnection implements DataConnect {
                 return wis;
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         } finally {
             sem.release();
         }
@@ -2694,7 +2694,7 @@ public class ServerConnection implements DataConnect {
                 return (WasteReason) data.getData();
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2717,7 +2717,7 @@ public class ServerConnection implements DataConnect {
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2742,7 +2742,7 @@ public class ServerConnection implements DataConnect {
                 return wr;
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, "Error in ServerConnection", ex);
+            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
             sem.release();
         }
@@ -2766,7 +2766,7 @@ public class ServerConnection implements DataConnect {
                 return wrs;
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
-            log.log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         } finally {
             sem.release();
         }
@@ -3098,7 +3098,7 @@ public class ServerConnection implements DataConnect {
             obOut.writeObject(ConnectionData.create("GETTOTALSOLDITEM", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
-                if(data.getData() instanceof ProductNotFoundException){
+                if (data.getData() instanceof ProductNotFoundException) {
                     throw (ProductNotFoundException) data.getData();
                 }
                 throw new IOException(data.getData().toString());
@@ -3313,10 +3313,10 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public List<Trigger> getDiscountTriggers(int id) throws IOException, SQLException, DiscountNotFoundException {
+    public List<DiscountBucket> getDiscountBuckets(int id) throws IOException, SQLException, DiscountNotFoundException {
         try {
             sem.acquire();
-            obOut.writeObject(ConnectionData.create("GETDISCOUNTTRIGGERS", id));
+            obOut.writeObject(ConnectionData.create("GETDISCOUNTBUCKETS", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
@@ -3358,6 +3358,96 @@ public class ServerConnection implements DataConnect {
                 throw new IOException(data.getData().toString());
             }
             return (List) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("ADDBUCKET"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (DiscountBucket) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public void removeBucket(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("REMOVEBUCKET"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return;
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETBUCKETTRIGGERES", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (List) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public Trigger updateTrigger(Trigger t) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("UPDATETRIGGER", t));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (Trigger) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("UPDATEBUCKET"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (DiscountBucket) data.getData();
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

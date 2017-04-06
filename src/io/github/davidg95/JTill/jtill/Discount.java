@@ -23,11 +23,11 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
     private boolean open;
     private int action;
     private int condition;
-    private int conditionValue;
+    private int currentHits;
     private long start;
     private long end;
 
-    private List<Trigger> triggers;
+    private List<DiscountBucket> buckets;
 
     public static final int PERCENTAGE_OFF = 0;
     public static final int MONEY_OFF = 1;
@@ -41,12 +41,11 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param price the price.
      * @param action the action the discount performs.
      * @param condition the condition that was chosen.
-     * @param conditionValue the value for the condition.
      * @param start the start date of the promotion.
      * @param end the end date of the promotion.
      */
-    public Discount(int id, String name, double percentage, BigDecimal price, int action, int condition, int conditionValue, long start, long end) {
-        this(name, percentage, price, action, condition, conditionValue, start, end);
+    public Discount(int id, String name, double percentage, BigDecimal price, int action, int condition, long start, long end) {
+        this(name, percentage, price, action, condition, start, end);
         this.id = id;
     }
 
@@ -58,15 +57,15 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
      * @param price the price.
      * @param action the action the discount performs.
      * @param condition the condition that was chosen.
-     * @param conditionValue the value for the condition.
+     * @param start the start date of the promotion.
+     * @param end the end date of the promotion.
      */
-    public Discount(String name, double percentage, BigDecimal price, int action, int condition, int conditionValue, long start, long end) {
+    public Discount(String name, double percentage, BigDecimal price, int action, int condition, long start, long end) {
         this.name = name;
         this.percentage = percentage;
         this.price = price;
         this.action = action;
         this.condition = condition;
-        this.conditionValue = conditionValue;
         this.start = start;
         this.end = end;
     }
@@ -119,12 +118,20 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
         this.condition = condition;
     }
 
-    public int getConditionValue() {
-        return conditionValue;
+    public void addHit() {
+        currentHits++;
     }
 
-    public void setConditionValue(int conditionValue) {
-        this.conditionValue = conditionValue;
+    public void reset() {
+        currentHits = 0;
+    }
+
+    public int getCurrentHits() {
+        return currentHits;
+    }
+
+    public void setCurrentHits(int currentHits) {
+        this.currentHits = currentHits;
     }
 
     public String getSQLInsertString() {
@@ -133,7 +140,6 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
                 + "," + this.price.doubleValue()
                 + "," + this.action
                 + "," + this.condition
-                + "," + this.conditionValue
                 + "," + this.start
                 + "," + this.end;
     }
@@ -145,7 +151,6 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
                 + ", PRICE=" + this.price.doubleValue()
                 + ", ACTION=" + this.action
                 + ", CONDITION=" + this.condition
-                + ", CONDITIONVALUE=" + this.conditionValue
                 + ", STARTT=" + this.start
                 + ", ENDT=" + this.end
                 + " WHERE DISCOUNTS.ID=" + this.getId();
@@ -171,12 +176,12 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
         this.open = open;
     }
 
-    public List<Trigger> getTriggers() {
-        return triggers;
+    public List<DiscountBucket> getBuckets() {
+        return buckets;
     }
 
-    public void setTriggers(List<Trigger> triggers) {
-        this.triggers = triggers;
+    public void setBuckets(List<DiscountBucket> buckets) {
+        this.buckets = buckets;
     }
 
     public long getStart() {

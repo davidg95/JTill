@@ -301,17 +301,25 @@ public class DBConnect implements DataConnect {
                 + "	PRICE DOUBLE not null,\n"
                 + "     ACTION INTEGER,\n"
                 + "     CONDITION INTEGER,\n"
-                + "     CONDITIONVALUE INTEGER,\n"
                 + "     STARTT BIGINT,\n"
                 + "     ENDT BIGINT\n"
+                + ")";
+        String buckets = "create table \"APP\".BUCKETS\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     DISCOUNT INT not null references DISCOUNTS(ID),\n"
+                + "     TRIGGERSREQUIRED INT\n"
                 + ")";
         String triggers = "create table \"APP\".TRIGGERS\n"
                 + "(\n"
                 + "     ID INT not null primary key\n"
                 + "         GENERATED ALWAYS AS IDENTITY\n"
                 + "         (START WITH 1, INCREMENT BY 1),\n"
-                + "     DISCOUNT INT not null references DISCOUNTS(ID),\n"
-                + "     PRODUCT INT not null references PRODUCTS(ID)\n"
+                + "     BUCKET INT not null references BUCKETS(ID),\n"
+                + "     PRODUCT INT not null references PRODUCTS(ID),\n"
+                + "     QUANTITYREQUIRED INT\n"
                 + ")";
         String staff = "create table \"APP\".STAFF\n"
                 + "(\n"
@@ -472,6 +480,14 @@ public class DBConnect implements DataConnect {
             try {
                 stmt.execute(discounts);
                 LOG.log(Level.INFO, "Created discounts table");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
+            try {
+                stmt.execute(buckets);
+                LOG.log(Level.INFO, "Created buckets table");
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -1458,10 +1474,9 @@ public class DBConnect implements DataConnect {
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                     int a = set.getInt("ACTION");
                     int c = set.getInt("CONDITION");
-                    int cv = set.getInt("CONDITIONVALUE");
                     long start = set.getLong("STARTT");
                     long end = set.getLong("ENDT");
-                    Discount d = new Discount(id, name, percentage, price, a, c, cv, start, end);
+                    Discount d = new Discount(id, name, percentage, price, a, c, start, end);
 
                     discounts.add(d);
                 }
@@ -1486,10 +1501,9 @@ public class DBConnect implements DataConnect {
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
             int a = set.getInt("ACTION");
             int c = set.getInt("CONDITION");
-            int cv = set.getInt("CONDITIONVALUE");
             long start = set.getLong("STARTT");
             long end = set.getLong("ENDT");
-            Discount d = new Discount(id, name, percentage, price, a, c, cv, start, end);
+            Discount d = new Discount(id, name, percentage, price, a, c, start, end);
 
             discounts.add(d);
         }
@@ -1498,7 +1512,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Discount addDiscount(Discount d) throws SQLException {
-        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, ACTION, CONDITION, CONDITIONVALUE, START, END) VALUES (" + d.getSQLInsertString() + ")";
+        String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, ACTION, CONDITION, STARTT, ENDT) VALUES (" + d.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             long stamp = disL.writeLock();
@@ -4300,7 +4314,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Trigger addTrigger(Trigger t) throws IOException, SQLException {
-        String query = "INSERT INTO TRIGGERS (DISCOUNT, PRODUCT) VALUES (" + t.getDiscount() + "," + t.getProduct() + ")";
+        String query = "INSERT INTO TRIGGERS (BUCKET, PRODUCT, QUANTITYREQUIRED) VALUES (" + t.getBucket() + "," + t.getProduct() + "," + t.getQuantityRequired() + ")";
         try (Connection con = getNewConnection()) {
             try {
                 PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -4321,20 +4335,20 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public List<Trigger> getDiscountTriggers(int id) throws IOException, SQLException, DiscountNotFoundException {
-        String query = "SELECT * FROM TRIGGERS WHERE DISCOUNT=" + id;
+    public List<DiscountBucket> getDiscountBuckets(int id) throws IOException, SQLException, DiscountNotFoundException {
+        String query = "SELECT * FROM BUCKETS WHERE DISCOUNT=" + id;
         try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<Trigger> triggers = new ArrayList<>();
+                List<DiscountBucket> buckets = new ArrayList<>();
                 while (set.next()) {
-                    int tId = set.getInt("ID");
-                    int p = set.getInt("PRODUCT");
-                    triggers.add(new Trigger(tId, id, p));
+                    int bId = set.getInt("ID");
+                    int triggers = set.getInt("TRIGGERSREQUIRED");
+                    buckets.add(new DiscountBucket(bId, id, triggers));
                 }
                 con.commit();
-                return triggers;
+                return buckets;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
@@ -4349,7 +4363,7 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
-                stmt.executeQuery(query);
+                stmt.executeUpdate(query);
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -4375,16 +4389,110 @@ public class DBConnect implements DataConnect {
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                     int a = set.getInt("ACTION");
                     int c = set.getInt("CONDITION");
-                    int cv = set.getInt("CONDITIONVALUE");
                     Date start = new Date(set.getLong("STARTT"));
                     Date end = new Date(set.getLong("ENDT"));
-                    Discount d = new Discount(id, name, percentage, price, a, c, cv, start.getTime(), end.getTime());
+                    Discount d = new Discount(id, name, percentage, price, a, c, start.getTime(), end.getTime());
                     if (start.before(date) && end.after(date)) {
                         discounts.add(d);
                     }
                 }
                 con.commit();
                 return discounts;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException {
+        String query = "INSERT INTO BUCKETS (DISCOUNT, TRIGGERSREQUIRED) VALUES(" + b.getDiscount() + "," + b.getRequiredTriggers() + ")";
+        try (Connection con = getNewConnection()) {
+            try {
+                PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    b.setId(set.getInt(1));
+                }
+                con.commit();
+                return b;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public void removeBucket(int id) throws IOException, SQLException, JTillException {
+        String query = "DELETE FROM BUCKETS WHERE ID=" + id;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException {
+        String query = "SELECT * FROM TRIGGERS WHERE BUCKET=" + id;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<Trigger> triggers = new ArrayList<>();
+                while (set.next()) {
+                    int tId = set.getInt("ID");
+                    int product = set.getInt("PRODUCT");
+                    int req = set.getInt("QUANTITYREQUIRED");
+                    triggers.add(new Trigger(tId, id, product, req));
+                }
+                con.commit();
+                return triggers;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public Trigger updateTrigger(Trigger t) throws IOException, SQLException, JTillException {
+        String query = "UPDATE TRIGGERS SET BUCKET=" + t.getBucket() + ", PRODUCT=" + t.getProduct() + ", QUANTITYREQUIRED=" + t.getQuantityRequired();
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+                return t;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException {
+        String query = "UPDATE BUCKETS SET DISCOUNT=" + b.getDiscount() + ", TRIGGERSREQUIRED=" + b.getRequiredTriggers();
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                stmt.executeUpdate(query);
+                con.commit();
+                return b;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);

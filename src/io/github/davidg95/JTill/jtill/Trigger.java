@@ -14,17 +14,20 @@ import java.io.Serializable;
 public class Trigger implements Serializable {
 
     private int id;
-    private int discount;
+    private int bucket;
     private int product;
+    private int quantityRequired;
+    private int currentQuantity;
 
-    public Trigger(int id, int discount, int product) {
-        this(discount, product);
+    public Trigger(int id, int bucket, int product, int quantityRequired) {
+        this(bucket, product,quantityRequired);
         this.id = id;
     }
 
-    public Trigger(int discount, int product) {
-        this.discount = discount;
+    public Trigger(int bucket, int product, int quantityRequired) {
+        this.bucket = bucket;
         this.product = product;
+        this.quantityRequired = quantityRequired;
     }
 
     public int getId() {
@@ -35,12 +38,12 @@ public class Trigger implements Serializable {
         this.id = id;
     }
 
-    public int getDiscount() {
-        return discount;
+    public int getBucket() {
+        return bucket;
     }
 
-    public void setDiscount(int discount) {
-        this.discount = discount;
+    public void setBucket(int bucket) {
+        this.bucket = bucket;
     }
 
     public int getProduct() {
@@ -49,6 +52,30 @@ public class Trigger implements Serializable {
 
     public void setProduct(int product) {
         this.product = product;
+    }
+
+    public int getQuantityRequired() {
+        return quantityRequired;
+    }
+
+    public void setQuantityRequired(int quantityRequired) {
+        this.quantityRequired = quantityRequired;
+    }
+    
+    public void addHit(){
+        currentQuantity++;
+    }
+    
+    public void resetQuantity(){
+        currentQuantity = 0;
+    }
+
+    public int getCurrentQuantity() {
+        return currentQuantity;
+    }
+
+    public void setCurrentQuantity(int currentQuantity) {
+        this.currentQuantity = currentQuantity;
     }
 
     @Override
@@ -78,6 +105,6 @@ public class Trigger implements Serializable {
 
     @Override
     public String toString() {
-        return id + " - " + discount;
+        return id + " - " + bucket;
     }
 }
