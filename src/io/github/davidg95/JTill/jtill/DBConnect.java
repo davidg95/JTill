@@ -60,20 +60,7 @@ public class DBConnect implements DataConnect {
     private boolean connected; //Connection flag
 
     //Concurrent locks
-    private final StampedLock prL;
-    private final StampedLock cusL;
-    private final StampedLock stL;
-    private final StampedLock disL;
-    private final StampedLock taxL;
-    private final StampedLock catL;
-    private final StampedLock salL;
     private final StampedLock susL;
-    private final StampedLock scrL;
-    private final StampedLock tilL;
-    private final StampedLock pluL;
-    private final StampedLock wasL;
-    private final StampedLock wasItL;
-    private final StampedLock wasReL;
     private final StampedLock supL;
 
     private GUIInterface g; //A reference to the GUI.
@@ -97,20 +84,7 @@ public class DBConnect implements DataConnect {
      * Constructor which initialises the concurrent locks.
      */
     public DBConnect() {
-        prL = new StampedLock();
-        cusL = new StampedLock();
-        stL = new StampedLock();
-        disL = new StampedLock();
-        taxL = new StampedLock();
-        catL = new StampedLock();
-        salL = new StampedLock();
         susL = new StampedLock();
-        scrL = new StampedLock();
-        tilL = new StampedLock();
-        pluL = new StampedLock();
-        wasL = new StampedLock();
-        wasItL = new StampedLock();
-        wasReL = new StampedLock();
         supL = new StampedLock();
         suspendedSales = new HashMap<>();
         systemSettings = Settings.getInstance();
@@ -644,7 +618,6 @@ public class DBConnect implements DataConnect {
         List<Product> products;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            long stamp = prL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 products = new ArrayList<>();
@@ -674,8 +647,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockRead(stamp);
             }
         }
         return products;
@@ -719,7 +690,6 @@ public class DBConnect implements DataConnect {
     public Product addProduct(Product p) throws SQLException {
         String query = "INSERT INTO PRODUCTS (PLU, ORDER_CODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, DEPARTMENT_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
-            long stamp = prL.writeLock();
             try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -732,8 +702,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockWrite(stamp);
             }
             LOG.log(Level.INFO, "New Product {0} added", p.getId());
         }
@@ -746,7 +714,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = prL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 if (value == 0) {
@@ -757,8 +724,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockWrite(stamp);
             }
             LOG.log(Level.INFO, "Product {0} updated", p.getId());
         }
@@ -778,7 +743,6 @@ public class DBConnect implements DataConnect {
         ResultSet res;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            long stamp = prL.readLock();
             try {
                 res = stmt.executeQuery(query);
                 if (res.next()) {
@@ -793,8 +757,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockRead(stamp);
             }
         }
     }
@@ -825,7 +787,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = wasItL.writeLock();
             try {
                 stmt.executeUpdate(iQuery);
                 con.commit();
@@ -833,10 +794,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasItL.unlockWrite(stamp);
             }
-            stamp = prL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 if (value == 0) {
@@ -847,8 +805,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockWrite(stamp);
             }
         }
         LOG.log(Level.INFO, "Product {0} removed", id);
@@ -869,7 +825,6 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.ID=" + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            long stamp = prL.writeLock();
             try {
                 LOG.log(Level.INFO, "Purchase product {0}", id);
                 ResultSet res = stmt.executeQuery(query);
@@ -892,8 +847,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockWrite(stamp);
             }
         }
         throw new ProductNotFoundException(id + " could not be found");
@@ -913,7 +866,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
-            long stamp = prL.readLock();
             try {
                 LOG.log(Level.INFO, "Get product {0}", code);
                 ResultSet res = stmt.executeQuery(query);
@@ -926,8 +878,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockRead(stamp);
             }
             return products.get(0);
         }
@@ -947,7 +897,6 @@ public class DBConnect implements DataConnect {
         List<Product> products = new ArrayList<>();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            long stamp = prL.readLock();
             try {
                 LOG.log(Level.INFO, "Get Product {0}", barcode);
                 ResultSet res = stmt.executeQuery(query);
@@ -960,8 +909,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockRead(stamp);
             }
         }
         return products.get(0);
@@ -973,8 +920,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
-            long pStamp = prL.readLock();
-            long dStamp = disL.readLock();
             try {
                 LOG.log(Level.INFO, "Get discounts for product {0}", p.getId());
                 ResultSet res = stmt.executeQuery(query);
@@ -984,9 +929,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockRead(pStamp);
-                disL.unlockRead(dStamp);
             }
             return discounts;
         }
@@ -1009,7 +951,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
-            long stamp = cusL.readLock();
             try {
                 LOG.log(Level.INFO, "Get all customers");
                 ResultSet set = stmt.executeQuery(query);
@@ -1037,8 +978,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                cusL.unlockRead(stamp);
             }
             return customers;
         }
@@ -1082,7 +1021,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = cusL.writeLock();
             try {
                 LOG.log(Level.INFO, "Add customer {0}", c.getId());
                 stmt.executeUpdate();
@@ -1096,8 +1034,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                cusL.unlockWrite(stamp);
             }
             return c;
         }
@@ -1109,7 +1045,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = cusL.writeLock();
             try {
                 LOG.log(Level.INFO, "Update customer {0}", c.getId());
                 value = stmt.executeUpdate(query);
@@ -1121,8 +1056,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                cusL.unlockWrite(stamp);
             }
             return c;
         }
@@ -1139,7 +1072,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = cusL.writeLock();
             try {
                 LOG.log(Level.INFO, "Remove customer {0}", id);
                 value = stmt.executeUpdate(query);
@@ -1151,8 +1083,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                cusL.unlockWrite(stamp);
             }
         }
     }
@@ -1163,7 +1093,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
-            long stamp = cusL.readLock();
             try {
                 LOG.log(Level.INFO, "Get customer {0}", id);
                 ResultSet res = stmt.executeQuery(query);
@@ -1173,8 +1102,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                cusL.unlockRead(stamp);
             }
             if (customers.isEmpty()) {
                 throw new CustomerNotFoundException("Customer " + id + " could not be found");
@@ -1189,7 +1116,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
-            long stamp = cusL.readLock();
             try {
                 LOG.log(Level.INFO, "Get customer {0}", name);
                 ResultSet res = stmt.executeQuery(query);
@@ -1199,8 +1125,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                cusL.unlockRead(stamp);
             }
             if (customers.isEmpty()) {
                 throw new CustomerNotFoundException("Customer " + name + " could not be found");
@@ -1215,7 +1139,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
-            long stamp = cusL.readLock();
             try {
                 LOG.log(Level.INFO, "Search customers for {0}", terms);
                 ResultSet res = stmt.executeQuery(query);
@@ -1225,8 +1148,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                cusL.unlockRead(stamp);
             }
 
             List<Customer> newList = new ArrayList<>();
@@ -1246,7 +1167,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
-            long stamp = stL.readLock();
             try {
                 LOG.log(Level.INFO, "Get all staff");
                 ResultSet set = stmt.executeQuery(query);
@@ -1266,8 +1186,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockRead(stamp);
             }
 
             return staff;
@@ -1295,7 +1213,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD, WAGE) VALUES (" + s.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = stL.writeLock();
             try {
                 LOG.log(Level.INFO, "Add staff {0}", s.getId());
                 stmt.executeUpdate();
@@ -1309,8 +1226,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockWrite(stamp);
             }
             return s;
         }
@@ -1322,7 +1237,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = stL.writeLock();
             try {
                 LOG.log(Level.INFO, "Update staff {0}", s.getId());
                 value = stmt.executeUpdate(query);
@@ -1334,8 +1248,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockWrite(stamp);
             }
             return s;
         }
@@ -1352,7 +1264,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = stL.writeLock();
             try {
                 LOG.log(Level.INFO, "Remove staff {0}", id);
                 value = stmt.executeUpdate(query);
@@ -1364,8 +1275,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockWrite(stamp);
             }
         }
     }
@@ -1376,7 +1285,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
-            long stamp = stL.readLock();
             try {
                 LOG.log(Level.INFO, "Get staff {0}", id);
                 ResultSet set = stmt.executeQuery(query);
@@ -1386,8 +1294,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockRead(stamp);
             }
 
             if (staff.isEmpty()) {
@@ -1404,7 +1310,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
-            long stamp = stL.readLock();
             try {
                 LOG.log(Level.INFO, "Login Staff {0}", username);
                 ResultSet res = stmt.executeQuery(query);
@@ -1414,8 +1319,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockRead(stamp);
             }
 
             if (staff.isEmpty()) {
@@ -1438,7 +1341,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
-            long stamp = stL.readLock();
             try {
                 LOG.log(Level.INFO, "Get staff count");
                 ResultSet res = stmt.executeQuery(query);
@@ -1448,8 +1350,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockRead(stamp);
             }
 
             return staff.size();
@@ -1463,7 +1363,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
-            long stamp = disL.readLock();
             try {
                 LOG.log(Level.INFO, "Get all discounts");
                 ResultSet set = stmt.executeQuery(query);
@@ -1486,8 +1385,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                disL.unlockRead(stamp);
             }
             return discounts;
         }
@@ -1516,7 +1413,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO DISCOUNTS (NAME, PERCENTAGE, PRICE, ACTION, CONDITION, STARTT, ENDT) VALUES (" + d.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = disL.writeLock();
             try {
                 LOG.log(Level.INFO, "Add discount {0}", d.getId());
                 stmt.executeUpdate();
@@ -1530,8 +1426,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                disL.unlockWrite(stamp);
             }
             return d;
         }
@@ -1543,7 +1437,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = disL.writeLock();
             try {
                 LOG.log(Level.INFO, "Update discount {0}", d.getId());
                 value = stmt.executeUpdate(query);
@@ -1555,8 +1448,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                disL.unlockWrite(stamp);
             }
             return d;
         }
@@ -1573,7 +1464,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = disL.writeLock();
             try {
                 LOG.log(Level.INFO, "Remove discount {0}", id);
                 value = stmt.executeUpdate(query);
@@ -1585,8 +1475,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                disL.unlockWrite(stamp);
             }
         }
     }
@@ -1597,7 +1485,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
-            long stamp = disL.readLock();
             try {
                 LOG.log(Level.INFO, "Get discount {0}", id);
                 ResultSet set = stmt.executeQuery(query);
@@ -1607,8 +1494,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                disL.unlockRead(stamp);
             }
 
             if (discounts.isEmpty()) {
@@ -1626,7 +1511,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Tax> tax = new ArrayList<>();
-            long stamp = taxL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tax = new ArrayList<>();
@@ -1642,8 +1526,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                taxL.unlockRead(stamp);
             }
 
             return tax;
@@ -1668,7 +1550,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO TAX (NAME, VALUE) VALUES (" + t.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = taxL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -1681,8 +1562,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                taxL.unlockWrite(stamp);
             }
         }
         return t;
@@ -1694,7 +1573,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = taxL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -1705,8 +1583,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                taxL.unlockWrite(stamp);
             }
         }
         return t;
@@ -1732,7 +1608,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = taxL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -1743,8 +1618,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                taxL.unlockWrite(stamp);
             }
         }
     }
@@ -1755,7 +1628,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Tax> tax = new ArrayList<>();
-            long stamp = taxL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tax = getTaxFromResultSet(set);
@@ -1764,8 +1636,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                taxL.unlockRead(stamp);
             }
 
             if (tax.isEmpty()) {
@@ -1782,8 +1652,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
-            long tStamp = taxL.readLock();
-            long pStamp = prL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 products = getProductsFromResultSet(set);
@@ -1792,9 +1660,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                taxL.unlockRead(tStamp);
-                prL.unlockRead(pStamp);
             }
 
             return products;
@@ -1808,7 +1673,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Category> categorys = new ArrayList<>();
-            long stamp = catL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 categorys = new ArrayList<>();
@@ -1827,8 +1691,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                catL.unlockRead(stamp);
             }
             return categorys;
         }
@@ -1854,7 +1716,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO CATEGORYS (NAME, SELL_START, SELL_END, TIME_RESTRICT, MINIMUM_AGE) VALUES (" + c.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stmap = catL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -1867,8 +1728,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                catL.unlockWrite(stmap);
             }
         }
         return c;
@@ -1880,7 +1739,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = catL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -1891,8 +1749,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                catL.unlockWrite(stamp);
             }
         }
         return c;
@@ -1918,7 +1774,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = catL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -1929,8 +1784,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                catL.unlockWrite(stamp);
             }
         }
     }
@@ -1941,7 +1794,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Category> categorys = new ArrayList<>();
-            long stamp = catL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 categorys = getCategorysFromResultSet(set);
@@ -1950,8 +1802,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                catL.unlockRead(stamp);
             }
 
             if (categorys.isEmpty()) {
@@ -1968,7 +1818,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
-            long stamp = prL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 products = getProductsFromResultSet(set);
@@ -1977,8 +1826,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                prL.unlockRead(stamp);
             }
 
             return products;
@@ -2007,7 +1854,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = salL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -2033,8 +1879,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                salL.unlockWrite(stamp);
             }
         }
         for (SaleItem p : s.getSaleItems()) {
@@ -2066,9 +1910,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
-            long sStamp = salL.readLock();
-            long cStamp = cusL.readLock();
-            long stStamp = stL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 sales = new ArrayList<>();
@@ -2089,10 +1930,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                salL.unlockRead(sStamp);
-                cusL.unlockRead(cStamp);
-                stL.unlockRead(stStamp);
             }
             return sales;
         }
@@ -2104,7 +1941,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             BigDecimal result = new BigDecimal("0");
-            long stamp = salL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 while (set.next()) {
@@ -2132,8 +1968,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                salL.unlockRead(stamp);
             }
             return result;
         }
@@ -2145,7 +1979,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
-            long stamp = salL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 sales = getSalesFromResultSet(set);
@@ -2154,8 +1987,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                salL.unlockRead(stamp);
             }
             return sales;
         }
@@ -2198,7 +2029,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new ArrayList<>();
-            long stamp = salL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 sales = getSalesFromResultSet(set);
@@ -2207,8 +2037,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                salL.unlockRead(stamp);
             }
 
             if (sales.isEmpty()) {
@@ -2224,7 +2052,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = salL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -2235,8 +2062,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                salL.unlockWrite(stamp);
             }
         }
         return s;
@@ -2292,7 +2117,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
-            long stamp = stL.readLock();
             try {
                 ResultSet res = stmt.executeQuery(query);
                 staff = getStaffFromResultSet(res);
@@ -2301,8 +2125,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockRead(stamp);
             }
 
             if (staff.isEmpty()) {
@@ -2395,7 +2217,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR) VALUES (" + s.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = scrL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -2408,8 +2229,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockWrite(stamp);
             }
         }
         return s;
@@ -2420,7 +2239,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = scrL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -2433,8 +2251,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockWrite(stamp);
             }
         }
         return b;
@@ -2447,7 +2263,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = scrL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 stmt.executeUpdate(buttonsQuery);
@@ -2459,8 +2274,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockWrite(stamp);
             }
         }
     }
@@ -2471,7 +2284,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = scrL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -2482,8 +2294,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockWrite(stamp);
             }
         }
     }
@@ -2494,7 +2304,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Screen> screens = new ArrayList<>();
-            long stamp = scrL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 screens = getScreensFromResultSet(set);
@@ -2503,8 +2312,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockRead(stamp);
             }
             if (screens.isEmpty()) {
                 throw new ScreenNotFoundException("Screen " + s + " could not be found");
@@ -2541,7 +2348,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<TillButton> buttons = new ArrayList<>();
-            long stamp = scrL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 buttons = getButtonsFromResultSet(set);
@@ -2550,8 +2356,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockRead(stamp);
             }
             if (buttons.isEmpty()) {
                 throw new ButtonNotFoundException("Button " + b + " could not be found");
@@ -2566,7 +2370,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = scrL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -2577,8 +2380,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockWrite(stamp);
             }
         }
         return s;
@@ -2590,7 +2391,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = scrL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -2601,8 +2401,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockWrite(stamp);
             }
         }
         return b;
@@ -2614,7 +2412,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Screen> screens = new ArrayList<>();
-            long stamp = scrL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 screens = new ArrayList<>();
@@ -2632,8 +2429,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockRead(stamp);
             }
             return screens;
         }
@@ -2645,7 +2440,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<TillButton> buttons = new ArrayList<>();
-            long stamp = scrL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 buttons = new ArrayList<>();
@@ -2674,8 +2468,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockRead(stamp);
             }
             return buttons;
         }
@@ -2687,7 +2479,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<TillButton> buttons = new ArrayList<>();
-            long stamp = scrL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 buttons = new ArrayList<>();
@@ -2712,8 +2503,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                scrL.unlockRead(stamp);
             }
             return buttons;
         }
@@ -2876,7 +2665,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO TILLS (NAME, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = tilL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -2889,8 +2677,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                tilL.unlockWrite(stamp);
             }
         }
         return t;
@@ -2902,7 +2688,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = tilL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -2913,8 +2698,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                tilL.unlockWrite(stamp);
             }
         }
     }
@@ -2925,7 +2708,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Till> tills = new ArrayList<>();
-            long stamp = tilL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tills = getTillsFromResultSet(set);
@@ -2934,8 +2716,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                tilL.unlockRead(stamp);
             }
 
             if (tills.isEmpty()) {
@@ -2951,7 +2731,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Till> tills = new ArrayList<>();
-            long stamp = tilL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tills = getTillsFromResultSet(set);
@@ -2960,8 +2739,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                tilL.unlockRead(stamp);
             }
             return tills;
         }
@@ -3009,7 +2786,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Till> tills = new ArrayList<>();
-            long stamp = tilL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tills = getTillsFromResultSet(set);
@@ -3018,8 +2794,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                tilL.unlockRead(stamp);
             }
 
             if (tills.isEmpty()) {
@@ -3055,7 +2829,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO APP.PLUS (CODE) values ('" + plu.getCode() + "')";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = pluL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -3068,8 +2841,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                pluL.unlockWrite(stamp);
             }
         }
         return plu;
@@ -3081,7 +2852,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
-            long stamp = pluL.writeLock();
             try {
                 stmt.executeUpdate(query);
                 con.commit();
@@ -3089,8 +2859,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                pluL.unlockWrite(stamp);
             }
             if (value == 0) {
                 throw new JTillException(id + " could not be found");
@@ -3109,7 +2877,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Plu> plus = new ArrayList<>();
-            long stamp = pluL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 plus = getPlusFromResultSet(set);
@@ -3118,8 +2885,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                pluL.unlockRead(stamp);
             }
 
             if (plus.isEmpty()) {
@@ -3135,7 +2900,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Plu> plus = new ArrayList<>();
-            long stamp = pluL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 plus = getPlusFromResultSet(set);
@@ -3144,8 +2908,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                pluL.unlockRead(stamp);
             }
             if (plus.isEmpty()) {
                 throw new JTillException("Plu " + code + " not found");
@@ -3161,7 +2923,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Plu> plus = new ArrayList<>();
-            long stamp = pluL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 plus = getPlusFromResultSet(set);
@@ -3170,8 +2931,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                pluL.unlockRead(stamp);
             }
 
             return plus;
@@ -3184,7 +2943,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = pluL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -3195,8 +2953,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                pluL.unlockWrite(stamp);
             }
         }
         return p;
@@ -3212,7 +2968,6 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM STAFF WHERE USERNAME='" + username.toLowerCase() + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            long stamp = stL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 boolean used = set.next();
@@ -3222,8 +2977,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                stL.unlockRead(stamp);
             }
         }
     }
@@ -3259,7 +3012,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO APP.WASTEREPORTS (VALUE, TIMESTAMP) values (" + wr.getTotalValue().doubleValue() + "," + wr.getDate().getTime() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = wasL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -3272,8 +3024,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasL.unlockWrite(stamp);
             }
         }
         for (WasteItem wi : wr.getItems()) {
@@ -3288,7 +3038,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
-            long stamp = wasL.writeLock();
             try {
                 stmt.executeUpdate(query);
                 con.commit();
@@ -3296,8 +3045,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasL.unlockWrite(stamp);
             }
             if (value == 0) {
                 throw new JTillException(id + " could not be found");
@@ -3311,7 +3058,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReport> wrs = new ArrayList<>();
-            long stamp = wasL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReportsFromResultSet(set);
@@ -3320,8 +3066,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasL.unlockRead(stamp);
             }
 
             if (wrs.isEmpty()) {
@@ -3339,7 +3083,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteItem> wis = new ArrayList<>();
-            long stamp = wasItL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wis = getWasteItemsFromResultSet(set);
@@ -3348,8 +3091,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasItL.unlockRead(stamp);
             }
             return wis;
         }
@@ -3361,7 +3102,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReport> wrs = new ArrayList<>();
-            long stamp = wasL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReportsFromResultSet(set);
@@ -3373,8 +3113,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasL.unlockRead(stamp);
             }
             return wrs;
         }
@@ -3386,7 +3124,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = wasL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -3397,8 +3134,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasL.unlockWrite(stamp);
             }
         }
         return wr;
@@ -3425,7 +3160,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO APP.WASTEITEMS (REPORT_ID, PRODUCT, QUANTITY, REASON) values (" + wr.getId() + "," + wi.getProduct().getId() + "," + wi.getQuantity() + "," + wi.getReason() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = wasItL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -3438,8 +3172,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasItL.unlockWrite(stamp);
             }
         }
         return wi;
@@ -3451,7 +3183,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
-            long stamp = wasItL.writeLock();
             try {
                 stmt.executeUpdate(query);
                 con.commit();
@@ -3459,8 +3190,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasItL.unlockWrite(stamp);
             }
             if (value == 0) {
                 throw new JTillException(id + " could not be found");
@@ -3474,7 +3203,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteItem> wis = new ArrayList<>();
-            long stamp = wasItL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wis = getWasteItemsFromResultSet(set);
@@ -3483,8 +3211,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasItL.unlockRead(stamp);
             }
 
             if (wis.isEmpty()) {
@@ -3501,7 +3227,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteItem> wis = new ArrayList<>();
-            long stamp = wasItL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wis = getWasteItemsFromResultSet(set);
@@ -3510,8 +3235,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasItL.unlockRead(stamp);
             }
 
             return wis;
@@ -3524,7 +3247,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = wasItL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -3535,8 +3257,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasItL.unlockWrite(stamp);
             }
         }
         return wi;
@@ -3557,7 +3277,6 @@ public class DBConnect implements DataConnect {
         String query = "INSERT INTO APP.WASTEREASONS (REASON) values ('" + wr.getReason() + "')";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            long stamp = wasReL.writeLock();
             try {
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
@@ -3570,8 +3289,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasReL.unlockWrite(stamp);
             }
         }
         return wr;
@@ -3583,7 +3300,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value = 0;
-            long stamp = wasReL.writeLock();
             try {
                 stmt.executeUpdate(query);
                 con.commit();
@@ -3591,8 +3307,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasReL.unlockWrite(stamp);
             }
             if (value == 0) {
                 throw new JTillException(id + " could not be found");
@@ -3606,7 +3320,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReason> wrs = new ArrayList<>();
-            long stamp = wasReL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReasonsFromResultSet(set);
@@ -3615,8 +3328,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasReL.unlockRead(stamp);
             }
 
             if (wrs.isEmpty()) {
@@ -3632,7 +3343,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<WasteReason> wrs = new ArrayList<>();
-            long stamp = wasReL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReasonsFromResultSet(set);
@@ -3641,8 +3351,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasReL.unlockRead(stamp);
             }
 
             return wrs;
@@ -3655,7 +3363,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
-            long stamp = wasReL.writeLock();
             try {
                 value = stmt.executeUpdate(query);
                 con.commit();
@@ -3666,8 +3373,6 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
-            } finally {
-                wasReL.unlockWrite(stamp);
             }
         }
         return wr;
