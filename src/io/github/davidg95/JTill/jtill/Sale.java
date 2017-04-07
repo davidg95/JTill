@@ -23,7 +23,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private BigDecimal total;
     private int customer;
     private Date date;
-    private String terminal;
+    private int terminal;
     private boolean cashed;
     private int staff;
     private boolean chargeAccount;
@@ -39,7 +39,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param terminal the name of the terminal the sale is done it.
      * @param s the staff member the sale is done by.
      */
-    public Sale(String terminal, int s) {
+    public Sale(int terminal, int s) {
         saleItems = new ArrayList<>();
         total = new BigDecimal("0.00");
         this.terminal = terminal;
@@ -60,7 +60,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, String terminal, boolean cashed, int staff, List<SaleItem> saleItems) {
+    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, List<SaleItem> saleItems) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -83,7 +83,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, String terminal, boolean cashed, int staff) {
+    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -316,11 +316,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.chargeAccount = chargeAccount;
     }
 
-    public String getTerminal() {
+    public int getTerminal() {
         return terminal;
     }
 
-    public void setTerminal(String terminal) {
+    public void setTerminal(int terminal) {
         this.terminal = terminal;
     }
 
@@ -368,16 +368,16 @@ public class Sale implements Serializable, JTillObject, Cloneable {
             return this.total
                     + ",-1"
                     + "," + this.date.getTime()
-                    + ",'" + this.terminal
-                    + "'," + this.cashed
+                    + "," + this.terminal
+                    + "," + this.cashed
                     + "," + this.staff
                     + "," + this.chargeAccount;
         } else {
             return this.total
                     + "," + this.customer
                     + "," + this.date.getTime()
-                    + ",'" + this.terminal
-                    + "'," + this.cashed
+                    + "," + this.terminal
+                    + "," + this.cashed
                     + "," + this.staff
                     + "," + this.chargeAccount;
         }
@@ -389,8 +389,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=-1"
                     + ", TIMESTAMP=" + this.date.getTime()
-                    + ", TERMINAL='" + this.terminal
-                    + "', CASHED=" + this.cashed
+                    + ", TERMINAL=" + this.terminal
+                    + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.id;
@@ -399,8 +399,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=" + this.customer
                     + ", TIMESTAMP=" + this.date.getTime()
-                    + ", TERMINAL='" + this.terminal
-                    + "', CASHED=" + this.cashed
+                    + ", TERMINAL=" + this.terminal
+                    + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
                     + ", CHARGE_ACCOUNT=" + this.chargeAccount
                     + " WHERE SALES.ID=" + this.id;

@@ -55,10 +55,11 @@ public class ServerConnection implements DataConnect {
      * @param IP the server IP address.
      * @param PORT the server port number.
      * @param site the name of the terminal.
+     * @return this connection till object.
      * @throws IOException if there was an error connecting.
      * @throws java.net.ConnectException if there was an error connecting.
      */
-    public void connect(String IP, int PORT, String site) throws IOException, ConnectException {
+    public Till connect(String IP, int PORT, String site) throws IOException, ConnectException {
         try {
             socket = new Socket();
             this.site = site;
@@ -73,13 +74,17 @@ public class ServerConnection implements DataConnect {
             g.hideModalMessage();
             if (data.getFlag().equals("DISALLOW")) {
                 g.disallow();
+                return null;
             } else {
                 g.allow();
+                isConnected = true;
+                Till t = (Till) data.getData();
+                return t;
             }
-            isConnected = true;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
+        throw new IOException("Class error (Update may be required)");
     }
 
     /**
@@ -140,9 +145,9 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public BigDecimal getTillTakings(String terminal) throws IOException, SQLException {
+    public BigDecimal getTillTakings(int terminal) throws IOException, SQLException {
         try {
-            obOut.writeObject(ConnectionData.create("TAKINGS", site));
+            obOut.writeObject(ConnectionData.create("TAKINGS", terminal));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
 
@@ -3448,6 +3453,24 @@ public class ServerConnection implements DataConnect {
                 throw new IOException(data.getData().toString());
             }
             return (DiscountBucket) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
+
+    @Override
+    public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETUNCASHEDTERMINALSALES"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (List) data.getData();
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

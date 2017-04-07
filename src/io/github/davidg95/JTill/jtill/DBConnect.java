@@ -207,9 +207,8 @@ public class DBConnect implements DataConnect {
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "     PRICE DOUBLE,\n"
                 + "     CUSTOMER int,\n"
-                + "     DISCOUNT int,\n"
                 + "     TIMESTAMP bigint,\n"
-                + "     TERMINAL VARCHAR(20),\n"
+                + "     TERMINAL int not null references TILLS(ID),\n"
                 + "     CASHED boolean not null,\n"
                 + "     STAFF int,\n"
                 + "     CHARGE_ACCOUNT boolean\n"
@@ -1839,7 +1838,7 @@ public class DBConnect implements DataConnect {
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
             int customerid = set.getInt("cId");
             Date date = new Date(set.getLong("TIMESTAMP"));
-            String terminal = set.getString("TERMINAL");
+            int terminal = set.getInt("TERMINAL");
             boolean cashed = set.getBoolean("CASHED");
             int sId = set.getInt("stId");
             Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
@@ -1918,7 +1917,7 @@ public class DBConnect implements DataConnect {
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                     int customerid = set.getInt("sCus");
                     Date date = new Date(set.getLong("TIMESTAMP"));
-                    String terminal = set.getString("TERMINAL");
+                    int terminal = set.getInt("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
                     Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
@@ -1936,8 +1935,8 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public BigDecimal getTillTakings(String t) throws SQLException {
-        String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = '" + t + "'";
+    public BigDecimal getTillTakings(int t) throws SQLException {
+        String query = "SELECT * FROM SALES WHERE SALES.CASHED = FALSE AND SALES.TERMINAL = " + t + "";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             BigDecimal result = new BigDecimal("0");
@@ -1948,7 +1947,7 @@ public class DBConnect implements DataConnect {
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
                     int customerid = set.getInt("CUSTOMER");
                     Date date = new Date(set.getLong("TIMESTAMP"));
-                    String terminal = set.getString("TERMINAL");
+                    int terminal = set.getInt("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
                     Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
@@ -4180,6 +4179,41 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
+        }
+    }
+
+    @Override
+    public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException {
+        String query = "SELECT * FROM SALES WHERE TERMINAL=" + id;// + " AND CASHED=" + false;
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(query);
+                List<Sale> sales = new ArrayList<>();
+                while (set.next()) {
+                    int sId = set.getInt("ID");
+                    double price = set.getDouble("PRICE");
+                    int cId = set.getInt("CUSTOMER");
+                    long timestamp = set.getLong("TIMESTAMP");
+                    boolean cashed = set.getBoolean("CASHED");
+                    if(cashed){
+                        continue;
+                    }
+                    int staff = set.getInt("STAFF");
+                    boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
+                    Sale s = new Sale(sId, new BigDecimal(Double.toString(price)), cId, new Date(timestamp), id, false, staff);
+                    s.setChargeAccount(chargeAccount);
+                    sales.add(s);
+                }
+                con.commit();
+                return sales;
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+            throw new JTillException("Error getting sales");
         }
     }
 }

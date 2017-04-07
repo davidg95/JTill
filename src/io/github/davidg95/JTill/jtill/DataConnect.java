@@ -65,7 +65,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
+    public BigDecimal getTillTakings(int terminal) throws IOException, SQLException;
 
     /**
      * Send an email to the report email set in the server.
@@ -1171,6 +1171,16 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      */
     public List<Till> getConnectedTills() throws IOException;
+
+    /**
+     * Method to get uncashed till sales.
+     *
+     * @param id the id of the till to get takings for.
+     * @return a List of uncashed sales.
+     * @throws IOException if there was a network error.
+     * @throws JTillException if there was another error.
+     */
+    public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException;
 
     //Waste Report
     /**
