@@ -1648,7 +1648,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Product> getProductsInTax(int id) throws SQLException {
-        String query = "SELECT * FROM PRODUCTS, TAX WHERE TAX.ID = PRODUCTS.TAX_ID AND TAX.ID = " + id;
+        String query = "SELECT * FROM PRODUCTS WHERE TAX_ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
@@ -2191,18 +2191,8 @@ public class DBConnect implements DataConnect {
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            Product p = null;
-            try {
-                p = getProduct(set.getInt("PRODUCT"));
-            } catch (ProductNotFoundException ex) {
-                LOG.log(Level.WARNING, null, ex);
-            }
-            Screen s = null;
-            try {
-                s = getScreen(set.getInt("SCREEN_ID"));
-            } catch (ScreenNotFoundException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
+            int p = set.getInt("PRODUCT");
+            int s = set.getInt("SCREEN_ID");
             int color = set.getInt("COLOR");
             TillButton b = new TillButton(name, p, s, color, id);
 
@@ -2446,21 +2436,10 @@ public class DBConnect implements DataConnect {
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
-                    Product p = null;
-                    try {
-                        p = getProduct(set.getInt("PRODUCT"));
-                    } catch (ProductNotFoundException ex) {
-                        LOG.log(Level.WARNING, null, ex);
-                    }
+                    int p = set.getInt("PRODUCT");
                     int color = set.getInt("COLOR");
-                    Screen s = null;
-                    try {
-                        s = getScreenNoSem(set.getInt("SCREEN_ID"));
-                    } catch (ScreenNotFoundException ex) {
-                        LOG.log(Level.SEVERE, null, ex);
-                    }
+                    int s = set.getInt("SCREEN_ID");
                     TillButton b = new TillButton(name, p, s, color, id);
-
                     buttons.add(b);
                 }
                 con.commit();
@@ -2485,16 +2464,12 @@ public class DBConnect implements DataConnect {
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
-                    Item i = null;
+                    int i = 0;
                     if (!name.equals("[SPACE]")) {
-                        try {
-                            i = getProduct(set.getInt("PRODUCT"));
-                        } catch (ProductNotFoundException ex) {
-                            LOG.log(Level.WARNING, null, ex);
-                        }
+                        i = set.getInt("PRODUCT");
                     }
                     int color = set.getInt("COLOR");
-                    TillButton b = new TillButton(name, i, s, color, id);
+                    TillButton b = new TillButton(name, i, s.getId(), color, id);
 
                     buttons.add(b);
                 }

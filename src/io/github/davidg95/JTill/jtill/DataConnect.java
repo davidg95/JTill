@@ -21,16 +21,50 @@ import javax.mail.internet.AddressException;
  */
 public interface DataConnect {
 
+    /**
+     * Check if there is a database connection.
+     *
+     * @return true if there is a connection.
+     */
     public boolean isConnected();
 
+    /**
+     * Close the connection.
+     *
+     * @throws IOException if there was an error closing the connection.
+     */
     public void close() throws IOException;
 
+    /**
+     * Set a reference to the GUI.
+     *
+     * @param g the GUI.
+     */
     public void setGUI(GUIInterface g);
 
+    /**
+     * Get the GUI.
+     *
+     * @return the GUI.
+     */
     public GUIInterface getGUI();
 
+    /**
+     * Send and assistance message to the server.
+     *
+     * @param message the message to send.
+     * @throws IOException if there was an error sending the message.
+     */
     public void assisstance(String message) throws IOException;
 
+    /**
+     * Get the takings for a specified terminal.
+     *
+     * @param terminal the name of the terminal to get the takings for.
+     * @return the takings as a BigDecimal.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public BigDecimal getTillTakings(String terminal) throws IOException, SQLException;
 
     /**
@@ -879,58 +913,263 @@ public interface DataConnect {
     public List<Discount> getValidDiscounts() throws IOException, SQLException;
 
     //Tax
+    /**
+     * Add a new tax to the system.
+     *
+     * @param t the new tax to add.
+     * @return the tax with its ID assigned.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Tax addTax(Tax t) throws IOException, SQLException;
 
+    /**
+     * Method to remove a tax from the system.
+     *
+     * @param t the tax to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws TaxNotFoundException if the tax was not found.
+     */
     public void removeTax(Tax t) throws IOException, SQLException, TaxNotFoundException;
 
+    /**
+     * Method to remove a tax from the system given its ID.
+     *
+     * @param id the ID of the tax to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws TaxNotFoundException if the tax was not found.
+     */
     public void removeTax(int id) throws IOException, SQLException, TaxNotFoundException;
 
+    /**
+     * Method to get a tax from the system.
+     *
+     * @param id the ID of the tax to get.
+     * @return the Tax.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws TaxNotFoundException if the tax was not found.
+     */
     public Tax getTax(int id) throws IOException, SQLException, TaxNotFoundException;
 
+    /**
+     * Method to update a tax on the system
+     *
+     * @param t the Tax to update.
+     * @return the tax after getting updated.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws TaxNotFoundException if the tax was not found.
+     */
     public Tax updateTax(Tax t) throws IOException, SQLException, TaxNotFoundException;
 
+    /**
+     * Method to get a list of all the tax on the system.
+     *
+     * @return a List of type Tax.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Tax> getAllTax() throws IOException, SQLException;
 
+    /**
+     * Method to get all the products that belong to a specific tax.
+     *
+     * @param id the id of the tax to search.
+     * @return a List of type Product.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws TaxNotFoundException if the Tax was not found.
+     */
     public List<Product> getProductsInTax(int id) throws IOException, SQLException, TaxNotFoundException;
 
     //Screens
+    /**
+     * Method to add a new till screen.
+     *
+     * @param s the new screen to add.
+     * @return the screen after being added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Screen addScreen(Screen s) throws IOException, SQLException;
 
+    /**
+     * Method to add a new screen button.
+     *
+     * @param b the button to add.
+     * @return the button after it was added.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public TillButton addButton(TillButton b) throws IOException, SQLException;
 
+    /**
+     * Method to remove a screen from the database.
+     *
+     * @param s the screen to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws ScreenNotFoundException if the screen was not found.
+     */
     public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
+    /**
+     * Method to remove a button from the database.
+     *
+     * @param b the button to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws ButtonNotFoundException if the button was not found.
+     */
     public void removeButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException;
 
+    /**
+     * Method to get a screen from the server.
+     *
+     * @param s the ID of the screen to get.
+     * @return the Screen that matches the ID.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws ScreenNotFoundException if the screen was not found.
+     */
     public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException;
 
+    /**
+     * Method to get a button from the server.
+     *
+     * @param b the ID of the button to get.
+     * @return the Button that matches the ID.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws ButtonNotFoundException if the button was not found.
+     */
     public TillButton getButton(int b) throws IOException, SQLException, ButtonNotFoundException;
 
+    /**
+     * Method to update a screen on the server.
+     *
+     * @param s the screen to update.
+     * @return the screen after being updated.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws ScreenNotFoundException if the screen was not found.
+     */
     public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
+    /**
+     * Method to update a button on the server.
+     *
+     * @param b the button to update.
+     * @return the button after being updated.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws ButtonNotFoundException if the button was not found.
+     */
     public TillButton updateButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException;
 
+    /**
+     * Method to get all screens on the database.
+     *
+     * @return a List of type Screen.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Screen> getAllScreens() throws IOException, SQLException;
 
+    /**
+     * Method to get all the buttons on the database.
+     *
+     * @return a List of type Button.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<TillButton> getAllButtons() throws IOException, SQLException;
 
+    /**
+     * Method to get all buttons for a certain screen.
+     *
+     * @param s the screen to get buttons for.
+     * @return a List of type TillButton.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws ScreenNotFoundException if the screen could not be found.
+     */
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
+    /**
+     * Method to delete all screens and button on the server.
+     *
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public void deleteAllScreensAndButtons() throws IOException, SQLException;
 
     //Tills
+    /**
+     * Method to add a new till to the system.
+     *
+     * @param t the new Till to add.
+     * @return the till with its ID assigned.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public Till addTill(Till t) throws IOException, SQLException;
 
+    /**
+     * Method to remove a till from the server.
+     *
+     * @param id the ID of the till to remove.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws TillNotFoundException if the till was not found.
+     */
     public void removeTill(int id) throws IOException, SQLException, TillNotFoundException;
 
+    /**
+     * Method to get a till from the server.
+     *
+     * @param id the ID of the till to get.
+     * @return the till that matches the ID.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws TillNotFoundException if the till was not found.
+     */
     public Till getTill(int id) throws IOException, SQLException, TillNotFoundException;
 
+    /**
+     * Method to get all tills on the server.
+     *
+     * @return a List of type Till.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public List<Till> getAllTills() throws IOException, SQLException;
 
+    /**
+     * Method to connect a till.
+     *
+     * @param t the name of the till to connect.
+     * @return the Till object.
+     * @throws IOException if there was a network error.
+     */
     public Till connectTill(String t) throws IOException;
 
+    /**
+     * Method to disconnect a till.
+     *
+     * @param t the till to disconnect.
+     */
     public void disconnectTill(Till t);
 
+    /**
+     * Method to get all current connected tills.
+     *
+     * @return a List of type Till.
+     * @throws IOException if there was a network error.
+     */
     public List<Till> getConnectedTills() throws IOException;
 
     //Waste Report
