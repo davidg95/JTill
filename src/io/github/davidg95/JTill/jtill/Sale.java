@@ -30,6 +30,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
 
     private SaleItem lastAdded;
 
+    private transient final List<ProductListener> listeners;
+
     /**
      * Constructor which creates a new sale with no items and with the total set
      * to £0.00.
@@ -42,6 +44,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         total = new BigDecimal("0.00");
         this.terminal = terminal;
         this.staff = s;
+        listeners = new ArrayList<>();
     }
 
     /**
@@ -65,6 +68,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.terminal = terminal;
         this.staff = staff;
         this.saleItems = saleItems;
+        listeners = new ArrayList<>();
     }
 
     /**
@@ -86,6 +90,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.date = date;
         this.terminal = terminal;
         this.staff = staff;
+        listeners = new ArrayList<>();
     }
 
     /**
@@ -333,6 +338,29 @@ public class Sale implements Serializable, JTillObject, Cloneable {
 
     public void setStaff(int staff) {
         this.staff = staff;
+    }
+
+    public void addListener(ProductListener pl) {
+        listeners.add(pl);
+    }
+
+    public void notifyAllListeners(ProductEvent pe, int itemQuantity) {
+        listeners.forEach((pl) -> {
+            new Thread() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < itemQuantity; i++) {
+                        pl.onProductAdd(pe);
+                    }
+                }
+            }.start();
+        });
+    }
+
+    public void complete() {
+        listeners.forEach((pl) -> {
+            pl.killListener();
+        });
     }
 
     public String getSQLInsertStatement() {

@@ -124,6 +124,12 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
 
     public void reset() {
         currentHits = 0;
+        for (DiscountBucket b : buckets) {
+            for (Trigger t : b.getTriggers()) {
+                t.resetQuantity();
+            }
+            b.reset();
+        }
     }
 
     public int getCurrentHits() {
@@ -132,6 +138,19 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
 
     public void setCurrentHits(int currentHits) {
         this.currentHits = currentHits;
+    }
+
+    public boolean checkRequiredTriggers() {
+        boolean allTrig = true;
+        for (DiscountBucket b : buckets) {
+            if (b.isRequiredTrigger()) {
+                if (b.getCurrentTriggers() >= b.getRequiredTriggers()) {
+                } else {
+                    allTrig = false;
+                }
+            }
+        }
+        return allTrig;
     }
 
     public String getSQLInsertString() {

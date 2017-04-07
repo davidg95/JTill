@@ -310,7 +310,8 @@ public class DBConnect implements DataConnect {
                 + "         GENERATED ALWAYS AS IDENTITY\n"
                 + "         (START WITH 1, INCREMENT BY 1),\n"
                 + "     DISCOUNT INT not null references DISCOUNTS(ID),\n"
-                + "     TRIGGERSREQUIRED INT\n"
+                + "     TRIGGERSREQUIRED INT,\n"
+                + "     REQUIREDTRIGGER BOOLEAN\n"
                 + ")";
         String triggers = "create table \"APP\".TRIGGERS\n"
                 + "(\n"
@@ -4345,7 +4346,8 @@ public class DBConnect implements DataConnect {
                 while (set.next()) {
                     int bId = set.getInt("ID");
                     int triggers = set.getInt("TRIGGERSREQUIRED");
-                    buckets.add(new DiscountBucket(bId, id, triggers));
+                    boolean required = set.getBoolean("REQUIREDTRIGGER");
+                    buckets.add(new DiscountBucket(bId, id, triggers, required));
                 }
                 con.commit();
                 return buckets;
@@ -4408,7 +4410,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException {
-        String query = "INSERT INTO BUCKETS (DISCOUNT, TRIGGERSREQUIRED) VALUES(" + b.getDiscount() + "," + b.getRequiredTriggers() + ")";
+        String query = "INSERT INTO BUCKETS (DISCOUNT, TRIGGERSREQUIRED, REQUIREDTRIGGER) VALUES(" + b.getDiscount() + "," + b.getRequiredTriggers() + "," + b.isRequiredTrigger() + ")";
         try (Connection con = getNewConnection()) {
             try {
                 PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -4486,7 +4488,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException {
-        String query = "UPDATE BUCKETS SET TRIGGERSREQUIRED=" + b.getRequiredTriggers();
+        String query = "UPDATE BUCKETS SET TRIGGERSREQUIRED=" + b.getRequiredTriggers() + ", REQUIREDTRIGGER=" + b.isRequiredTrigger() + " WHERE ID=" + b.getId();
         try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();

@@ -19,8 +19,10 @@ public class DiscountBucket implements Serializable {
     private int id; //The bucket id.
     private int discount; //The discount the bucket applies to.
     private int requiredTriggers; //The number of required triggers to activate the discount.
-    private int currentTriggers;
-    
+    private boolean requiredTrigger;
+
+    private int currentTriggers; //The current number of activated triggers in a particular sale.
+
     private List<Trigger> triggers;
 
     /**
@@ -28,10 +30,12 @@ public class DiscountBucket implements Serializable {
      *
      * @param discount the discount the bucket is for.
      * @param requiredTriggers the number of triggers to activate the bucket.
+     * @param requiredTrigger whether this trigger is required or not.
      */
-    public DiscountBucket(int discount, int requiredTriggers) {
+    public DiscountBucket(int discount, int requiredTriggers, boolean requiredTrigger) {
         this.discount = discount;
         this.requiredTriggers = requiredTriggers;
+        this.requiredTrigger = requiredTrigger;
     }
 
     /**
@@ -40,9 +44,10 @@ public class DiscountBucket implements Serializable {
      * @param id the bucket id.
      * @param discount the discount the bucket is for.
      * @param requiredTriggers the number of triggers to activate the bucket.
+     * @param requiredTrigger whether this trigger is required or not.
      */
-    public DiscountBucket(int id, int discount, int requiredTriggers) {
-        this(discount, requiredTriggers);
+    public DiscountBucket(int id, int discount, int requiredTriggers, boolean requiredTrigger) {
+        this(discount, requiredTriggers, requiredTrigger);
         this.id = id;
     }
 
@@ -77,12 +82,20 @@ public class DiscountBucket implements Serializable {
     public void setTriggers(List<Trigger> triggers) {
         this.triggers = triggers;
     }
-    
-    public void addHit(){
+
+    public boolean isRequiredTrigger() {
+        return requiredTrigger;
+    }
+
+    public void setRequiredTrigger(boolean requiredTrigger) {
+        this.requiredTrigger = requiredTrigger;
+    }
+
+    public void addHit() {
         currentTriggers++;
     }
-    
-    public void reset(){
+
+    public void reset() {
         currentTriggers = 0;
     }
 
