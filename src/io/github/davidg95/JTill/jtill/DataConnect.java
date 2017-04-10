@@ -135,6 +135,17 @@ public interface DataConnect {
     public Product addProduct(Product p) throws IOException, SQLException;
 
     /**
+     * Add a new Product and Plu to the database.
+     *
+     * @param p the product to add.
+     * @param pl the plu to add.
+     * @return the new product.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public Product addProductAndPlu(Product p, Plu pl) throws IOException, SQLException;
+
+    /**
      * Remove a product from the system
      *
      * @param code the code of the product to remove.

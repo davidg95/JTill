@@ -208,6 +208,7 @@ public class Settings implements Serializable {
             setSetting("SETTINGS_EDIT", "3");
             setSetting("CURERNCY_SYMBOL", "£");
             setSetting("SITE_NAME", "SITE");
+            setSetting("ASK_EMAIL_RECEIPT", "FALSE");
 
             properties.store(out, null);
             out.close();

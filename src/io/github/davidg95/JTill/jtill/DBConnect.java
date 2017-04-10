@@ -124,7 +124,6 @@ public class DBConnect implements DataConnect {
      * @throws SQLException if there was an error getting the connection.
      */
     public Connection getNewConnection() throws SQLException {
-        LOG.log(Level.INFO, "Connecting to database {0}", address);
         Connection connection = DriverManager.getConnection(address, username, password);
         connection.setAutoCommit(false);
         connected = true;
@@ -4196,7 +4195,7 @@ public class DBConnect implements DataConnect {
                     int cId = set.getInt("CUSTOMER");
                     long timestamp = set.getLong("TIMESTAMP");
                     boolean cashed = set.getBoolean("CASHED");
-                    if(cashed){
+                    if (cashed) {
                         continue;
                     }
                     int staff = set.getInt("STAFF");
@@ -4214,6 +4213,37 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, null, ex);
             throw new JTillException("Error getting sales");
+        }
+    }
+
+    @Override
+    public Product addProductAndPlu(Product p, Plu pl) throws IOException, SQLException {
+        try (Connection con = getNewConnection()) {
+            try {
+                String pluAdd = "INSERT INTO PLUS (CODE) VALUES ('" + pl.getCode() + "')";
+                PreparedStatement pluStmt = con.prepareStatement(pluAdd, Statement.RETURN_GENERATED_KEYS);
+                pluStmt.executeUpdate();
+                ResultSet plu = pluStmt.getGeneratedKeys();
+                while (plu.next()) {
+                    int id = plu.getInt(1);
+                    pl.setId(id);
+                }
+                p.setPlu(pl.getId());
+                String productAdd = "INSERT INTO PRODUCTS (PLU, ORDER_CODE, NAME, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, DEPARTMENT_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL) VALUES (" + p.getSQLInsertString() + ")";
+                PreparedStatement productStmt = con.prepareStatement(productAdd, Statement.RETURN_GENERATED_KEYS);
+                productStmt.executeUpdate();
+                ResultSet product = productStmt.getGeneratedKeys();
+                while (product.next()) {
+                    int id = product.getInt(1);
+                    p.setId(id);
+                }
+                con.commit();
+                return p;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
         }
     }
 }

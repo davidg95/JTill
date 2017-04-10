@@ -358,9 +358,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     }
 
     public void complete() {
-        listeners.forEach((pl) -> {
-            pl.killListener();
-        });
+        if (listeners != null) {
+            listeners.forEach((pl) -> {
+                pl.killListener();
+            });
+        }
     }
 
     public String getSQLInsertStatement() {
