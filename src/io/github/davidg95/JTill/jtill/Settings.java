@@ -54,6 +54,7 @@ public class Settings implements Serializable {
     public Settings() {
         properties = new Properties();
         meta = new Properties();
+        loadProperties();
     }
 
     /**
@@ -209,6 +210,11 @@ public class Settings implements Serializable {
             setSetting("CURERNCY_SYMBOL", "£");
             setSetting("SITE_NAME", "SITE");
             setSetting("ASK_EMAIL_RECEIPT", "FALSE");
+            setSetting("MAX_CACHE_SALES", "20");
+            setSetting("SEND_PRODUCTS_START", "FALSE");
+            setSetting("UPC_PREFIX", "");
+            setSetting("BARCODE_LENGTH", "15");
+            setSetting("NEXT_PLU", "0");
 
             properties.store(out, null);
             out.close();
