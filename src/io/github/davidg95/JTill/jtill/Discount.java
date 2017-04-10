@@ -118,10 +118,16 @@ public class Discount implements Serializable, Cloneable, Item, JTillObject {
         this.condition = condition;
     }
 
+    /**
+     * Adds a bucket hit to the discount.
+     */
     public void addHit() {
         currentHits++;
     }
 
+    /**
+     * Resets this discounts. All buckets and triggers will be set to 0.
+     */
     public void reset() {
         currentHits = 0;
         for (DiscountBucket b : buckets) {
