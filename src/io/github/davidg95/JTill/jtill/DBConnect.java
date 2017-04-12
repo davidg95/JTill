@@ -312,7 +312,9 @@ public class DBConnect implements DataConnect {
                 + "         (START WITH 1, INCREMENT BY 1),\n"
                 + "     NAME VARCHAR(50) not null,\n"
                 + "     POSITION INTEGER,\n"
-                + "     COLOR INT\n"
+                + "     COLOR INT,\n"
+                + "     WIDTH INT,\n"
+                + "     HEIGHT INT\n"
                 + ")";
         String buttons = "create table \"APP\".BUTTONS\n"
                 + "(\n"
@@ -322,6 +324,10 @@ public class DBConnect implements DataConnect {
                 + "     NAME VARCHAR(50) not null,\n"
                 + "     PRODUCT INT not null,\n"
                 + "     COLOR INT,\n"
+                + "     WIDTH INT,\n"
+                + "     HEIGHT INT,\n"
+                + "     XPOS INT,\n"
+                + "     YPOS INT,\n"
                 + "     SCREEN_ID INT not null references SCREENS(ID)\n"
                 + ")";
         String wasteReports = "create table \"APP\".WASTEREPORTS\n"
@@ -2176,7 +2182,9 @@ public class DBConnect implements DataConnect {
             String name = set.getString("NAME");
             int order = set.getInt("POSITION");
             int color = set.getInt("COLOR");
-            Screen s = new Screen(name, order, color, id);
+            int width = set.getInt("WIDTH");
+            int height = set.getInt("HEIGHT");
+            Screen s = new Screen(name, order, color, id, width, height);
 
             screens.add(s);
         }
@@ -2192,7 +2200,11 @@ public class DBConnect implements DataConnect {
             int p = set.getInt("PRODUCT");
             int s = set.getInt("SCREEN_ID");
             int color = set.getInt("COLOR");
-            TillButton b = new TillButton(name, p, s, color, id);
+            int width = set.getInt("WIDTH");
+            int height = set.getInt("HEIGHT");
+            int x = set.getInt("XPOS");
+            int y = set.getInt("YPOS");
+            TillButton b = new TillButton(name, p, s, color, id, width, height, x, y);
 
             buttons.add(b);
         }
@@ -2202,7 +2214,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Screen addScreen(Screen s) throws SQLException {
-        String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR) VALUES (" + s.getSQLInsertString() + ")";
+        String query = "INSERT INTO SCREENS (NAME, POSITION, COLOR, WIDTH, HEIGHT) VALUES (" + s.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -2224,7 +2236,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public TillButton addButton(TillButton b) throws SQLException {
-        String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID) VALUES (" + b.getSQLInsertString() + ")";
+        String query = "INSERT INTO BUTTONS (NAME, PRODUCT, COLOR, SCREEN_ID, WIDTH, HEIGHT, XPOS, YPOS) VALUES (" + b.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -2252,8 +2264,8 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                value = stmt.executeUpdate(query);
                 stmt.executeUpdate(buttonsQuery);
+                value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
                     throw new ScreenNotFoundException("Screen " + s + " could not be found");
@@ -2303,28 +2315,6 @@ public class DBConnect implements DataConnect {
             }
             if (screens.isEmpty()) {
                 throw new ScreenNotFoundException("Screen " + s + " could not be found");
-            }
-            return screens.get(0);
-        }
-    }
-
-    private Screen getScreenNoSem(int id) throws SQLException, ScreenNotFoundException {
-        String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + id;
-        try (Connection con = getNewConnection()) {
-            Statement stmt = con.createStatement();
-            List<Screen> screens;
-            try {
-                ResultSet set = stmt.executeQuery(query);
-                screens = getScreensFromResultSet(set);
-                con.commit();
-            } catch (SQLException ex) {
-                con.rollback();
-                LOG.log(Level.SEVERE, null, ex);
-                throw ex;
-            } finally {
-            }
-            if (screens.isEmpty()) {
-                throw new ScreenNotFoundException("Screen " + id + " could not be found");
             }
             return screens.get(0);
         }
@@ -2408,7 +2398,9 @@ public class DBConnect implements DataConnect {
                     String name = set.getString("NAME");
                     int order = set.getInt("POSITION");
                     int color = set.getInt("COLOR");
-                    Screen s = new Screen(name, order, color, id);
+                    int width = set.getInt("WIDTH");
+                    int height = set.getInt("HEIGHT");
+                    Screen s = new Screen(name, order, color, id, width, height);
 
                     screens.add(s);
                 }
@@ -2437,7 +2429,11 @@ public class DBConnect implements DataConnect {
                     int p = set.getInt("PRODUCT");
                     int color = set.getInt("COLOR");
                     int s = set.getInt("SCREEN_ID");
-                    TillButton b = new TillButton(name, p, s, color, id);
+                    int width = set.getInt("WIDTH");
+                    int height = set.getInt("HEIGHT");
+                    int x = set.getInt("XPOS");
+                    int y = set.getInt("YPOS");
+                    TillButton b = new TillButton(name, p, s, color, id, width, height, x, y);
                     buttons.add(b);
                 }
                 con.commit();
@@ -2467,7 +2463,12 @@ public class DBConnect implements DataConnect {
                         i = set.getInt("PRODUCT");
                     }
                     int color = set.getInt("COLOR");
-                    TillButton b = new TillButton(name, i, s.getId(), color, id);
+                    int width = set.getInt("WIDTH");
+                    int height = set.getInt("HEIGHT");
+                    int x = set.getInt("XPOS");
+                    int y = set.getInt("YPOS");
+
+                    TillButton b = new TillButton(name, i, s.getId(), color, id, width, height, x, y);
 
                     buttons.add(b);
                 }

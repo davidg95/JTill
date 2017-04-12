@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.io.Serializable;
 
 /**
+ * Models a till button.
  *
  * @author David
  */
@@ -19,16 +20,24 @@ public class TillButton implements Serializable {
     private int item;
     private int screen;
     private int color;
+    private int width;
+    private int height;
+    private int x;
+    private int y;
 
-    public TillButton(String name, int item, int screen, int color) {
+    public TillButton(String name, int item, int screen, int color, int width, int height, int x, int y) {
         this.name = name;
         this.item = item;
         this.screen = screen;
         this.color = color;
+        this.width = width;
+        this.height = height;
+        this.x = x;
+        this.y = y;
     }
 
-    public TillButton(String name, int item, int screen, int color, int id) {
-        this(name, item, screen, color);
+    public TillButton(String name, int item, int screen, int color, int id, int width, int height, int x, int y) {
+        this(name, item, screen, color, width, height, x, y);
         this.id = id;
     }
 
@@ -80,11 +89,47 @@ public class TillButton implements Serializable {
         this.color = c.getRGB();
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + item
                 + "," + this.color
-                + "," + this.screen;
+                + "," + this.screen
+                + "," + this.width
+                + "," + this.height
+                + "," + this.x
+                + "," + this.y;
     }
 
     public String getSQLUpdateString() {
@@ -93,6 +138,10 @@ public class TillButton implements Serializable {
                 + "', PRODUCT=" + this.getItem()
                 + ", COLOR=" + this.getColorValue()
                 + ", SCREEN_ID=" + this.getScreen()
+                + ", WIDTH=" + this.getWidth()
+                + ", HEIGHT=" + this.getHeight()
+                + ", XPOS=" + this.getX()
+                + ", YPOS=" + this.getY()
                 + " WHERE BUTTONS.ID=" + this.getId();
     }
 

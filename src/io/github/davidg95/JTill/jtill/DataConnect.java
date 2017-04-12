@@ -1018,7 +1018,8 @@ public interface DataConnect {
     public TillButton addButton(TillButton b) throws IOException, SQLException;
 
     /**
-     * Method to remove a screen from the database.
+     * Method to remove a screen from the database. This will also remove any
+     * buttons on that screen from the database as well.
      *
      * @param s the screen to remove.
      * @throws IOException if there was a network error.
