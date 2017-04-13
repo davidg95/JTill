@@ -2727,8 +2727,10 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, "There has been an error adding a till to the database", ex);
         } catch (TillNotFoundException ex) {
-            boolean result = g.showYesNoMessage("New Till", "Allow till " + t + " to connect?");
-
+            boolean result = true;
+            if (this.getSetting("APPROVE_NEW_CONNECTIONS").equals("TRUE")) {
+                result = g.showYesNoMessage("New Till", "Allow till " + t + " to connect?");
+            }
             if (result) {
                 Till newTill = new Till(t);
                 try {

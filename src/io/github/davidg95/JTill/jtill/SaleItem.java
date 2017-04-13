@@ -24,19 +24,20 @@ public class SaleItem implements Serializable {
     private String totalPrice;
     private int sale;
     private int type;
+    private boolean refundItem;
 
     /**
      * Indicates the sale item is a Product.
      *
      * Value = 1.
      */
-    public static int PRODUCT = 1;
+    public static final int PRODUCT = 1;
     /**
      * Indicates the sale item is a discount.
      *
      * Value = 2.
      */
-    public static int DISCOUNT = 2;
+    public static final int DISCOUNT = 2;
 
     public SaleItem(int sale, int item, int quantity, int id, BigDecimal price, int type) {
         this(sale, item, quantity, price, type);
@@ -48,6 +49,7 @@ public class SaleItem implements Serializable {
         this.item = item;
         this.quantity = quantity;
         this.price = price;
+        this.price.setScale(2);
         this.type = type;
     }
 
@@ -135,6 +137,14 @@ public class SaleItem implements Serializable {
 
     public void setType(int type) {
         this.type = type;
+    }
+
+    public boolean isRefundItem() {
+        return refundItem;
+    }
+
+    public void setRefundItem(boolean refundItem) {
+        this.refundItem = refundItem;
     }
 
     public String getSQLInsertStatement() {

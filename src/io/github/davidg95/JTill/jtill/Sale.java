@@ -107,58 +107,47 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * false if it is a new item in the sale.
      */
     public boolean addItem(Item i, int quantity) {
+        //Check if it is a refind item.
+        boolean isRefundItem = (quantity < 0);
+        //Check if it is a product or discount.
+        int type;
+        if (i instanceof Product) {
+            type = SaleItem.PRODUCT;
+        } else {
+            type = SaleItem.DISCOUNT;
+        }
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
-            int type;
-            if (i instanceof Product) {
-                type = SaleItem.PRODUCT;
-            } else {
-                type = SaleItem.DISCOUNT;
-            }
-            if (item.getItem() == i.getId() && item.getType() == type) {
+            if (item.getItem() == i.getId() && item.getType() == type && item.isRefundItem() == isRefundItem) {
                 //The item has been added
-                if (i.isOpen()) {
-                    if (i.getPrice().compareTo(item.getPrice()) == 0) {
-                        item.increaseQuantity(quantity);
-                        this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
-                        if (i instanceof Discount) {
-                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.DISCOUNT);
-                        } else {
-                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.PRODUCT);
-                        }
-                        updateTotal();
-                        return true; //The product is open price and the same price so increase the quantity and exit
-                    } else {
-                        continue; //The product is open but a different price so check the next item
+                if (i.isOpen()) { //Check if it is open price.
+                    if (i.getPrice().compareTo(item.getPrice()) == 0) { //Check if it is the same price.
+                        item.increaseQuantity(quantity); //Increace the quantity.
+                        this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity()))); //Update the sale total.
+                        this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type); //Set this item to the last added.
+                        updateTotal(); //Update the total.
+                        return true;
                     }
-                }
-                //Product is not open price and does already exist
-                item.increaseQuantity(quantity);
-                item.setName(i.getName());
-                item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString());
-                this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity)));
-                if (i instanceof Discount) {
-                    this.lastAdded = new SaleItem(this.id, i.getId(), quantity, item.getPrice(), SaleItem.DISCOUNT);
                 } else {
-                    this.lastAdded = new SaleItem(this.id, i.getId(), quantity, item.getPrice(), SaleItem.PRODUCT);
+                    //Product is not open price and does already exist
+                    item.increaseQuantity(quantity);
+                    item.setName(i.getName()); //Set the name for the list box.
+                    item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString()); //Set the total for the list box.
+                    this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
+                    this.lastAdded = new SaleItem(this.id, i.getId(), quantity, item.getPrice(), type); //Set this item to the last item added.
+                    return true;
                 }
-                return true;
             }
         }
         //If the item is not already in the sale
-        SaleItem item;
-        if (i instanceof Discount) {
-            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.DISCOUNT);
-        } else {
-            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), SaleItem.PRODUCT);
-        }
-
-        this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity)));
-        item.setName(i.getName());
-        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString());
-        saleItems.add(item);
-        this.lastAdded = item;
-        updateTotal();
+        SaleItem item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type);
+        item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
+        this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
+        item.setName(i.getName()); //Set the name of the item for the list box.
+        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString()); //Set the total of the item for the list box.
+        saleItems.add(item); //Add the item to the list of sale items.
+        this.lastAdded = item; //Set this item to the last item added.
+        updateTotal(); //Update the total.
         return false;
     }
 

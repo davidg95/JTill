@@ -215,6 +215,7 @@ public class Settings implements Serializable {
             setSetting("UPC_PREFIX", "");
             setSetting("BARCODE_LENGTH", "15");
             setSetting("NEXT_PLU", "0");
+            setSetting("APPROVE_NEW_CONNECTIONS", "TRUE");
 
             properties.store(out, null);
             out.close();
