@@ -304,6 +304,16 @@ public interface DataConnect {
     public Plu getPluByCode(String code) throws IOException, JTillException, SQLException;
 
     /**
+     * Method to get a plu by its product.
+     *
+     * @param id the id of the product.
+     * @return the plu for that product.
+     * @throws IOException if there was a network error.
+     * @throws JTillException if the plu could not be found.
+     */
+    public Plu getPluByProduct(int id) throws IOException, JTillException;
+
+    /**
      * Method to get all plus on the system.
      *
      * @return a List of all the plus.

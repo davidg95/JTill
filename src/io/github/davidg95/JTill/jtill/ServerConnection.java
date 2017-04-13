@@ -3496,4 +3496,22 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required)");
     }
+
+    @Override
+    public Plu getPluByProduct(int id) throws IOException, JTillException {
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETPLUBYPRODUCT", id));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (Plu) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
+    }
 }

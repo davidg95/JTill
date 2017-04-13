@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     private int productCode;
-    private int plu;
     private int order_code;
     private String name;
     private String shortName;
@@ -43,10 +42,9 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param department the department the product belongs to.
      * @param comments the comments.
      * @param tax the tax class for this product.
-     * @param plu the products plu.
      * @param open if the price is open.
      */
-    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, int plu, boolean open) {
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open) {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
@@ -54,7 +52,6 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.department = department;
         this.comments = comments;
         this.tax = tax;
-        this.plu = plu;
         this.open = open;
     }
 
@@ -69,12 +66,11 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param department the department the product belongs to.
      * @param comments the comments.
      * @param tax the tax class for this product.
-     * @param plu the plu for the product.
      * @param open if the price is open.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, int plu, boolean open, int productCode) {
-        this(name, shortName, order_code, category, department, comments, tax, plu, open);
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, int productCode) {
+        this(name, shortName, order_code, category, department, comments, tax, open);
         this.productCode = productCode;
     }
 
@@ -91,13 +87,12 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
-     * @param plu the plu of the product.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu) {
-        this(name, shortName, order_code, category, department, comments, tax, plu, open);
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock) {
+        this(name, shortName, order_code, category, department, comments, tax, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -118,14 +113,13 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
-     * @param plu the plu of the product.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int plu, int productCode) {
-        this(name, shortName, order_code, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock, plu);
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int productCode) {
+        this(name, shortName, order_code, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock);
         this.productCode = productCode;
     }
 
@@ -205,14 +199,6 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.stock = stock;
     }
 
-    public int getPlu() {
-        return plu;
-    }
-
-    public void setPlu(int plu) {
-        this.plu = plu;
-    }
-
     public String getComments() {
         return comments;
     }
@@ -290,8 +276,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     }
 
     public String getSQLInsertString() {
-        return +this.plu
-                +"," + this.order_code
+        return + this.order_code
                 + ",'" + this.name
                 + "'," + this.open
                 + "," + this.price
@@ -308,8 +293,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
-                + " SET PRODUCTS.PLU=" + this.getPlu()
-                + ", PRODUCTS.ORDER_CODE=" + this.getOrder_code()
+                + " SET PRODUCTS.ORDER_CODE=" + this.getOrder_code()
                 + ", PRODUCTS.NAME='" + this.getLongName()
                 + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
                 + ", PRODUCTS.PRICE=" + this.getPrice()

@@ -15,14 +15,16 @@ public class Plu implements Serializable, Cloneable, JTillObject {
 
     private int id;
     private String code;
+    private int product;
 
-    public Plu(int id, String code) {
-        this(code);
+    public Plu(int id, String code, int product) {
+        this(code, product);
         this.id = id;
     }
 
-    public Plu(String code) {
+    public Plu(String code, int product) {
         this.code = code;
+        this.product = product;
     }
 
     @Override
@@ -45,6 +47,14 @@ public class Plu implements Serializable, Cloneable, JTillObject {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public int getProduct() {
+        return product;
+    }
+
+    public void setProduct(int product) {
+        this.product = product;
     }
 
     @Override
