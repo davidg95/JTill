@@ -49,7 +49,6 @@ public class SaleItem implements Serializable {
         this.item = item;
         this.quantity = quantity;
         this.price = price;
-        this.price.setScale(2);
         this.type = type;
     }
 

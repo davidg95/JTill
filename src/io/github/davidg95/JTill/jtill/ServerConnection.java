@@ -3514,4 +3514,9 @@ public class ServerConnection implements DataConnect {
         }
         throw new IOException("Class error (Update may be required)");
     }
+
+    @Override
+    public List<SaleItem> searchSaleItems(int department, int category, boolean both, Date start, Date end) throws IOException, SQLException, JTillException {
+        return null;
+    }
 }

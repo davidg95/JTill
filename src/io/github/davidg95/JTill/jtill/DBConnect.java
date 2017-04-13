@@ -18,6 +18,7 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.StampedLock;
@@ -2002,7 +2003,7 @@ public class DBConnect implements DataConnect {
                 Statement stmt = con.createStatement();
                 List<SaleItem> items;
                 ResultSet set = stmt.executeQuery(query);
-                items = getSaleItemsFromResultSet(set, sale);
+                items = getSaleItemsFromResultSet(set);
                 con.commit();
                 return items;
             } catch (SQLException ex) {
@@ -2012,15 +2013,16 @@ public class DBConnect implements DataConnect {
         }
     }
 
-    private List<SaleItem> getSaleItemsFromResultSet(ResultSet set, Sale sale) throws SQLException {
+    private List<SaleItem> getSaleItemsFromResultSet(ResultSet set) throws SQLException {
         List<SaleItem> sales = new ArrayList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             int item = set.getInt("PRODUCT_ID");
             int type = set.getInt("TYPE");
             int quantity = set.getInt("QUANTITY");
+            int saleId = set.getInt("SALE_ID");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            SaleItem s = new SaleItem(sale.getId(), item, quantity, id, price, type);
+            SaleItem s = new SaleItem(saleId, item, quantity, id, price, type);
             sales.add(s);
         }
         return sales;
@@ -4276,6 +4278,33 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             throw new JTillException("Error getting Plu");
+        }
+    }
+
+    @Override
+    public List<SaleItem> searchSaleItems(int department, int category, boolean both, Date start, Date end) throws IOException, SQLException, JTillException {
+        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId FROM PRODUCTS p, SALEITEMS i WHERE p.DEPARTMENT_ID = " + department + (both ? " AND " : " OR ") + "p.CATEGORY_ID = " + category + " AND p.ID = i.PRODUCT_ID AND i.TYPE = 1";
+        try (Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                ResultSet set = stmt.executeQuery(pQuery);
+                List<SaleItem> items = new LinkedList<>();
+                while (set.next()) {
+                    int id = set.getInt("iid");
+                    int pid = set.getInt("ipid");
+                    int qu = set.getInt("iQua");
+                    double price = set.getDouble("iPrice");
+                    int iSa = set.getInt("iSaleId");
+                    SaleItem i = new SaleItem(iSa, pid, qu, id, new BigDecimal(Double.toString(price)), 1);
+                    items.add(i);
+                }
+                con.commit();
+                return items;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
         }
     }
 }

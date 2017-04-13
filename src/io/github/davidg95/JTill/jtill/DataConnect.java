@@ -1582,4 +1582,15 @@ public interface DataConnect {
      * @throws JTillException if the bucket was not found.
      */
     public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException;
+    
+    /**
+     * Method to search SaleItems.
+     * @param department the department to include.
+     * @param category the category to include.
+     * @param both if items should belong to the category AND department.
+     * @param start the start date.
+     * @param end the end date.
+     * @return list of SaleItems.
+     */
+    public List<SaleItem> searchSaleItems(int department, int category, boolean both, Date start, Date end) throws IOException, SQLException, JTillException;
 }
