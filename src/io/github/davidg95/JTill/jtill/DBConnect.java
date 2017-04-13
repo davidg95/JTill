@@ -3754,7 +3754,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public BigDecimal getTotalValueSold(int id) throws IOException, SQLException, ProductNotFoundException {
-        String query = "SELECT PRICE, PRODUCT_ID FROM SALEITEMS WHERE PRODUCT_ID=" + id;
+        String query = "SELECT PRICE, PRODUCT_ID, QUANTITY FROM SALEITEMS WHERE PRODUCT_ID=" + id;
         BigDecimal val = BigDecimal.ZERO;
         try (Connection con = getNewConnection()) {
             try {
@@ -3764,7 +3764,8 @@ public class DBConnect implements DataConnect {
                 while (set.next()) {
                     found = true;
                     String value = Double.toString(set.getDouble("PRICE"));
-                    val = val.add(new BigDecimal(value));
+                    int quantity = set.getInt("QUANTITY");
+                    val = val.add(new BigDecimal(value).multiply(new BigDecimal(quantity)));
                 }
                 if (!found) {
                     throw new ProductNotFoundException("Product " + id + " not found");
