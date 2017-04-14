@@ -1079,11 +1079,14 @@ public class ServerConnection implements DataConnect {
     @Override
     public Staff addStaff(Staff s) throws IOException, SQLException {
         try {
+            s.setPassword(Encryptor.encrypt(s.getPassword()));
             sem.acquire();
             obOut.writeObject(ConnectionData.create("ADDSTAFF", s));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("SUCC")) {
+                Staff staff = (Staff) data.getData();
+                staff.setPassword(Encryptor.decrypt(staff.getPassword()));
                 return (Staff) data.getData();
             } else {
                 if (data.getData() instanceof SQLException) {
@@ -1134,6 +1137,7 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public void removeStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
+        s.setPassword(Encryptor.encrypt(s.getPassword()));
         removeStaff(s.getId());
     }
 
@@ -1155,7 +1159,9 @@ public class ServerConnection implements DataConnect {
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("SUCC")) {
-                return (Staff) data.getData();
+                Staff s = (Staff) data.getData();
+                s.setPassword(Encryptor.decrypt(s.getPassword()));
+                return s;
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
@@ -1196,7 +1202,13 @@ public class ServerConnection implements DataConnect {
                 throw (SQLException) o;
             }
 
-            return (List<Staff>) o;
+            List<Staff> staff = (List) o;
+
+            for (Staff s : staff) {
+                s.setPassword(Encryptor.decrypt(s.getPassword()));
+            }
+
+            return staff;
         } catch (InterruptedException | ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         } finally {
@@ -1209,13 +1221,16 @@ public class ServerConnection implements DataConnect {
     @Override
     public Staff updateStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
         try {
+            s.setPassword(Encryptor.encrypt(s.getPassword()));
             sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATESTAFF", s));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("SUCC")) {
-                return (Staff) data.getData();
+                Staff staff = (Staff) data.getData();
+                staff.setPassword(Encryptor.decrypt(staff.getPassword()));
+                return staff;
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
@@ -1223,7 +1238,6 @@ public class ServerConnection implements DataConnect {
                     throw (StaffNotFoundException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
-
                 }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
@@ -1272,13 +1286,16 @@ public class ServerConnection implements DataConnect {
     @Override
     public Staff login(String username, String password) throws IOException, LoginException, SQLException {
         try {
+            password = Encryptor.encrypt(password);
             sem.acquire();
             obOut.writeObject(ConnectionData.create("LOGIN", username, password));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("SUCC")) {
-                return (Staff) data.getData();
+                Staff s = (Staff) data.getData();
+                s.setPassword(Encryptor.decrypt(s.getPassword()));
+                return s;
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
@@ -1314,7 +1331,9 @@ public class ServerConnection implements DataConnect {
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("SUCC")) {
-                return (Staff) data.getData();
+                Staff s = (Staff) data.getData();
+                s.setPassword(Encryptor.decrypt(s.getPassword()));
+                return s;
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
@@ -1342,6 +1361,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void logout(Staff s) throws IOException, StaffNotFoundException {
         try {
+            s.setPassword(Encryptor.encrypt(s.getPassword()));
             sem.acquire();
             obOut.writeObject(ConnectionData.create("LOGOUT", s));
 
@@ -1372,6 +1392,7 @@ public class ServerConnection implements DataConnect {
     @Override
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
         try {
+            s.setPassword(Encryptor.encrypt(s.getPassword()));
             sem.acquire();
             obOut.writeObject(ConnectionData.create("TILLLOGOUT", s));
 

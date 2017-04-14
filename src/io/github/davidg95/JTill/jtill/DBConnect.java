@@ -304,7 +304,7 @@ public class DBConnect implements DataConnect {
                 + "	NAME VARCHAR(50) not null,\n"
                 + "	POSITION INTEGER not null,\n"
                 + "	USERNAME VARCHAR(20) not null,\n"
-                + "	PASSWORD VARCHAR(20) not null,\n"
+                + "	PASSWORD VARCHAR(200) not null,\n"
                 + "     WAGE DOUBLE\n"
                 + ")";
         String screens = "create table \"APP\".SCREENS\n"
@@ -1181,8 +1181,9 @@ public class DBConnect implements DataConnect {
                     int position = set.getInt("POSITION");
                     String uname = set.getString("USERNAME");
                     String pword = set.getString("PASSWORD");
+                    String dPword = Encryptor.decrypt(pword);
                     double wage = set.getDouble("WAGE");
-                    Staff s = new Staff(id, name, position, uname, pword, wage);
+                    Staff s = new Staff(id, name, position, uname, dPword, wage);
                     staff.add(s);
                 }
                 con.commit();
@@ -1204,8 +1205,9 @@ public class DBConnect implements DataConnect {
             int position = set.getInt("POSITION");
             String uname = set.getString("USERNAME");
             String pword = set.getString("PASSWORD");
+            String dPass = Encryptor.decrypt(pword);
             double wage = set.getDouble("WAGE");
-            Staff s = new Staff(id, name, position, uname, pword, wage);
+            Staff s = new Staff(id, name, position, uname, dPass, wage);
 
             staff.add(s);
         }

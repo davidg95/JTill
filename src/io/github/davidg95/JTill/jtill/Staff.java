@@ -208,19 +208,21 @@ public class Staff implements Serializable, JTillObject {
     }
 
     public String getSQLInsertString() {
+        String ePass = Encryptor.encrypt(this.password);
         return "'" + this.name
                 + "'," + this.position
                 + ",'" + this.username.toLowerCase()
-                + "','" + this.password
+                + "','" + ePass
                 + "'," + wage;
     }
 
     public String getSQLUpdateString() {
+        String ePass = Encryptor.encrypt(this.password);
         return "UPDATE STAFF"
                 + " SET NAME='" + this.getName()
                 + "', POSITION=" + this.getPosition()
                 + ", USERNAME='" + this.getUsername().toLowerCase()
-                + "', PASSWORD='" + this.getPassword()
+                + "', PASSWORD='" + ePass
                 + "', WAGE=" + wage
                 + " WHERE STAFF.ID=" + this.getId();
     }
