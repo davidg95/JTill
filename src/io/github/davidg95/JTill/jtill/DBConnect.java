@@ -223,17 +223,17 @@ public class DBConnect implements DataConnect {
                 + "	ID INT not null primary key\n"
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
-                + "	NAME VARCHAR(50) not null,\n"
-                + "	PHONE VARCHAR(15),\n"
-                + "	MOBILE VARCHAR(15),\n"
-                + "	EMAIL VARCHAR(50),\n"
-                + "	ADDRESS_LINE_1 VARCHAR(50),\n"
-                + "	ADDRESS_LINE_2 VARCHAR(50),\n"
-                + "	TOWN VARCHAR(50),\n"
-                + "	COUNTY VARCHAR(50),\n"
-                + "	COUNTRY VARCHAR(50),\n"
-                + "	POSTCODE VARCHAR(20),\n"
-                + "	NOTES VARCHAR(200),\n"
+                + "	NAME VARCHAR(200) not null,\n"
+                + "	PHONE VARCHAR(200),\n"
+                + "	MOBILE VARCHAR(200),\n"
+                + "	EMAIL VARCHAR(200),\n"
+                + "	ADDRESS_LINE_1 VARCHAR(300),\n"
+                + "	ADDRESS_LINE_2 VARCHAR(300),\n"
+                + "	TOWN VARCHAR(200),\n"
+                + "	COUNTY VARCHAR(200),\n"
+                + "	COUNTRY VARCHAR(200),\n"
+                + "	POSTCODE VARCHAR(200),\n"
+                + "	NOTES VARCHAR(1000),\n"
                 + "	LOYALTY_POINTS INTEGER,\n"
                 + "     MONEY_DUE DOUBLE\n"
                 + ")";
@@ -1006,7 +1006,8 @@ public class DBConnect implements DataConnect {
             BigDecimal moneyDue = new BigDecimal(set.getDouble("MONEY_DUE"));
 
             Customer c = new Customer(id, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
-
+            
+            c = (Customer) Encryptor.decrypt(c);
             customers.add(c);
         }
         return customers;
@@ -1022,6 +1023,7 @@ public class DBConnect implements DataConnect {
      */
     @Override
     public Customer addCustomer(Customer c) throws SQLException {
+        c = (Customer) Encryptor.encrypt(c);
         String query = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES (" + c.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -1039,6 +1041,7 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
+            c = (Customer) Encryptor.decrypt(c);
             return c;
         }
     }
