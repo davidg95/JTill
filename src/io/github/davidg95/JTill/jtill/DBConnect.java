@@ -568,12 +568,10 @@ public class DBConnect implements DataConnect {
                 String addDepartment = "INSERT INTO DEPARTMENTS (NAME) VALUES ('DEFAULT')";
                 String addTax = "INSERT INTO TAX (NAME, VALUE) VALUES ('ZERO',0.0)";
                 String addReason = "INSERT INTO WASTEREASONS (REASON) VALUES ('DEFAULT')";
-                String addCustomer = "INSERT INTO CUSTOMERS (NAME, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE) VALUES ('NONE','0','0','','','','','','','','',0,0)";
                 stmt.executeUpdate(addCategory);
                 stmt.executeUpdate(addDepartment);
                 stmt.executeUpdate(addTax);
                 stmt.executeUpdate(addReason);
-                stmt.executeUpdate(addCustomer);
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -975,6 +973,7 @@ public class DBConnect implements DataConnect {
                     int loyaltyPoints = set.getInt("LOYALTY_POINTS");
                     BigDecimal moneyDue = new BigDecimal(Double.toString(set.getDouble("MONEY_DUE")));
                     Customer c = new Customer(id, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
+                    c = (Customer) Encryptor.decrypt(c);
                     customers.add(c);
                 }
                 con.commit();
