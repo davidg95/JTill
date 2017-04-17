@@ -25,6 +25,55 @@ public class TillButton implements Serializable {
     private int x;
     private int y;
 
+    /**
+     * Indicates that the color of the button is blue.
+     *
+     * Value: 1.
+     */
+    public static final int BLUE = 1;
+    /**
+     * Indicates that the color of the button is red.
+     *
+     * Value: 2.
+     */
+    public static final int RED = 2;
+    /**
+     * Indicates that the color of the button is green.
+     *
+     * Value: 3.
+     */
+    public static final int GREEN = 3;
+    /**
+     * Indicates that the color of the button is yellow.
+     *
+     * Value: 4.
+     */
+    public static final int YELLOW = 4;
+    /**
+     * Indicates that the color of the button is orange.
+     *
+     * Value: 5.
+     */
+    public static final int ORANGE = 5;
+    /**
+     * Indicates that the color of the button is purple.
+     *
+     * Value: 6.
+     */
+    public static final int PURPLE = 6;
+    /**
+     * Indicates that the color of the button is white.
+     *
+     * Value: 7.
+     */
+    public static final int WHITE = 7;
+    /**
+     * Indicates that the color of the button is black.
+     *
+     * Value: 8.
+     */
+    public static final int BLACK = 8;
+
     public TillButton(String name, int item, int screen, int color, int width, int height, int x, int y) {
         this.name = name;
         this.item = item;
@@ -79,14 +128,6 @@ public class TillButton implements Serializable {
 
     public void setColorValue(int color) {
         this.color = color;
-    }
-
-    public Color getColor() {
-        return new Color(color);
-    }
-
-    public void setColor(Color c) {
-        this.color = c.getRGB();
     }
 
     public int getWidth() {
