@@ -5,8 +5,6 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import io.github.davidg95.JTill.jtill.*;
-
 /**
  * Models a ProductEvent of a product getting added to a sale.
  *

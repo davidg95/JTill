@@ -111,7 +111,7 @@ public class DBConnect implements DataConnect {
      * @throws SQLException if there was a log on error.
      */
     public void connect(String database_address, String username, String password) throws SQLException {
-        LOG.log(Level.INFO, "Connecting to database {0}", database_address);
+        LOG.log(Level.INFO, "Connecting to database " + database_address);
         this.address = database_address;
         this.username = username;
         this.password = password;
@@ -705,7 +705,7 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
-            LOG.log(Level.INFO, "New Product {0} added", p.getId());
+            LOG.log(Level.INFO, "New Product " + p.getId() + " added");
         }
         return p;
     }
@@ -727,7 +727,7 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
-            LOG.log(Level.INFO, "Product {0} updated", p.getId());
+            LOG.log(Level.INFO, "Product " + p.getId() + " updated");
         }
         return p;
     }
@@ -809,7 +809,7 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         }
-        LOG.log(Level.INFO, "Product {0} removed", id);
+        LOG.log(Level.INFO, "Product " + id + " removed");
     }
 
     /**
@@ -828,7 +828,7 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
-                LOG.log(Level.INFO, "Purchase product {0}", id);
+                LOG.log(Level.INFO, "Purchase product " + id);
                 ResultSet res = stmt.executeQuery(query);
                 while (res.next()) {
                     int stock = res.getInt("STOCK");
@@ -839,7 +839,7 @@ public class DBConnect implements DataConnect {
                     stmt = con.createStatement();
                     stmt.executeUpdate(update);
                     if (stock < minStock) {
-                        LOG.log(Level.WARNING, "{0} is below minimum stock level", id);
+                        LOG.log(Level.WARNING, id + " is below minimum stock level");
                         g.logWarning("WARNING- Product " + id + " is below is minimum level!");
                     }
                     con.commit();
@@ -869,7 +869,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Product> products = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Get product {0}", code);
+                LOG.log(Level.INFO, "Get product " + code);
                 ResultSet res = stmt.executeQuery(query);
                 products = getProductsFromResultSet(res);
                 con.commit();
@@ -900,7 +900,7 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
-                LOG.log(Level.INFO, "Get Product {0}", barcode);
+                LOG.log(Level.INFO, "Get Product " + barcode);
                 ResultSet res = stmt.executeQuery(query);
                 products = getProductsFromResultSet(res);
                 con.commit();
@@ -923,7 +923,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Get discounts for product {0}", p.getId());
+                LOG.log(Level.INFO, "Get discounts for product " + p.getId());
                 ResultSet res = stmt.executeQuery(query);
                 discounts = getDiscountsFromResultSet(res);
                 con.commit();
@@ -1027,7 +1027,7 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
-                LOG.log(Level.INFO, "Add customer {0}", c.getId());
+                LOG.log(Level.INFO, "Add customer " + c.getId());
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
                 while (set.next()) {
@@ -1052,7 +1052,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Update customer {0}", c.getId());
+                LOG.log(Level.INFO, "Update customer " + c.getId());
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1079,7 +1079,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Remove customer {0}", id);
+                LOG.log(Level.INFO, "Remove customer " + id);
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1100,7 +1100,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Get customer {0}", id);
+                LOG.log(Level.INFO, "Get customer " + id);
                 ResultSet res = stmt.executeQuery(query);
                 customers = getCustomersFromResultSet(res);
                 con.commit();
@@ -1123,7 +1123,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Get customer {0}", name);
+                LOG.log(Level.INFO, "Get customer " + name);
                 ResultSet res = stmt.executeQuery(query);
                 customers = getCustomersFromResultSet(res);
                 con.commit();
@@ -1146,7 +1146,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Customer> customers = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Search customers for {0}", terms);
+                LOG.log(Level.INFO, "Search customers for " + terms);
                 ResultSet res = stmt.executeQuery(query);
                 customers = getCustomersFromResultSet(res);
                 con.commit();
@@ -1222,7 +1222,7 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
-                LOG.log(Level.INFO, "Add staff {0}", s.getId());
+                LOG.log(Level.INFO, "Add staff " + s.getId());
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
                 while (set.next()) {
@@ -1246,7 +1246,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Update staff {0}", s.getId());
+                LOG.log(Level.INFO, "Update staff " + s.getId());
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1273,7 +1273,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Remove staff {0}", id);
+                LOG.log(Level.INFO, "Remove staff " + id);
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1294,7 +1294,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Get staff {0}", id);
+                LOG.log(Level.INFO, "Get staff " + id);
                 ResultSet set = stmt.executeQuery(query);
                 staff = getStaffFromResultSet(set);
                 con.commit();
@@ -1319,7 +1319,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Staff> staff = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Login Staff {0}", username);
+                LOG.log(Level.INFO, "Login Staff " + username);
                 ResultSet res = stmt.executeQuery(query);
                 staff = getStaffFromResultSet(res);
                 con.commit();
@@ -1422,7 +1422,7 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
-                LOG.log(Level.INFO, "Add discount {0}", d.getId());
+                LOG.log(Level.INFO, "Add discount " + d.getId());
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
                 while (set.next()) {
@@ -1446,7 +1446,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Update discount {0}", d.getId());
+                LOG.log(Level.INFO, "Update discount " + d.getId());
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1473,7 +1473,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Remove discount {0}", id);
+                LOG.log(Level.INFO, "Remove discount " + id);
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1494,7 +1494,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new ArrayList<>();
             try {
-                LOG.log(Level.INFO, "Get discount {0}", id);
+                LOG.log(Level.INFO, "Get discount " + id);
                 ResultSet set = stmt.executeQuery(query);
                 discounts = getDiscountsFromResultSet(set);
                 con.commit();
@@ -2173,7 +2173,7 @@ public class DBConnect implements DataConnect {
             loggedIn.remove(s);
             return;
         } catch (InterruptedException ex) {
-            LOG.log(Level.SEVERE, "There has been an error loggin " + s.getId() + " out of the system", ex);
+            LOG.log(Level.SEVERE, "There has been an error logging " + s.getId() + " out of the system", ex);
         } finally {
             loggedInSem.release();
         }

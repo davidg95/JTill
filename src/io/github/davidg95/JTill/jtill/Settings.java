@@ -216,6 +216,10 @@ public class Settings implements Serializable {
             setSetting("BARCODE_LENGTH", "15");
             setSetting("NEXT_PLU", "0");
             setSetting("APPROVE_NEW_CONNECTIONS", "TRUE");
+            setSetting("TERMINAL_BACKGROUND", "#000000");
+            setSetting("SHOW_ADDRESS_RECEIPT", "TRUE");
+            setSetting("SHOW_STAFF_RECEIPT", "TRUE");
+            setSetting("SHOW_TERMINAL_RECEIPT", "TRUE");
 
             properties.store(out, null);
             out.close();
