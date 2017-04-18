@@ -207,7 +207,7 @@ public class Settings implements Serializable {
             setSetting("LOGOUT_TIMEOUT", "-1");
             setSetting("MINIMUM_SERVER_LOGIN", "2");
             setSetting("SETTINGS_EDIT", "3");
-            setSetting("CURERNCY_SYMBOL", "£");
+            setSetting("CURRENCY_SYMBOL", "£");
             setSetting("SITE_NAME", "SITE");
             setSetting("ASK_EMAIL_RECEIPT", "FALSE");
             setSetting("MAX_CACHE_SALES", "20");
