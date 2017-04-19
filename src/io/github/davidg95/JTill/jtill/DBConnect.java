@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -15,7 +16,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -27,6 +27,8 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
+import javax.imageio.ImageIO;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -79,8 +81,6 @@ public class DBConnect implements DataConnect {
     private final List<Integer> clockedOn;
     private final StampedLock clockLock;
 
-    private final String symbol; //Symbol to use for currency.
-
     /**
      * Constructor which initialises the concurrent locks.
      */
@@ -89,7 +89,7 @@ public class DBConnect implements DataConnect {
         supL = new StampedLock();
         suspendedSales = new HashMap<>();
         systemSettings = Settings.getInstance();
-        loggedIn = new ArrayList<>();
+        loggedIn = new LinkedList<>();
         loggedInSem = new Semaphore(1);
         connectedTills = FXCollections.observableArrayList();
         connectedTills.addListener((ListChangeListener.Change<? extends Till> c) -> {
@@ -97,9 +97,8 @@ public class DBConnect implements DataConnect {
         });
         handler = LogFileHandler.getInstance();
         Logger.getGlobal().addHandler(handler);
-        clockedOn = new ArrayList<>();
+        clockedOn = new LinkedList<>();
         clockLock = new StampedLock();
-        symbol = Settings.getInstance().getSetting("CURRENCY_SYMBOL");
     }
 
     /**
@@ -384,6 +383,14 @@ public class DBConnect implements DataConnect {
                 + "     TIMESTAMP BIGINT,\n"
                 + "     ONOFF int\n"
                 + ")";
+        String images = "create table \"APP\".IMAGES\n"
+                + "(\n"
+                + "     ID INT not null primary key\n"
+                + "         GENERATED ALWAYS AS IDENTITY\n"
+                + "         (START WITH 1, INCREMENT BY 1),\n"
+                + "     NAME VARCHAR(50),\n"
+                + "     URL VARCHAR(200)\n"
+                + ")";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
@@ -562,6 +569,14 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            try {
+                stmt.execute(images);
+                LOG.log(Level.INFO, "Created table images");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                error(ex);
+            }
 
             try {
                 String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
@@ -624,7 +639,7 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                products = new ArrayList<>();
+                products = new LinkedList<>();
                 while (set.next()) {
                     int code = set.getInt("pId");
                     int order_code = set.getInt("ORDER_CODE");
@@ -656,7 +671,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<Product> getProductsFromResultSet(ResultSet set) throws SQLException {
-        List<Product> products = new ArrayList<>();
+        List<Product> products = new LinkedList<>();
         while (set.next()) {
             int code = set.getInt("pId");
             int order_code = set.getInt("ORDER_CODE");
@@ -867,7 +882,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT p.ID as pId, p.ORDER_CODE, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.CATEGORY_ID, p.DEPARTMENT_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL FROM PRODUCTS p WHERE p.ID=" + code;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Product> products = new ArrayList<>();
+            List<Product> products = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get product " + code);
                 ResultSet res = stmt.executeQuery(query);
@@ -896,7 +911,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Product getProductByBarcode(String barcode) throws SQLException, ProductNotFoundException {
         String query = "SELECT p.ID as pId, p.ORDER_CODE, p.NAME as pName, p.OPEN_PRICE, p.PRICE, p.STOCK, p.COMMENTS, p.SHORT_NAME, p.DEPARTMENT_ID, p.CATEGORY_ID, p.TAX_ID, p.COST_PRICE, p.MIN_PRODUCT_LEVEL, p.MAX_PRODUCT_LEVEL, pl.ID as plId, pl.CODE as plCode, pl.PRODUCT as plProduct FROM PRODUCTS p, PLUS pl WHERE p.ID = pl.PRODUCT AND pl.CODE='" + barcode + "'";
-        List<Product> products = new ArrayList<>();
+        List<Product> products = new LinkedList<>();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
@@ -921,7 +936,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM DISCOUNTS, PRODUCTS WHERE PRODUCTS.ID = " + p.getId() + " AND PRODUCTS.DISCOUNT_ID = DISCOUNTS.ID";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Discount> discounts = new ArrayList<>();
+            List<Discount> discounts = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get discounts for product " + p.getId());
                 ResultSet res = stmt.executeQuery(query);
@@ -939,7 +954,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<Product> productLookup(String terms) throws IOException, SQLException {
         List<Product> products = this.getAllProducts();
-        List<Product> newList = new ArrayList<>();
+        List<Product> newList = new LinkedList<>();
         products.stream().filter((p) -> (p.getLongName().toLowerCase().contains(terms.toLowerCase()) || p.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((p) -> {
             newList.add(p);
         });
@@ -952,11 +967,11 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM CUSTOMERS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Customer> customers = new ArrayList<>();
+            List<Customer> customers = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get all customers");
                 ResultSet set = stmt.executeQuery(query);
-                customers = new ArrayList<>();
+                customers = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -987,7 +1002,7 @@ public class DBConnect implements DataConnect {
     }
 
     public List<Customer> getCustomersFromResultSet(ResultSet set) throws SQLException {
-        List<Customer> customers = new ArrayList<>();
+        List<Customer> customers = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -1005,7 +1020,7 @@ public class DBConnect implements DataConnect {
             BigDecimal moneyDue = new BigDecimal(set.getDouble("MONEY_DUE"));
 
             Customer c = new Customer(id, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
-            
+
             c = (Customer) Encryptor.decrypt(c);
             customers.add(c);
         }
@@ -1098,7 +1113,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Customer> customers = new ArrayList<>();
+            List<Customer> customers = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get customer " + id);
                 ResultSet res = stmt.executeQuery(query);
@@ -1121,7 +1136,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM CUSTOMERS WHERE CUSTOMERS.NAME = " + name;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Customer> customers = new ArrayList<>();
+            List<Customer> customers = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get customer " + name);
                 ResultSet res = stmt.executeQuery(query);
@@ -1144,7 +1159,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM CUSTOMERS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Customer> customers = new ArrayList<>();
+            List<Customer> customers = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Search customers for " + terms);
                 ResultSet res = stmt.executeQuery(query);
@@ -1156,7 +1171,7 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
 
-            List<Customer> newList = new ArrayList<>();
+            List<Customer> newList = new LinkedList<>();
 
             customers.stream().filter((c) -> (c.getName().toLowerCase().contains(terms.toLowerCase()))).forEachOrdered((c) -> {
                 newList.add(c);
@@ -1172,11 +1187,11 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Staff> staff = new ArrayList<>();
+            List<Staff> staff = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get all staff");
                 ResultSet set = stmt.executeQuery(query);
-                staff = new ArrayList<>();
+                staff = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -1200,7 +1215,7 @@ public class DBConnect implements DataConnect {
     }
 
     public List<Staff> getStaffFromResultSet(ResultSet set) throws SQLException {
-        List<Staff> staff = new ArrayList<>();
+        List<Staff> staff = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -1292,7 +1307,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Staff> staff = new ArrayList<>();
+            List<Staff> staff = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get staff " + id);
                 ResultSet set = stmt.executeQuery(query);
@@ -1317,7 +1332,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM STAFF WHERE STAFF.USERNAME = '" + username.toLowerCase() + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Staff> staff = new ArrayList<>();
+            List<Staff> staff = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Login Staff " + username);
                 ResultSet res = stmt.executeQuery(query);
@@ -1348,7 +1363,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Staff> staff = new ArrayList<>();
+            List<Staff> staff = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get staff count");
                 ResultSet res = stmt.executeQuery(query);
@@ -1370,11 +1385,11 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM DISCOUNTS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Discount> discounts = new ArrayList<>();
+            List<Discount> discounts = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get all discounts");
                 ResultSet set = stmt.executeQuery(query);
-                discounts = new ArrayList<>();
+                discounts = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -1399,7 +1414,7 @@ public class DBConnect implements DataConnect {
     }
 
     public List<Discount> getDiscountsFromResultSet(ResultSet set) throws SQLException {
-        List<Discount> discounts = new ArrayList<>();
+        List<Discount> discounts = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -1492,7 +1507,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM DISCOUNTS WHERE DISCOUNTS.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Discount> discounts = new ArrayList<>();
+            List<Discount> discounts = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get discount " + id);
                 ResultSet set = stmt.executeQuery(query);
@@ -1518,10 +1533,10 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM TAX";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Tax> tax = new ArrayList<>();
+            List<Tax> tax = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                tax = new ArrayList<>();
+                tax = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -1541,7 +1556,7 @@ public class DBConnect implements DataConnect {
     }
 
     public List<Tax> getTaxFromResultSet(ResultSet set) throws SQLException {
-        List<Tax> tax = new ArrayList<>();
+        List<Tax> tax = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -1635,7 +1650,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Tax> tax = new ArrayList<>();
+            List<Tax> tax = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tax = getTaxFromResultSet(set);
@@ -1659,7 +1674,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM PRODUCTS WHERE TAX_ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Product> products = new ArrayList<>();
+            List<Product> products = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 products = getProductsFromResultSet(set);
@@ -1680,10 +1695,10 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM CATEGORYS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Category> categorys = new ArrayList<>();
+            List<Category> categorys = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                categorys = new ArrayList<>();
+                categorys = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -1705,7 +1720,7 @@ public class DBConnect implements DataConnect {
     }
 
     public List<Category> getCategorysFromResultSet(ResultSet set) throws SQLException {
-        List<Category> categorys = new ArrayList<>();
+        List<Category> categorys = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -1801,7 +1816,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Category> categorys = new ArrayList<>();
+            List<Category> categorys = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 categorys = getCategorysFromResultSet(set);
@@ -1825,7 +1840,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM PRODUCTS WHERE PRODUCTS.CATEGORY_ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Product> products = new ArrayList<>();
+            List<Product> products = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 products = getProductsFromResultSet(set);
@@ -1841,7 +1856,7 @@ public class DBConnect implements DataConnect {
     }
 
     public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
-        List<Sale> sales = new ArrayList<>();
+        List<Sale> sales = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("sId");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
@@ -1917,10 +1932,10 @@ public class DBConnect implements DataConnect {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT FROM SALES s";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Sale> sales = new ArrayList<>();
+            List<Sale> sales = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                sales = new ArrayList<>();
+                sales = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("sId");
                     BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
@@ -1986,7 +2001,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS-LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND TERMINAL = '" + t + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Sale> sales = new ArrayList<>();
+            List<Sale> sales = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 sales = getSalesFromResultSet(set);
@@ -2018,7 +2033,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<SaleItem> getSaleItemsFromResultSet(ResultSet set) throws SQLException {
-        List<SaleItem> sales = new ArrayList<>();
+        List<SaleItem> sales = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             int item = set.getInt("PRODUCT_ID");
@@ -2037,7 +2052,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Sale> sales = new ArrayList<>();
+            List<Sale> sales = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 sales = getSalesFromResultSet(set);
@@ -2102,7 +2117,7 @@ public class DBConnect implements DataConnect {
             throw new IllegalArgumentException("Start date needs to be before end date");
         }
         List<Sale> s = getAllSales();
-        List<Sale> sales = new ArrayList<>();
+        List<Sale> sales = new LinkedList<>();
 
         s.stream().filter((sale) -> (sale.getDate().after(start) && sale.getDate().before(start))).forEachOrdered((sale) -> {
             sales.add(sale);
@@ -2125,7 +2140,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM STAFF WHERE STAFF.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Staff> staff = new ArrayList<>();
+            List<Staff> staff = new LinkedList<>();
             try {
                 ResultSet res = stmt.executeQuery(query);
                 staff = getStaffFromResultSet(res);
@@ -2181,7 +2196,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<Screen> getScreensFromResultSet(ResultSet set) throws SQLException {
-        List<Screen> screens = new ArrayList<>();
+        List<Screen> screens = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -2198,7 +2213,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<TillButton> getButtonsFromResultSet(ResultSet set) throws SQLException {
-        List<TillButton> buttons = new ArrayList<>();
+        List<TillButton> buttons = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -2308,7 +2323,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM SCREENS WHERE SCREENS.ID = " + s;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Screen> screens = new ArrayList<>();
+            List<Screen> screens = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 screens = getScreensFromResultSet(set);
@@ -2330,7 +2345,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM SCREENS WHERE BUTTONS.ID = " + b;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<TillButton> buttons = new ArrayList<>();
+            List<TillButton> buttons = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 buttons = getButtonsFromResultSet(set);
@@ -2394,10 +2409,10 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM SCREENS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Screen> screens = new ArrayList<>();
+            List<Screen> screens = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                screens = new ArrayList<>();
+                screens = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -2424,10 +2439,10 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM BUTTONS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<TillButton> buttons = new ArrayList<>();
+            List<TillButton> buttons = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                buttons = new ArrayList<>();
+                buttons = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -2456,10 +2471,10 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM BUTTONS WHERE BUTTONS.SCREEN_ID=" + s.getId();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<TillButton> buttons = new ArrayList<>();
+            List<TillButton> buttons = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                buttons = new ArrayList<>();
+                buttons = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -2602,8 +2617,7 @@ public class DBConnect implements DataConnect {
         text += "Here is your receipt from your recent purchase\n";
         text += "Sale ID: " + sale.getId() + "\n";
         text += "Time: " + sale.getDate().toString() + "\n";
-        //text = sale.getSaleItems().stream().map((i) -> i.getItem().getName() + "\t" + i.getQuantity() + "\t" + symbol + i.getPrice() + "\n").reduce(text, String::concat);
-
+        String symbol = Settings.getInstance().getSetting("CURRENCY_SYMBOL");
         text += "Total: " + symbol + sale.getTotal() + "\n";
         if (sale.isChargeAccount()) {
             text += "You will be invoiced for this sale\n";
@@ -2624,7 +2638,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<Till> getTillsFromResultSet(ResultSet set) throws SQLException {
-        List<Till> tills = new ArrayList<>();
+        List<Till> tills = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
@@ -2686,7 +2700,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM TILLS WHERE TILLS.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Till> tills = new ArrayList<>();
+            List<Till> tills = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tills = getTillsFromResultSet(set);
@@ -2709,7 +2723,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM TILLS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Till> tills = new ArrayList<>();
+            List<Till> tills = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tills = getTillsFromResultSet(set);
@@ -2766,7 +2780,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM TILLS WHERE TILLS.NAME = '" + t + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Till> tills = new ArrayList<>();
+            List<Till> tills = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 tills = getTillsFromResultSet(set);
@@ -2796,7 +2810,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<Plu> getPlusFromResultSet(ResultSet set) throws SQLException {
-        List<Plu> plus = new ArrayList<>();
+        List<Plu> plus = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String code = set.getString("CODE");
@@ -2858,7 +2872,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM PLUS WHERE ID=" + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Plu> plus = new ArrayList<>();
+            List<Plu> plus = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 plus = getPlusFromResultSet(set);
@@ -2881,7 +2895,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM PLUS WHERE CODE='" + code + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Plu> plus = new ArrayList<>();
+            List<Plu> plus = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 plus = getPlusFromResultSet(set);
@@ -2904,7 +2918,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM PLUS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Plu> plus = new ArrayList<>();
+            List<Plu> plus = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 plus = getPlusFromResultSet(set);
@@ -2979,7 +2993,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<WasteReport> getWasteReportsFromResultSet(ResultSet set) throws SQLException {
-        List<WasteReport> wrs = new ArrayList<>();
+        List<WasteReport> wrs = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             BigDecimal value = new BigDecimal(Double.toString(set.getDouble("VALUE")));
@@ -3039,7 +3053,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM WASTEREPORTS WHERE ID=" + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<WasteReport> wrs = new ArrayList<>();
+            List<WasteReport> wrs = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReportsFromResultSet(set);
@@ -3064,7 +3078,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM WASTEITEMS WHERE REPORT_ID=" + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<WasteItem> wis = new ArrayList<>();
+            List<WasteItem> wis = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wis = getWasteItemsFromResultSet(set);
@@ -3083,7 +3097,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM WASTEREPORTS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<WasteReport> wrs = new ArrayList<>();
+            List<WasteReport> wrs = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReportsFromResultSet(set);
@@ -3122,7 +3136,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<WasteItem> getWasteItemsFromResultSet(ResultSet set) throws SQLException {
-        List<WasteItem> wis = new ArrayList<>();
+        List<WasteItem> wis = new LinkedList<>();
         while (set.next()) {
             try {
                 int id = set.getInt("ID");
@@ -3184,7 +3198,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM WASTEITEMS WHERE ID=" + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<WasteItem> wis = new ArrayList<>();
+            List<WasteItem> wis = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wis = getWasteItemsFromResultSet(set);
@@ -3208,7 +3222,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM WASTEITEMS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<WasteItem> wis = new ArrayList<>();
+            List<WasteItem> wis = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wis = getWasteItemsFromResultSet(set);
@@ -3245,7 +3259,7 @@ public class DBConnect implements DataConnect {
     }
 
     private List<WasteReason> getWasteReasonsFromResultSet(ResultSet set) throws SQLException {
-        List<WasteReason> wrs = new ArrayList<>();
+        List<WasteReason> wrs = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
             String reason = set.getString("REASON");
@@ -3301,7 +3315,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM WASTEREASONS WHERE ID=" + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<WasteReason> wrs = new ArrayList<>();
+            List<WasteReason> wrs = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReasonsFromResultSet(set);
@@ -3324,7 +3338,7 @@ public class DBConnect implements DataConnect {
         String query = "SELECT * FROM WASTEREASONS";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<WasteReason> wrs = new ArrayList<>();
+            List<WasteReason> wrs = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
                 wrs = getWasteReasonsFromResultSet(set);
@@ -3439,7 +3453,7 @@ public class DBConnect implements DataConnect {
             long stamp = supL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                List<Supplier> suppliers = new ArrayList<>();
+                List<Supplier> suppliers = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -3528,7 +3542,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<Department> departments = new ArrayList<>();
+                List<Department> departments = new LinkedList<>();
                 while (set.next()) {
                     String name = set.getString("NAME");
                     departments.add(new Department(id, name));
@@ -3550,7 +3564,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<Department> departments = new ArrayList<>();
+                List<Department> departments = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -3654,7 +3668,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<SaleItem> getAllSaleItems() throws IOException, SQLException {
         String query = "SELECT * FROM SALEITEMS";
-        List<SaleItem> items = new ArrayList<>();
+        List<SaleItem> items = new LinkedList<>();
         int product_id;
         int sale_id;
         int type;
@@ -3685,7 +3699,7 @@ public class DBConnect implements DataConnect {
     @Override
     public List<SaleItem> submitSaleItemQuery(String q) throws SQLException {
         String query = "SELECT * FROM SALEITEMS " + q;
-        List<SaleItem> items = new ArrayList<>();
+        List<SaleItem> items = new LinkedList<>();
         int product_id;
         int sale_id;
         int type;
@@ -3889,7 +3903,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<SaleItem> items = new ArrayList<>();
+                List<SaleItem> items = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("iId");
                     int pId = set.getInt("pId");
@@ -3967,7 +3981,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<ClockItem> items = new ArrayList<>();
+                List<ClockItem> items = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     long timestamp = set.getLong("TIMESTAMP");
@@ -4030,7 +4044,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<DiscountBucket> buckets = new ArrayList<>();
+                List<DiscountBucket> buckets = new LinkedList<>();
                 while (set.next()) {
                     int bId = set.getInt("ID");
                     int triggers = set.getInt("TRIGGERSREQUIRED");
@@ -4071,7 +4085,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<Discount> discounts = new ArrayList<>();
+                List<Discount> discounts = new LinkedList<>();
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
@@ -4140,7 +4154,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<Trigger> triggers = new ArrayList<>();
+                List<Trigger> triggers = new LinkedList<>();
                 while (set.next()) {
                     int tId = set.getInt("ID");
                     int product = set.getInt("PRODUCT");
@@ -4198,7 +4212,7 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
-                List<Sale> sales = new ArrayList<>();
+                List<Sale> sales = new LinkedList<>();
                 while (set.next()) {
                     int sId = set.getInt("ID");
                     double price = set.getDouble("PRICE");

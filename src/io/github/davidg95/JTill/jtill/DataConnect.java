@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.util.Date;
 import java.util.List;
+import javafx.scene.image.Image;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
@@ -1582,15 +1583,19 @@ public interface DataConnect {
      * @throws JTillException if the bucket was not found.
      */
     public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException;
-    
+
     /**
      * Method to search SaleItems.
+     *
      * @param department the department to include.
      * @param category the category to include.
      * @param both if items should belong to the category AND department.
      * @param start the start date.
      * @param end the end date.
      * @return list of SaleItems.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if there was an error in the search.
      */
     public List<SaleItem> searchSaleItems(int department, int category, boolean both, Date start, Date end) throws IOException, SQLException, JTillException;
 }

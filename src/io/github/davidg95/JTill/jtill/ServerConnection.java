@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.image.Image;
 
 /**
  * Server connection class which handles communication with the server.
