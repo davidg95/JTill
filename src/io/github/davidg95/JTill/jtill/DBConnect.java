@@ -141,12 +141,14 @@ public class DBConnect implements DataConnect {
     public void create(String address, String username, String password) throws SQLException {
         LOG.log(Level.INFO, "The database does not exists, so it is getting created");
         embedded = new EmbeddedDriver();
+        TillSplashScreen.setLabel("Registering database driver");
         DriverManager.registerDriver(embedded);
-
+        TillSplashScreen.addBar(10);
         this.address = address;
         this.username = username;
         this.password = password;
         connected = true;
+        TillSplashScreen.setLabel("Creating tables");
         createTables();
     }
 
@@ -401,6 +403,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(tax);
                 LOG.log(Level.INFO, "Created tax table");
@@ -409,6 +412,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(categorys);
                 LOG.log(Level.INFO, "Created categorys table");
@@ -417,6 +421,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(departments);
                 LOG.log(Level.INFO, "Created departments table");
@@ -425,6 +430,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(configs);
                 LOG.log(Level.INFO, "Created configs table");
@@ -433,6 +439,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(sales);
                 LOG.log(Level.INFO, "Created sales table");
@@ -441,6 +448,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(customers);
                 LOG.log(Level.INFO, "Created customers table");
@@ -449,6 +457,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(products);
                 LOG.log(Level.INFO, "Created products table");
@@ -457,6 +466,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(plus);
                 LOG.log(Level.INFO, "Created plus table");
@@ -465,6 +475,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(discounts);
                 LOG.log(Level.INFO, "Created discounts table");
@@ -473,6 +484,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(buckets);
                 LOG.log(Level.INFO, "Created buckets table");
@@ -481,6 +493,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(triggers);
                 LOG.log(Level.INFO, "Create triggers table");
@@ -489,6 +502,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(saleItems);
                 LOG.log(Level.INFO, "Created saleItems table");
@@ -497,6 +511,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(staff);
                 LOG.log(Level.INFO, "Created staff table");
@@ -505,6 +520,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(screens);
                 LOG.log(Level.INFO, "Created screens table");
@@ -513,6 +529,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(buttons);
                 LOG.log(Level.INFO, "Created buttons table");
@@ -521,6 +538,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(wasteReports);
                 LOG.log(Level.INFO, "Created waste reports table");
@@ -529,6 +547,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(wasteReasons);
                 LOG.log(Level.INFO, "Created table waste reasons");
@@ -537,6 +556,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(wasteItems);
                 LOG.log(Level.INFO, "Created table waste items");
@@ -545,6 +565,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(suppliers);
                 LOG.log(Level.INFO, "Created table suppliers");
@@ -553,6 +574,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(receivedItems);
                 LOG.log(Level.INFO, "Created table recevied items");
@@ -561,6 +583,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(clockOnOff);
                 LOG.log(Level.INFO, "Created table clockonoff");
@@ -569,6 +592,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
             try {
                 stmt.execute(images);
                 LOG.log(Level.INFO, "Created table images");
@@ -577,6 +601,7 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 error(ex);
             }
+            TillSplashScreen.addBar(2);
 
             try {
                 String addCategory = "INSERT INTO CATEGORYS (NAME, TIME_RESTRICT, MINIMUM_AGE) VALUES ('Default','FALSE',0)";
