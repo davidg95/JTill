@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
@@ -27,8 +28,6 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.image.Image;
-import javax.imageio.ImageIO;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -159,6 +158,7 @@ public class DBConnect implements DataConnect {
                 + "	ID INT not null primary key\n"
                 + "        GENERATED ALWAYS AS IDENTITY\n"
                 + "        (START WITH 1, INCREMENT BY 1),\n"
+                + "     UUID VARCHAR(50) not null,\n"
                 + "	NAME VARCHAR(20) not null,\n"
                 + "     UNCASHED DOUBLE not null\n"
                 + ")";
@@ -2666,11 +2666,12 @@ public class DBConnect implements DataConnect {
         List<Till> tills = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt("ID");
+            UUID uuid = UUID.fromString(set.getString("UUID"));
             String name = set.getString("NAME");
             double d = set.getDouble("UNCASHED");
             BigDecimal uncashed = new BigDecimal(Double.toString(d));
 
-            Till t = new Till(name, uncashed, id);
+            Till t = new Till(name, uncashed, id, uuid);
 
             tills.add(t);
         }
@@ -2680,7 +2681,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Till addTill(Till t) throws IOException, SQLException {
-        String query = "INSERT INTO TILLS (NAME, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
+        String query = "INSERT INTO TILLS (NAME, UUID, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -2763,9 +2764,12 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Till connectTill(String t) {
+    public Till connectTill(String name, UUID uuid) {
         try {
-            Till till = this.getTillByName(t);
+            if(uuid == null){
+                throw new TillNotFoundException("No UUID");
+            }
+            Till till = this.getTillByUUID(uuid);
             g.addTill(till);
             connectedTills.add(till);
             return till;
@@ -2774,10 +2778,10 @@ public class DBConnect implements DataConnect {
         } catch (TillNotFoundException ex) {
             boolean result = true;
             if (this.getSetting("APPROVE_NEW_CONNECTIONS").equals("TRUE")) {
-                result = g.showYesNoMessage("New Till", "Allow till " + t + " to connect?");
+                result = g.showYesNoMessage("New Till", "Allow till " + name + " to connect?"); //Show the message on the terminal interface
             }
-            if (result) {
-                Till newTill = new Till(t);
+            if (result) { //If the connection was allowed
+                Till newTill = new Till(name);
                 try {
                     addTill(newTill);
                 } catch (IOException | SQLException ex1) {
@@ -2801,8 +2805,8 @@ public class DBConnect implements DataConnect {
         return connectedTills;
     }
 
-    private Till getTillByName(String t) throws SQLException, TillNotFoundException {
-        String query = "SELECT * FROM TILLS WHERE TILLS.NAME = '" + t + "'";
+    private Till getTillByUUID(UUID uuid) throws SQLException, TillNotFoundException {
+        String query = "SELECT * FROM TILLS WHERE TILLS.UUID = '" + uuid.toString() + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Till> tills = new LinkedList<>();
@@ -2817,7 +2821,7 @@ public class DBConnect implements DataConnect {
             }
 
             if (tills.isEmpty()) {
-                throw new TillNotFoundException(t + " could not be found");
+                throw new TillNotFoundException(uuid.toString() + " could not be found");
             }
 
             return tills.get(0);

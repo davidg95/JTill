@@ -18,6 +18,7 @@ public class Utilities {
      * @return true if it is a number, false otherwise.
      */
     public static boolean isNumber(String val) {
+        val = val.replace(".", "");
         if (val.matches("[0-9]+")) {
             return true;
         }

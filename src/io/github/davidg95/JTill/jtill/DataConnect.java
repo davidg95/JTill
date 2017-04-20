@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import javafx.scene.image.Image;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -1174,11 +1175,12 @@ public interface DataConnect {
     /**
      * Method to connect a till.
      *
-     * @param t the name of the till to connect.
+     * @param name the name of the till to connect.
+     * @param uuid the uuid of the till to connect.
      * @return the Till object.
      * @throws IOException if there was a network error.
      */
-    public Till connectTill(String t) throws IOException;
+    public Till connectTill(String name, UUID uuid) throws IOException;
 
     /**
      * Method to disconnect a till.

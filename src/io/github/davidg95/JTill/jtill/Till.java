@@ -8,6 +8,7 @@ package io.github.davidg95.JTill.jtill;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  *
@@ -16,6 +17,7 @@ import java.util.Date;
 public class Till implements Serializable, Cloneable, JTillObject {
 
     private int id;
+    private UUID uuid;
     private final String name;
     private BigDecimal uncashedTakings;
     private boolean connected;
@@ -25,17 +27,14 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.name = name;
         this.uncashedTakings = new BigDecimal("0");
         uncashedTakings = uncashedTakings.setScale(2);
+        this.uuid = UUID.randomUUID();
     }
 
-    public Till(String name, BigDecimal uncashedTakings) {
+    public Till(String name, BigDecimal uncashedTakings, int id, UUID uuid) {
         this(name);
         this.uncashedTakings = uncashedTakings;
-        this.uncashedTakings = this.uncashedTakings.setScale(2);
-    }
-
-    public Till(String name, BigDecimal uncashedTakings, int id) {
-        this(name, uncashedTakings);
         this.id = id;
+        this.uuid = uuid;
     }
 
     @Override
@@ -79,15 +78,25 @@ public class Till implements Serializable, Cloneable, JTillObject {
     public void setLastContact(Date lastContact) {
         this.lastContact = lastContact;
     }
-    
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
+                + "','" + this.uuid.toString()
                 + "'," + this.uncashedTakings;
     }
 
     public String getSQLUpdateString() {
         return "UPDATE TILLS"
                 + " SET NAME='" + this.name
+                + "' UUID='" + this.uuid.toString()
                 + "' UNCASHED=" + this.uncashedTakings
                 + " WHERE TILLS.ID=" + this.id;
     }

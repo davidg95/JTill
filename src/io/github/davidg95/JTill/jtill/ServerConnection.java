@@ -17,10 +17,10 @@ import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.image.Image;
 
 /**
  * Server connection class which handles communication with the server.
@@ -56,11 +56,12 @@ public class ServerConnection implements DataConnect {
      * @param IP the server IP address.
      * @param PORT the server port number.
      * @param site the name of the terminal.
+     * @param uuid the name of the terminal.
      * @return this connection till object.
      * @throws IOException if there was an error connecting.
      * @throws java.net.ConnectException if there was an error connecting.
      */
-    public Till connect(String IP, int PORT, String site) throws IOException, ConnectException {
+    public Till connect(String IP, int PORT, String site, UUID uuid) throws IOException, ConnectException {
         try {
             socket = new Socket();
             this.site = site;
@@ -68,7 +69,9 @@ public class ServerConnection implements DataConnect {
             obOut = new ObjectOutputStream(socket.getOutputStream());
             obOut.flush();
             obIn = new ObjectInputStream(socket.getInputStream());
-            obOut.writeObject(site);
+            ConnectionData sendUUID;
+            sendUUID = new ConnectionData("CON", site, uuid);
+            obOut.writeObject(sendUUID);
             g.showModalMessage("Server", "Waing for confirmation");
             Object o = obIn.readObject();
             ConnectionData data = (ConnectionData) o;
@@ -278,9 +281,9 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Till connectTill(String t) throws IOException {
+    public Till connectTill(String name, UUID uuid) throws IOException {
         try {
-            obOut.writeObject(ConnectionData.create("CONNECTTILL", t));
+            obOut.writeObject(ConnectionData.create("CONNECTTILL", name, uuid));
             ConnectionData data = (ConnectionData) obIn.readObject();
 
             if (data.getFlag().equals("CONNECT")) {
