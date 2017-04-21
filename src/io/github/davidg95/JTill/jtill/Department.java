@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author David
  */
-public class Department implements Serializable{
+public class Department implements Serializable, JTillObject{
     
     private int id;
     private String name;
@@ -25,6 +25,7 @@ public class Department implements Serializable{
         this.name = name;
     }
 
+    @Override
     public int getId() {
         return id;
     }
@@ -33,6 +34,7 @@ public class Department implements Serializable{
         this.id = id;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -70,6 +72,5 @@ public class Department implements Serializable{
     public String toString() {
         return id + " - " + name;
     }
-    
     
 }

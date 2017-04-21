@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -16,10 +17,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.StampedLock;
@@ -1929,6 +1932,16 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         }
+        Runnable run = new Runnable() {
+            @Override
+            public void run() {
+                for (SaleItem i : s.getSaleItems()) {
+
+                }
+            }
+        };
+        Thread thread = new Thread(run);
+        thread.start();
         for (SaleItem p : s.getSaleItems()) {
             addSaleItem(s, p);
             try {
@@ -1941,6 +1954,66 @@ public class DBConnect implements DataConnect {
             }
         }
         return s;
+    }
+
+    private void checkLoyalty(Product pr) {
+        List<JTillObject> contents = new ArrayList<>();
+        try (Scanner inDep = new Scanner(new File("departments.loyalty"))) {
+            while (inDep.hasNext()) {
+                try {
+                    String line = inDep.nextLine();
+                    int id = Integer.parseInt(line);
+                    final Department d = getDepartment(id);
+                    contents.add(d);
+                } catch (IOException | SQLException | JTillException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            try {
+                new File("departments.loyalty").createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        try (Scanner inCat = new Scanner(new File("categorys.loyalty"))) {
+            while (inCat.hasNext()) {
+                try {
+                    String line = inCat.nextLine();
+                    int id = Integer.parseInt(line);
+                    final Category c = getCategory(id);
+                    contents.add(c);
+                } catch (SQLException | CategoryNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            try {
+                new File("categorys.loyalty").createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        try (Scanner inPro = new Scanner(new File("products.loyalty"))) {
+            while (inPro.hasNext()) {
+                try {
+                    String line = inPro.nextLine();
+                    int id = Integer.parseInt(line);
+                    final Product p = getProduct(id);
+                    contents.add(p);
+                } catch (ProductNotFoundException | SQLException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } catch (FileNotFoundException e) {
+            try {
+                new File("products.loyalty").createNewFile();
+            } catch (IOException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 
     private void chargeCustomerAccount(Customer c, BigDecimal amount) {
@@ -2657,8 +2730,10 @@ public class DBConnect implements DataConnect {
             message.setSubject("Receipt for sale " + sale.getId());
             message.setText(text);
             Transport.send(message);
+
         } catch (SQLException | StaffNotFoundException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBConnect.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -2766,7 +2841,7 @@ public class DBConnect implements DataConnect {
     @Override
     public Till connectTill(String name, UUID uuid) {
         try {
-            if(uuid == null){
+            if (uuid == null) {
                 throw new TillNotFoundException("No UUID");
             }
             Till till = this.getTillByUUID(uuid);
@@ -4322,9 +4397,11 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
+
             }
         } catch (SQLException ex) {
-            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBConnect.class
+                    .getName()).log(Level.SEVERE, null, ex);
             throw new JTillException("Error getting Plu");
         }
     }
