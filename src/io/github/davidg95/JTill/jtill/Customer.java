@@ -170,6 +170,19 @@ public class Customer implements Serializable, JTillObject {
     public void setLoyaltyPoints(int loyaltyPoints) {
         this.loyaltyPoints = loyaltyPoints;
     }
+    
+    public int addLoyaltyPoints(int toAdd){
+        loyaltyPoints += toAdd;
+        return loyaltyPoints;
+    }
+    
+    public int removeLoyaltyPoints(int toRemove){
+        if(toRemove > loyaltyPoints){
+            return -1;
+        }
+        loyaltyPoints -= toRemove;
+        return loyaltyPoints;
+    }
 
     public String getNotes() {
         return notes;

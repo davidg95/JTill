@@ -220,6 +220,8 @@ public class Settings implements Serializable {
             setSetting("SHOW_ADDRESS_RECEIPT", "TRUE");
             setSetting("SHOW_STAFF_RECEIPT", "TRUE");
             setSetting("SHOW_TERMINAL_RECEIPT", "TRUE");
+            setSetting("LOYALTY_VALUE", "0");
+            setSetting("LOYALTY_SPEND_VALUE", "0");
 
             properties.store(out, null);
             out.close();

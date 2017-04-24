@@ -1090,6 +1090,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Customer updateCustomer(Customer c) throws SQLException, CustomerNotFoundException {
+        c = (Customer) Encryptor.encrypt(c);
         String query = c.getSQLUpdateString();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -1106,6 +1107,7 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
+            c = (Customer) Encryptor.decrypt(c);
             return c;
         }
     }
@@ -1912,20 +1914,15 @@ public class DBConnect implements DataConnect {
                     int id = set.getInt(1);
                     s.setId(id);
                 }
-                if (s.isChargeAccount()) {
-                    new Thread("Charge To Account") {
-                        @Override
-                        public void run() {
-                            try {
-                                final Customer c = DBConnect.this.getCustomer(s.getCustomer());
-                                chargeCustomerAccount(c, s.getTotal());
-                            } catch (SQLException | CustomerNotFoundException ex) {
-                                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    }.start();
-                }
                 con.commit();
+                if (s.isChargeAccount()) {
+                    try {
+                        final Customer c = DBConnect.this.getCustomer(s.getCustomer());
+                        chargeCustomerAccount(c, s.getTotal());
+                    } catch (SQLException | CustomerNotFoundException ex) {
+                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
@@ -1935,13 +1932,31 @@ public class DBConnect implements DataConnect {
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                for (SaleItem i : s.getSaleItems()) {
-
+                try {
+                    final Customer cus = getCustomer(s.getCustomer());
+                    for (SaleItem i : s.getSaleItems()) {
+                        try {
+                            final Product p = getProduct(i.getItem());
+                            if (checkLoyalty(p)) {
+                                String value = getSetting("LOYALTY_VALUE");
+                                int points = p.getPrice().divide(new BigDecimal(value)).intValue();
+                                points = points * i.getQuantity();
+                                cus.addLoyaltyPoints(points);
+                            }
+                        } catch (SQLException | ProductNotFoundException ex) {
+                            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                    updateCustomer(cus);
+                } catch (SQLException | CustomerNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         };
         Thread thread = new Thread(run);
-        thread.start();
+        if (s.getCustomer() > 1) {
+            thread.start();
+        }
         for (SaleItem p : s.getSaleItems()) {
             addSaleItem(s, p);
             try {
@@ -1956,7 +1971,7 @@ public class DBConnect implements DataConnect {
         return s;
     }
 
-    private void checkLoyalty(Product pr) {
+    private boolean checkLoyalty(Product pr) {
         List<JTillObject> contents = new ArrayList<>();
         try (Scanner inDep = new Scanner(new File("departments.loyalty"))) {
             while (inDep.hasNext()) {
@@ -2014,6 +2029,33 @@ public class DBConnect implements DataConnect {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+
+        for (JTillObject o : contents) {
+            if (o instanceof Product) {
+                if (((Product) o).equals(pr)) {
+                    return true;
+                }
+            } else if (o instanceof Department) {
+                try {
+                    final Department dep = getDepartment(pr.getDepartment());
+                    if (((Department) o).equals(dep)) {
+                        return true;
+                    }
+                } catch (IOException | SQLException | JTillException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            } else if (o instanceof Category) {
+                try {
+                    final Category cat = getCategory(pr.getCategory());
+                    if (((Category) o).equals(cat)) {
+                        return true;
+                    }
+                } catch (SQLException | CategoryNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return false;
     }
 
     private void chargeCustomerAccount(Customer c, BigDecimal amount) {
