@@ -1961,7 +1961,10 @@ public class DBConnect implements DataConnect {
             addSaleItem(s, p);
             try {
                 if (p.getType() == SaleItem.PRODUCT) {
-                    purchaseProduct(p.getItem(), p.getQuantity());
+                    final Product pr = this.getProduct(p.getItem());
+                    if (!pr.isOpen()) {
+                        purchaseProduct(p.getItem(), p.getQuantity());
+                    }
                 }
             } catch (OutOfStockException ex) {
                 g.log(ex);
