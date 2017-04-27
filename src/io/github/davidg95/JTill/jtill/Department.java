@@ -62,10 +62,7 @@ public class Department implements Serializable, JTillObject{
             return false;
         }
         final Department other = (Department) obj;
-        if (this.id != other.id) {
-            return false;
-        }
-        return true;
+        return this.id == other.id;
     }
 
     @Override

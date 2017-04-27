@@ -12,7 +12,6 @@ import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import javafx.scene.image.Image;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 

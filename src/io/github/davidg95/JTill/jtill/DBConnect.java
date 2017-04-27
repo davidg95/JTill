@@ -1929,28 +1929,25 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         }
-        Runnable run = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final Customer cus = getCustomer(s.getCustomer());
-                    for (SaleItem i : s.getSaleItems()) {
-                        try {
-                            final Product p = getProduct(i.getItem());
-                            if (checkLoyalty(p)) {
-                                String value = getSetting("LOYALTY_VALUE");
-                                int points = p.getPrice().divide(new BigDecimal(value)).intValue();
-                                points = points * i.getQuantity();
-                                cus.addLoyaltyPoints(points);
-                            }
-                        } catch (SQLException | ProductNotFoundException ex) {
-                            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+        Runnable run = () -> {
+            try {
+                final Customer cus = getCustomer(s.getCustomer());
+                for (SaleItem i : s.getSaleItems()) {
+                    try {
+                        final Product p = getProduct(i.getItem());
+                        if (checkLoyalty(p)) {
+                            String value = getSetting("LOYALTY_VALUE");
+                            int points = p.getPrice().divide(new BigDecimal(value)).intValue();
+                            points = points * i.getQuantity();
+                            cus.addLoyaltyPoints(points);
                         }
+                    } catch (SQLException | ProductNotFoundException ex) {
+                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    updateCustomer(cus);
-                } catch (SQLException | CustomerNotFoundException ex) {
-                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                updateCustomer(cus);
+            } catch (SQLException | CustomerNotFoundException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
         };
         Thread thread = new Thread(run);
