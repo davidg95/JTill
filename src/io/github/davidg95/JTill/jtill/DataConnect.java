@@ -1591,7 +1591,6 @@ public interface DataConnect {
      *
      * @param department the department to include.
      * @param category the category to include.
-     * @param both if items should belong to the category AND department.
      * @param start the start date.
      * @param end the end date.
      * @return list of SaleItems.
@@ -1599,5 +1598,5 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error in the search.
      */
-    public List<SaleItem> searchSaleItems(int department, int category, boolean both, Date start, Date end) throws IOException, SQLException, JTillException;
+    public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException;
 }

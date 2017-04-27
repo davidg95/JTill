@@ -4452,8 +4452,14 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public List<SaleItem> searchSaleItems(int department, int category, boolean both, Date start, Date end) throws IOException, SQLException, JTillException {
-        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId FROM PRODUCTS p, SALEITEMS i WHERE p.DEPARTMENT_ID = " + department + (both ? " AND " : " OR ") + "p.CATEGORY_ID = " + category + " AND p.ID = i.PRODUCT_ID AND i.TYPE = 1";
+    public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
+        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId FROM PRODUCTS p, SALEITEMS i WHERE p.ID = i.PRODUCT_ID AND i.TYPE = 1";
+        if (department > -1) {
+            pQuery = pQuery.concat(" AND p.DEPARTMENT_ID = " + department);
+        }
+        if (category > -1) {
+            pQuery = pQuery.concat(" AND p.CATEGORY_ID = " + category);
+        }
         try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
