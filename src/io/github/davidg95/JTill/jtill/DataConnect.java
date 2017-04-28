@@ -1598,4 +1598,16 @@ public interface DataConnect {
      * @throws JTillException if there was an error in the search.
      */
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to get a terminals sales.
+     *
+     * @param terminal the terminal to get sales for.
+     * @param uncashedOnly true if you only want uncashed sales, false for all.
+     * @return a List of the terminals sales.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if there was an error in the search.
+     */
+    public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException;
 }

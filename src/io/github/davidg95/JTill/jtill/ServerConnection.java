@@ -3544,4 +3544,9 @@ public class ServerConnection implements DataConnect {
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
         return null;
     }
+
+    @Override
+    public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException {
+        return null;
+    }
 }
