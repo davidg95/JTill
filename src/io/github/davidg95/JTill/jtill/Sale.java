@@ -132,7 +132,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     //Product is not open price and does already exist
                     item.increaseQuantity(quantity);
                     item.setName(i.getName()); //Set the name for the list box.
-                    item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString()); //Set the total for the list box.
+                    item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total for the list box.
                     this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
                     this.lastAdded = new SaleItem(this.id, i.getId(), quantity, item.getPrice(), type); //Set this item to the last item added.
                     return true;
@@ -144,7 +144,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
         this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
         item.setName(i.getName()); //Set the name of the item for the list box.
-        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).toString()); //Set the total of the item for the list box.
+        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total of the item for the list box.
         saleItems.add(item); //Add the item to the list of sale items.
         this.lastAdded = item; //Set this item to the last item added.
         updateTotal(); //Update the total.
