@@ -232,16 +232,6 @@ public interface DataConnect {
     public Product getProductByBarcode(String barcode) throws IOException, ProductNotFoundException, SQLException;
 
     /**
-     * Method to get the discount for a product.
-     *
-     * @param p the product to get the discount for.
-     * @return a List of discounts the product has.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was an error getting the product.
-     */
-    public List<Discount> getProductsDiscount(Product p) throws IOException, SQLException;
-
-    /**
      * Method to search for a product.
      *
      * @param terms the search terms.

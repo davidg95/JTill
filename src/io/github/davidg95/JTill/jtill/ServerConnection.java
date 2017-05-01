@@ -620,32 +620,6 @@ public class ServerConnection implements DataConnect {
         return false;
     }
 
-    @Override
-    public List<Discount> getProductsDiscount(Product p) throws IOException, SQLException {
-        List<Discount> discounts = null;
-        try {
-            sem.acquire();
-            obOut.writeObject(ConnectionData.create("GETPRODUCTSDISCOUNT", p));
-
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("SUCC")) {
-                return (List) data.getData();
-            } else {
-                if (data.getData() instanceof SQLException) {
-                    throw (SQLException) data.getData();
-                } else {
-                    throw new IOException(data.getData().toString());
-                }
-            }
-        } catch (InterruptedException | ClassNotFoundException ex) {
-            LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
-        } finally {
-            sem.release();
-        }
-        return discounts;
-    }
-
     /**
      * Method to get a List of all products on the server.
      *
@@ -1208,9 +1182,9 @@ public class ServerConnection implements DataConnect {
 
             List<Staff> staff = (List) o;
 
-            for (Staff s : staff) {
+            staff.forEach((s) -> {
                 s.setPassword(Encryptor.decrypt(s.getPassword()));
-            }
+            });
 
             return staff;
         } catch (InterruptedException | ClassNotFoundException ex) {
