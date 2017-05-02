@@ -54,6 +54,7 @@ public class TillSplashScreen extends JWindow {
     
     public static void addBar(int val){
         bar.setValue(bar.getValue() + val);
+        bar.repaint();
     }
 
 }

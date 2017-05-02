@@ -134,6 +134,23 @@ public class DBConnect implements DataConnect {
         return connection;
     }
 
+    public void integrityCheck() throws SQLException {
+        String query = "SELECT schemaname, tablename,\n"
+                + "SYSCS_UTIL.SYSCS_CHECK_TABLE(schemaname, tablename)\n"
+                + "FROM sys.sysschemas s, sys.systables t\n"
+                + "WHERE s.schemaid = t.schemaid";
+        try (Connection con = getNewConnection()) {
+            Statement stmt = con.createStatement();
+            try {
+                stmt.execute(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
+        }
+    }
+
     /**
      * Method which creates the database.
      *
@@ -972,14 +989,14 @@ public class DBConnect implements DataConnect {
             try {
                 LOG.log(Level.INFO, "Get Product " + barcode);
                 long stamp = productLock.readLock();
-                try{
-                ResultSet res = stmt.executeQuery(query);
-                products = getProductsFromResultSet(res);
-                con.commit();
-                if (products.isEmpty()) {
-                    throw new ProductNotFoundException(barcode + " could not be found");
-                }
-                } finally{
+                try {
+                    ResultSet res = stmt.executeQuery(query);
+                    products = getProductsFromResultSet(res);
+                    con.commit();
+                    if (products.isEmpty()) {
+                        throw new ProductNotFoundException(barcode + " could not be found");
+                    }
+                } finally {
                     productLock.unlockRead(stamp);
                 }
             } catch (SQLException ex) {
@@ -1402,22 +1419,24 @@ public class DBConnect implements DataConnect {
 
     @Override
     public int getStaffCount() throws SQLException {
-        String query = "SELECT * FROM STAFF";
+        String query = "SELECT COUNT(*) FROM STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
-            List<Staff> staff = new LinkedList<>();
             try {
                 LOG.log(Level.INFO, "Get staff count");
                 ResultSet res = stmt.executeQuery(query);
-                staff = getStaffFromResultSet(res);
+                while (res.next()) {
+                    int count = res.getInt(1);
+                    con.commit();
+                    return count;
+                }
                 con.commit();
+                return 0;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
-
-            return staff.size();
         }
     }
 

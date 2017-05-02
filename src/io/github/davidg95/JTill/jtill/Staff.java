@@ -62,6 +62,7 @@ public class Staff implements Serializable, JTillObject {
      * @param position the position they have.
      * @param username their username.
      * @param password their password.
+     * @param wage the staff members wage.
      */
     public Staff(String name, int position, String username, String password, double wage) {
         this.name = name;
@@ -80,6 +81,7 @@ public class Staff implements Serializable, JTillObject {
      * @param position the position they have.
      * @param username their username.
      * @param password their password.
+     * @param wage the staff members wage.
      */
     public Staff(int id, String name, int position, String username, String password, double wage) {
         this(name, position, username, password, wage);
