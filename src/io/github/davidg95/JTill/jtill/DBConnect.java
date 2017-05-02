@@ -1633,7 +1633,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Tax updateTax(Tax t) throws SQLException, TaxNotFoundException {
+    public Tax updateTax(Tax t) throws SQLException, JTillException {
         String query = t.getSQLUpdateString();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -1642,7 +1642,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new TaxNotFoundException(t.getId() + "");
+                    throw new JTillException(t.getId() + "");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -1654,12 +1654,12 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void removeTax(Tax t) throws SQLException, TaxNotFoundException {
+    public void removeTax(Tax t) throws SQLException, JTillException {
         removeTax(t.getId());
     }
 
     @Override
-    public void removeTax(int id) throws SQLException, TaxNotFoundException {
+    public void removeTax(int id) throws SQLException, JTillException {
         List<Product> products = this.getProductsInTax(id);
         final Tax DEFAULT_TAX = this.getTax(1);
         for (Product p : products) {
@@ -1677,7 +1677,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new TaxNotFoundException(id + "");
+                    throw new JTillException(id + "");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -1688,7 +1688,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Tax getTax(int id) throws SQLException, TaxNotFoundException {
+    public Tax getTax(int id) throws SQLException, JTillException {
         String query = "SELECT * FROM TAX WHERE TAX.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -1704,7 +1704,7 @@ public class DBConnect implements DataConnect {
             }
 
             if (tax.isEmpty()) {
-                throw new TaxNotFoundException(id + "");
+                throw new JTillException(id + "");
             }
 
             return tax.get(0);
@@ -1799,7 +1799,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Category updateCategory(Category c) throws SQLException, CategoryNotFoundException {
+    public Category updateCategory(Category c) throws SQLException, JTillException {
         String query = c.getSQLUpdateString();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -1808,7 +1808,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new CategoryNotFoundException(c.getId() + "");
+                    throw new JTillException(c.getId() + "");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -1820,12 +1820,12 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void removeCategory(Category c) throws SQLException, CategoryNotFoundException {
+    public void removeCategory(Category c) throws SQLException, JTillException {
         removeCategory(c.getId());
     }
 
     @Override
-    public void removeCategory(int id) throws SQLException, CategoryNotFoundException {
+    public void removeCategory(int id) throws SQLException, JTillException {
         List<Product> products = getProductsInCategory(id);
         final Category DEFAULT_CATEGORY = getCategory(1);
         for (Product p : products) {
@@ -1843,7 +1843,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new CategoryNotFoundException(id + "");
+                    throw new JTillException(id + "");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -1854,7 +1854,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Category getCategory(int id) throws SQLException, CategoryNotFoundException {
+    public Category getCategory(int id) throws SQLException, JTillException {
         String query = "SELECT * FROM CATEGORYS WHERE CATEGORYS.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -1870,7 +1870,7 @@ public class DBConnect implements DataConnect {
             }
 
             if (categorys.isEmpty()) {
-                throw new CategoryNotFoundException(id + "");
+                throw new JTillException(id + "");
             }
 
             return categorys.get(0);
@@ -2011,7 +2011,7 @@ public class DBConnect implements DataConnect {
                     int id = Integer.parseInt(line);
                     final Category c = getCategory(id);
                     contents.add(c);
-                } catch (SQLException | CategoryNotFoundException ex) {
+                } catch (SQLException | JTillException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -2062,7 +2062,7 @@ public class DBConnect implements DataConnect {
                     if (((Category) o).equals(cat)) {
                         return true;
                     }
-                } catch (SQLException | CategoryNotFoundException ex) {
+                } catch (SQLException | JTillException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -2133,7 +2133,7 @@ public class DBConnect implements DataConnect {
                         s.setCashed(true);
                         try {
                             updateSaleNoSem(s);
-                        } catch (SaleNotFoundException ex) {
+                        } catch (JTillException ex) {
                             LOG.log(Level.WARNING, null, ex);
                         }
                     }
@@ -2200,7 +2200,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Sale getSale(int id) throws SQLException, SaleNotFoundException {
+    public Sale getSale(int id) throws SQLException, JTillException {
         String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2216,14 +2216,14 @@ public class DBConnect implements DataConnect {
             }
 
             if (sales.isEmpty()) {
-                throw new SaleNotFoundException(id + "");
+                throw new JTillException(id + "");
             }
             return sales.get(0);
         }
     }
 
     @Override
-    public Sale updateSale(Sale s) throws SQLException, SaleNotFoundException {
+    public Sale updateSale(Sale s) throws SQLException, JTillException {
         String query = s.getSQLUpdateStatement();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2232,7 +2232,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new SaleNotFoundException(s.getId() + "");
+                    throw new JTillException(s.getId() + "");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -2243,7 +2243,7 @@ public class DBConnect implements DataConnect {
         return s;
     }
 
-    public Sale updateSaleNoSem(Sale s) throws SQLException, SaleNotFoundException {
+    public Sale updateSaleNoSem(Sale s) throws SQLException, JTillException {
         String query = s.getSQLUpdateStatement();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2257,7 +2257,7 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
             if (value == 0) {
-                throw new SaleNotFoundException(s.getId() + "");
+                throw new JTillException(s.getId() + "");
             }
         }
         return s;
@@ -2451,7 +2451,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void removeButton(TillButton b) throws SQLException, ButtonNotFoundException {
+    public void removeButton(TillButton b) throws SQLException, JTillException {
         String query = "DELETE FROM BUTTONS WHERE BUTTONS.ID = " + b.getId();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2460,7 +2460,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new ButtonNotFoundException("Button " + b + " could not be found");
+                    throw new JTillException("Button " + b + " could not be found");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -2493,7 +2493,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public TillButton getButton(int b) throws SQLException, ButtonNotFoundException {
+    public TillButton getButton(int b) throws SQLException, JTillException {
         String query = "SELECT * FROM SCREENS WHERE BUTTONS.ID = " + b;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2508,7 +2508,7 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
             if (buttons.isEmpty()) {
-                throw new ButtonNotFoundException("Button " + b + " could not be found");
+                throw new JTillException("Button " + b + " could not be found");
             }
             return buttons.get(0);
         }
@@ -2536,7 +2536,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public TillButton updateButton(TillButton b) throws SQLException, ButtonNotFoundException {
+    public TillButton updateButton(TillButton b) throws SQLException, JTillException {
         String query = b.getSQLUpdateString();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2545,7 +2545,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new ButtonNotFoundException("Button " + b + " could not be found");
+                    throw new JTillException("Button " + b + " could not be found");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -2831,7 +2831,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void removeTill(int id) throws IOException, SQLException, TillNotFoundException {
+    public void removeTill(int id) throws IOException, SQLException, JTillException {
         String query = "DELETE FROM TILLS WHERE TILLS.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2840,7 +2840,7 @@ public class DBConnect implements DataConnect {
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
-                    throw new TillNotFoundException(id + " could not be found");
+                    throw new JTillException(id + " could not be found");
                 }
             } catch (SQLException ex) {
                 con.rollback();
@@ -2851,7 +2851,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Till getTill(int id) throws IOException, SQLException, TillNotFoundException {
+    public Till getTill(int id) throws IOException, SQLException, JTillException {
         String query = "SELECT * FROM TILLS WHERE TILLS.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2867,7 +2867,7 @@ public class DBConnect implements DataConnect {
             }
 
             if (tills.isEmpty()) {
-                throw new TillNotFoundException(id + " could not be found");
+                throw new JTillException(id + " could not be found");
             }
             return tills.get(0);
         }
@@ -2896,7 +2896,7 @@ public class DBConnect implements DataConnect {
     public Till connectTill(String name, UUID uuid) {
         try {
             if (uuid == null) {
-                throw new TillNotFoundException("No UUID");
+                throw new JTillException("No UUID");
             }
             Till till = this.getTillByUUID(uuid);
             g.addTill(till);
@@ -2904,7 +2904,7 @@ public class DBConnect implements DataConnect {
             return till;
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, "There has been an error adding a till to the database", ex);
-        } catch (TillNotFoundException ex) {
+        } catch (JTillException ex) {
             boolean result = true;
             if (this.getSetting("APPROVE_NEW_CONNECTIONS").equals("TRUE")) {
                 result = g.showYesNoMessage("New Till", "Allow till " + name + " to connect?"); //Show the message on the terminal interface
@@ -2934,7 +2934,7 @@ public class DBConnect implements DataConnect {
         return connectedTills;
     }
 
-    private Till getTillByUUID(UUID uuid) throws SQLException, TillNotFoundException {
+    private Till getTillByUUID(UUID uuid) throws SQLException, JTillException {
         String query = "SELECT * FROM TILLS WHERE TILLS.UUID = '" + uuid.toString() + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
@@ -2950,7 +2950,7 @@ public class DBConnect implements DataConnect {
             }
 
             if (tills.isEmpty()) {
-                throw new TillNotFoundException(uuid.toString() + " could not be found");
+                throw new JTillException(uuid.toString() + " could not be found");
             }
 
             return tills.get(0);

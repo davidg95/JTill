@@ -435,9 +435,9 @@ public interface DataConnect {
      * @return the sale matching the id.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws SaleNotFoundException if the sale could not be found.
+     * @throws JTillException if the sale could not be found.
      */
-    public Sale getSale(int id) throws IOException, SQLException, SaleNotFoundException;
+    public Sale getSale(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all sales within the specified date range.
@@ -457,9 +457,9 @@ public interface DataConnect {
      * @return the sale that was updated.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws SaleNotFoundException if the sale could not be found.
+     * @throws JTillException if the sale could not be found.
      */
-    public Sale updateSale(Sale s) throws IOException, SQLException, SaleNotFoundException;
+    public Sale updateSale(Sale s) throws IOException, SQLException, JTillException;
 
     /**
      * Method to suspend a sale. This will add the sale to a list of suspended
@@ -746,9 +746,9 @@ public interface DataConnect {
      * @return the category that was updated.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws CategoryNotFoundException if the category could not be found.
+     * @throws JTillException if the category could not be found.
      */
-    public Category updateCategory(Category c) throws IOException, SQLException, CategoryNotFoundException;
+    public Category updateCategory(Category c) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a category from the system.
@@ -756,9 +756,9 @@ public interface DataConnect {
      * @param c the category to remove.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws CategoryNotFoundException if the category could not be found.
+     * @throws JTillException if the category could not be found.
      */
-    public void removeCategory(Category c) throws IOException, SQLException, CategoryNotFoundException;
+    public void removeCategory(Category c) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a category from the system.
@@ -766,9 +766,9 @@ public interface DataConnect {
      * @param id the id of the category to remove.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws CategoryNotFoundException if the category could not be found.
+     * @throws JTillException if the category could not be found.
      */
-    public void removeCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
+    public void removeCategory(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a category from the system.
@@ -777,9 +777,9 @@ public interface DataConnect {
      * @return the category that matches the id.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws CategoryNotFoundException if the category could not be found.
+     * @throws JTillException if the category could not be found.
      */
-    public Category getCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
+    public Category getCategory(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all the categories in the system.
@@ -797,9 +797,9 @@ public interface DataConnect {
      * @return a List of all the products in the category.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws CategoryNotFoundException if the category could not be found.
+     * @throws JTillException if the category could not be found.
      */
-    public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException;
+    public List<Product> getProductsInCategory(int id) throws IOException, SQLException, JTillException;
 
     //Department
     /**
@@ -941,9 +941,9 @@ public interface DataConnect {
      * @param t the tax to remove.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws TaxNotFoundException if the tax was not found.
+     * @throws JTillException if the tax was not found.
      */
-    public void removeTax(Tax t) throws IOException, SQLException, TaxNotFoundException;
+    public void removeTax(Tax t) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a tax from the system given its ID.
@@ -951,9 +951,9 @@ public interface DataConnect {
      * @param id the ID of the tax to remove.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws TaxNotFoundException if the tax was not found.
+     * @throws JTillException if the tax was not found.
      */
-    public void removeTax(int id) throws IOException, SQLException, TaxNotFoundException;
+    public void removeTax(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a tax from the system.
@@ -962,9 +962,9 @@ public interface DataConnect {
      * @return the Tax.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws TaxNotFoundException if the tax was not found.
+     * @throws JTillException if the tax was not found.
      */
-    public Tax getTax(int id) throws IOException, SQLException, TaxNotFoundException;
+    public Tax getTax(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to update a tax on the system
@@ -973,9 +973,9 @@ public interface DataConnect {
      * @return the tax after getting updated.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws TaxNotFoundException if the tax was not found.
+     * @throws JTillException if the tax was not found.
      */
-    public Tax updateTax(Tax t) throws IOException, SQLException, TaxNotFoundException;
+    public Tax updateTax(Tax t) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a list of all the tax on the system.
@@ -993,9 +993,9 @@ public interface DataConnect {
      * @return a List of type Product.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws TaxNotFoundException if the Tax was not found.
+     * @throws JTillException if the Tax was not found.
      */
-    public List<Product> getProductsInTax(int id) throws IOException, SQLException, TaxNotFoundException;
+    public List<Product> getProductsInTax(int id) throws IOException, SQLException, JTillException;
 
     //Screens
     /**
@@ -1035,9 +1035,9 @@ public interface DataConnect {
      * @param b the button to remove.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws ButtonNotFoundException if the button was not found.
+     * @throws JTillException if the button was not found.
      */
-    public void removeButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException;
+    public void removeButton(TillButton b) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a screen from the server.
@@ -1057,9 +1057,9 @@ public interface DataConnect {
      * @return the Button that matches the ID.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws ButtonNotFoundException if the button was not found.
+     * @throws JTillException if the button was not found.
      */
-    public TillButton getButton(int b) throws IOException, SQLException, ButtonNotFoundException;
+    public TillButton getButton(int b) throws IOException, SQLException, JTillException;
 
     /**
      * Method to update a screen on the server.
@@ -1079,9 +1079,9 @@ public interface DataConnect {
      * @return the button after being updated.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws ButtonNotFoundException if the button was not found.
+     * @throws JTillException if the button was not found.
      */
-    public TillButton updateButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException;
+    public TillButton updateButton(TillButton b) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all screens on the database.
@@ -1137,9 +1137,9 @@ public interface DataConnect {
      * @param id the ID of the till to remove.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws TillNotFoundException if the till was not found.
+     * @throws JTillException if the till was not found.
      */
-    public void removeTill(int id) throws IOException, SQLException, TillNotFoundException;
+    public void removeTill(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a till from the server.
@@ -1148,9 +1148,9 @@ public interface DataConnect {
      * @return the till that matches the ID.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws TillNotFoundException if the till was not found.
+     * @throws JTillException if the till was not found.
      */
-    public Till getTill(int id) throws IOException, SQLException, TillNotFoundException;
+    public Till getTill(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all tills on the server.

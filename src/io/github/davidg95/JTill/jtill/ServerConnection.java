@@ -239,7 +239,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Till getTill(int id) throws IOException, SQLException, TillNotFoundException {
+    public Till getTill(int id) throws IOException, SQLException, JTillException {
         try {
             obOut.writeObject(ConnectionData.create("GETTILL", id));
 
@@ -248,8 +248,8 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("GET")) {
                 return (Till) data.getData();
             } else {
-                if (data.getData() instanceof TillNotFoundException) {
-                    throw (TillNotFoundException) data.getData();
+                if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
                 } else {
@@ -970,7 +970,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Sale getSale(int id) throws IOException, SQLException, SaleNotFoundException {
+    public Sale getSale(int id) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETSALE", id));
@@ -980,8 +980,8 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("SUCC")) {
                 return (Sale) data.getData();
             } else {
-                if (data.getData() instanceof SaleNotFoundException) {
-                    throw (SaleNotFoundException) data.getData();
+                if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
                 } else {
@@ -997,7 +997,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Sale updateSale(Sale s) throws IOException, SaleNotFoundException, SQLException {
+    public Sale updateSale(Sale s) throws IOException, JTillException, SQLException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATESALE", s));
@@ -1007,8 +1007,8 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("SUCC")) {
                 return (Sale) data.getData();
             } else {
-                if (data.getData() instanceof SaleNotFoundException) {
-                    throw (SaleNotFoundException) data.getData();
+                if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
                 } else {
@@ -1417,7 +1417,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Category updateCategory(Category c) throws IOException, SQLException, CategoryNotFoundException {
+    public Category updateCategory(Category c) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATECATEGORY", c));
@@ -1429,8 +1429,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof CategoryNotFoundException) {
-                    throw (CategoryNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -1445,12 +1445,12 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public void removeCategory(Category c) throws IOException, CategoryNotFoundException, SQLException {
+    public void removeCategory(Category c) throws IOException, JTillException, SQLException {
         removeCategory(c.getId());
     }
 
     @Override
-    public void removeCategory(int id) throws IOException, CategoryNotFoundException, SQLException {
+    public void removeCategory(int id) throws IOException, JTillException, SQLException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVECATEGORY", id));
@@ -1460,8 +1460,8 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("FAIL")) {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof CategoryNotFoundException) {
-                    throw (CategoryNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -1475,7 +1475,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Category getCategory(int id) throws IOException, SQLException, CategoryNotFoundException {
+    public Category getCategory(int id) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETCATEGORY", id));
@@ -1487,8 +1487,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof CategoryNotFoundException) {
-                    throw (CategoryNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
                 }
@@ -1531,7 +1531,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public List<Product> getProductsInCategory(int id) throws IOException, SQLException, CategoryNotFoundException {
+    public List<Product> getProductsInCategory(int id) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPRODUCTSINCATEGORY"));
@@ -1543,8 +1543,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof CategoryNotFoundException) {
-                    throw (CategoryNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -1720,12 +1720,12 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public void removeTax(Tax t) throws IOException, TaxNotFoundException, SQLException {
+    public void removeTax(Tax t) throws IOException, JTillException, SQLException {
         removeTax(t.getId());
     }
 
     @Override
-    public void removeTax(int id) throws IOException, TaxNotFoundException, SQLException {
+    public void removeTax(int id) throws IOException, JTillException, SQLException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVETAX", id));
@@ -1735,8 +1735,8 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("FAIL")) {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof TaxNotFoundException) {
-                    throw (TaxNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -1750,7 +1750,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Tax getTax(int id) throws IOException, SQLException, TaxNotFoundException {
+    public Tax getTax(int id) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETTAX", id));
@@ -1762,8 +1762,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof TaxNotFoundException) {
-                    throw (TaxNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -1778,7 +1778,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public Tax updateTax(Tax t) throws IOException, SQLException, TaxNotFoundException {
+    public Tax updateTax(Tax t) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATETAX", t));
@@ -1790,8 +1790,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof TaxNotFoundException) {
-                    throw (TaxNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -1833,7 +1833,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public List<Product> getProductsInTax(int id) throws IOException, SQLException, TaxNotFoundException {
+    public List<Product> getProductsInTax(int id) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETPRODUCTSINTAX", id));
@@ -1849,8 +1849,8 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("SUCC")) {
                 return (List) data.getData();
             } else {
-                if (data.getData() instanceof TaxNotFoundException) {
-                    throw (TaxNotFoundException) data.getData();
+                if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw (SQLException) data.getData();
 
@@ -1955,7 +1955,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public void removeButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException {
+    public void removeButton(TillButton b) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("REMOVEBUTTON", b));
@@ -1964,8 +1964,8 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("FAIL")) {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof ButtonNotFoundException) {
-                    throw (ButtonNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -2006,7 +2006,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public TillButton getButton(int b) throws IOException, SQLException, ButtonNotFoundException {
+    public TillButton getButton(int b) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("GETBUTTON", b));
@@ -2017,8 +2017,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof ButtonNotFoundException) {
-                    throw (ButtonNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -2060,7 +2060,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public TillButton updateButton(TillButton b) throws IOException, SQLException, ButtonNotFoundException {
+    public TillButton updateButton(TillButton b) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
             obOut.writeObject(ConnectionData.create("UPDATEBUTTON", b));
@@ -2071,8 +2071,8 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof ButtonNotFoundException) {
-                    throw (ButtonNotFoundException) data.getData();
+                } else if (data.getData() instanceof JTillException) {
+                    throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
 
@@ -2209,7 +2209,7 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("FAIL")) {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof TaxNotFoundException) {
+                } else if (data.getData() instanceof JTillException) {
                     throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
@@ -2320,7 +2320,7 @@ public class ServerConnection implements DataConnect {
             } else {
                 if (data.getData() instanceof SQLException) {
                     throw (SQLException) data.getData();
-                } else if (data.getData() instanceof TaxNotFoundException) {
+                } else if (data.getData() instanceof JTillException) {
                     throw (JTillException) data.getData();
                 } else {
                     throw new IOException(data.getData().toString());
