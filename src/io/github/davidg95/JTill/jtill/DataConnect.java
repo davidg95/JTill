@@ -69,6 +69,15 @@ public interface DataConnect {
     public BigDecimal getTillTakings(int terminal) throws IOException, SQLException;
 
     /**
+     * Sets all uncashed sales to cashed.
+     *
+     * @param terminal the terminal.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public void cashUncashedSales(int terminal) throws IOException, SQLException;
+
+    /**
      * Send an email to the report email set in the server.
      *
      * @param message the message to send.

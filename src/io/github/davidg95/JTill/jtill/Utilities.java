@@ -19,9 +19,19 @@ public class Utilities {
      */
     public static boolean isNumber(String val) {
         val = val.replace(".", "");
+        val = val.replace("-", "");
         if (val.matches("[0-9]+")) {
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Method to check if a string value is an email or not.
+     * @param email
+     * @return 
+     */
+    public static boolean isEmail(String email){
+        return email.contains("@") && email.contains(".") && email.length() > 4;
     }
 }

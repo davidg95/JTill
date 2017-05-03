@@ -3523,4 +3523,9 @@ public class ServerConnection implements DataConnect {
     public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException {
         return null;
     }
+
+    @Override
+    public void cashUncashedSales(int terminal) throws IOException, SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
