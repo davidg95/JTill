@@ -1609,4 +1609,14 @@ public interface DataConnect {
      * @throws JTillException if there was an error in the search.
      */
     public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to search the Products table with a customer WHERE clause.
+     *
+     * @param WHERE the WHERE clause for the database query.
+     * @return a List of Products.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
+    public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException;
 }

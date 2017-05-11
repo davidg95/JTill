@@ -3528,4 +3528,9 @@ public class ServerConnection implements DataConnect {
     public void cashUncashedSales(int terminal) throws IOException, SQLException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

@@ -134,7 +134,7 @@ public class DBConnect implements DataConnect {
         return connection;
     }
 
-    public void integrityCheck() throws SQLException {
+    public HashMap integrityCheck() throws SQLException {
         String query = "SELECT schemaname, tablename,\n"
                 + "SYSCS_UTIL.SYSCS_CHECK_TABLE(schemaname, tablename)\n"
                 + "FROM sys.sysschemas s, sys.systables t\n"
@@ -142,8 +142,13 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
-                stmt.execute(query);
+                ResultSet set = stmt.executeQuery(query);
+                HashMap<String, HashMap> map = new HashMap();
+                while (set.next()) {
+
+                }
                 con.commit();
+                return map;
             } catch (SQLException ex) {
                 con.rollback();
                 throw ex;
@@ -2214,7 +2219,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale getSale(int id) throws SQLException, JTillException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -4475,7 +4480,9 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
-        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId FROM PRODUCTS p, SALEITEMS i WHERE p.ID = i.PRODUCT_ID AND i.TYPE = 1";
+        long startL = start.getTime();
+        long endL = end.getTime();
+        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId FROM PRODUCTS p, SALEITEMS i, SALES s WHERE p.ID = i.PRODUCT_ID AND i.SALE_ID = s.ID AND i.TYPE = 1";
         if (department > -1) {
             pQuery = pQuery.concat(" AND p.DEPARTMENT_ID = " + department);
         }
@@ -4562,10 +4569,48 @@ public class DBConnect implements DataConnect {
                             updateSaleNoSem(s);
                         } catch (JTillException ex) {
                             LOG.log(Level.WARNING, null, ex);
+                        }
                     }
                 }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
+
+    @Override
+    public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException {
+        String query = "SELECT * FROM PRODUCTS " + WHERE;
+        try (Connection con = getNewConnection()) {
+            Statement stmt = con.createStatement();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                List<Product> products = new ArrayList<>();
+                while (set.next()) {
+                    int code = set.getInt("id");
+                    int order_code = set.getInt("ORDER_CODE");
+                    String name = set.getString("name");
+                    boolean open = set.getBoolean("OPEN_PRICE");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    int stock = set.getInt("STOCK");
+                    String comments = set.getString("COMMENTS");
+                    String shortName = set.getString("SHORT_NAME");
+                    int categoryID = set.getInt("CATEGORY_ID");
+                    int dId = set.getInt("DEPARTMENT_ID");
+                    int taxID = set.getInt("TAX_ID");
+                    BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble("COST_PRICE")));
+                    int minStock = set.getInt("MIN_PRODUCT_LEVEL");
+                    int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
+
+                    Product p = new Product(name, shortName, order_code, categoryID, dId, comments, taxID, open, price, costPrice, stock, minStock, maxStock, code);
+
+                    products.add(p);
                 }
                 con.commit();
+                return products;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
