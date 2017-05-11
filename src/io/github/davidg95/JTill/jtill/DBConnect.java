@@ -2901,6 +2901,18 @@ public class DBConnect implements DataConnect {
                 ResultSet set = stmt.executeQuery(query);
                 tills = getTillsFromResultSet(set);
                 con.commit();
+                for (Till t : tills) {
+                    try {
+                        List<Sale> sales = this.getUncachedTillSales(t.getId());
+                        BigDecimal uncashedValue = BigDecimal.ZERO;
+                        for (Sale s : sales) {
+                            uncashedValue = uncashedValue.add(s.getTotal());
+                        }
+                        t.setUncashedTakings(uncashedValue);
+                    } catch (IOException | JTillException ex) {
+                        Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);

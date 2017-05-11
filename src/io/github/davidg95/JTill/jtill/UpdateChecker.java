@@ -14,7 +14,11 @@ import java.net.*;
  */
 public class UpdateChecker {
 
-    public static String getHTML(String urlToRead) throws Exception {
+    public static final String UPDATE_CHECK_URL = "http://jggcomputers.ddns.net/jtill/";
+
+    public static final String SERVER_UPDATE_DOWNLOAD = "http://jggcomputers.ddns.net/repo/public/jtillserverinstaller.exe";
+
+    public static byte[] getHTML(String urlToRead) throws Exception {
         StringBuilder result = new StringBuilder();
         URL url = new URL(urlToRead);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -25,10 +29,14 @@ public class UpdateChecker {
             result.append(line);
         }
         rd.close();
-        return result.toString();
+        return result.toString().getBytes();
     }
 
     public static String checkForUpdate() throws Exception {
-        return getHTML("http://192.168.1.70:5000/jtill");
+        return new String(getHTML(UPDATE_CHECK_URL));
+    }
+
+    public static byte[] downloadServerUpdate() throws Exception {
+        return getHTML(SERVER_UPDATE_DOWNLOAD);
     }
 }
