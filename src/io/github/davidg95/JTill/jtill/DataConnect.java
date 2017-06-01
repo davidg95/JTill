@@ -88,13 +88,14 @@ public interface DataConnect {
     /**
      * Email a receipt to a customer.
      *
-     * @param email the email to send the receipt to.
+     * @param email the email to send the receipt tos.
      * @param sale the sale to generate the receipt from.
+     * @return true if the email was successful, false if it was not.
      * @throws IOException if there was a network error.
      * @throws javax.mail.internet.AddressException if there was any errors
      * sending the email.
      */
-    public void emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException;
+    public boolean emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException;
 
     /**
      * Set a setting.
