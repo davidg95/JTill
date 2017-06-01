@@ -185,7 +185,7 @@ public class ServerConnection implements DataConnect {
     }
 
     @Override
-    public void emailReceipt(String email, Sale sale) throws IOException {
+    public boolean emailReceipt(String email, Sale sale) throws IOException {
         try {
             obOut.writeObject(ConnectionData.create("EMAILRECEIPT", email, sale));
             ConnectionData data = (ConnectionData) obIn.readObject();
@@ -193,10 +193,11 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData().toString());
             }
+            return true;
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        return false;
     }
 
     @Override
