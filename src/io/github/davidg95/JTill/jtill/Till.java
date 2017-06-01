@@ -130,6 +130,6 @@ public class Till implements Serializable, Cloneable, JTillObject {
 
     @Override
     public String toString() {
-        return this.id + " - " + this.name + " - " + (this.connected ? "Connected" : "Not Connected");
+        return this.id + " - " + this.name;
     }
 }
