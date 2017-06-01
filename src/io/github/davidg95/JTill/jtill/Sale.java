@@ -26,11 +26,16 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private int terminal;
     private boolean cashed;
     private int staff;
-    private boolean chargeAccount;
+    private int mop;
 
     private SaleItem lastAdded;
 
     private transient final List<ProductListener> listeners;
+    
+    public static final int MOP_CASH = 1;
+    public static final int MOP_CARD = 2;
+    public static final int MOP_CHARGEACCOUNT = 3;
+    public static final int MOP_CHEQUE = 4;
 
     /**
      * Constructor which creates a new sale with no items and with the total set
@@ -297,12 +302,12 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         return date;
     }
 
-    public boolean isChargeAccount() {
-        return chargeAccount;
+    public int getMOP() {
+        return mop;
     }
 
-    public void setChargeAccount(boolean chargeAccount) {
-        this.chargeAccount = chargeAccount;
+    public void setMOP(int mop) {
+        this.mop = mop;
     }
 
     public int getTerminal() {
@@ -362,7 +367,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + "," + this.terminal
                     + "," + this.cashed
                     + "," + this.staff
-                    + "," + this.chargeAccount;
+                    + "," + this.mop;
         } else {
             return this.total
                     + "," + this.customer
@@ -370,7 +375,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + "," + this.terminal
                     + "," + this.cashed
                     + "," + this.staff
-                    + "," + this.chargeAccount;
+                    + "," + this.mop;
         }
     }
 
@@ -383,7 +388,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + ", TERMINAL=" + this.terminal
                     + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
-                    + ", CHARGE_ACCOUNT=" + this.chargeAccount
+                    + ", MOP=" + this.mop
                     + " WHERE SALES.ID=" + this.id;
         } else {
             return "UPDATE SALES"
@@ -393,7 +398,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + ", TERMINAL=" + this.terminal
                     + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
-                    + ", CHARGE_ACCOUNT=" + this.chargeAccount
+                    + ", MOP=" + this.mop
                     + " WHERE SALES.ID=" + this.id;
         }
     }
