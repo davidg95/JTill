@@ -233,7 +233,7 @@ public class DBConnect implements DataConnect {
                 + "     TERMINAL int not null references TILLS(ID),\n"
                 + "     CASHED boolean not null,\n"
                 + "     STAFF int,\n"
-                + "     CHARGE_ACCOUNT boolean\n"
+                + "     MOP int\n"
                 + ")";
         String saleItems = "create table APP.SALEITEMS\n"
                 + "(\n"
@@ -777,7 +777,6 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
-            LOG.log(Level.INFO, "New Product " + p.getId() + " added");
         }
         return p;
     }
@@ -804,7 +803,6 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
-            LOG.log(Level.INFO, "Product " + p.getId() + " updated");
         }
         return p;
     }
@@ -891,7 +889,6 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         }
-        LOG.log(Level.INFO, "Product " + id + " removed");
     }
 
     /**
@@ -910,7 +907,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
-                LOG.log(Level.INFO, "Purchase product " + id);
                 long stamp = productLock.writeLock();
                 try {
                     ResultSet res = stmt.executeQuery(query);
@@ -956,7 +952,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Product> products = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get product " + code);
                 long stamp = productLock.readLock();
                 try {
                     ResultSet res = stmt.executeQuery(query);
@@ -992,7 +987,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
-                LOG.log(Level.INFO, "Get Product " + barcode);
                 long stamp = productLock.readLock();
                 try {
                     ResultSet res = stmt.executeQuery(query);
@@ -1031,7 +1025,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Customer> customers = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get all customers");
                 ResultSet set = stmt.executeQuery(query);
                 customers = new LinkedList<>();
                 while (set.next()) {
@@ -1104,7 +1097,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
-                LOG.log(Level.INFO, "Add customer " + c.getId());
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
                 while (set.next()) {
@@ -1130,7 +1122,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Update customer " + c.getId());
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1158,7 +1149,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Remove customer " + id);
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1179,7 +1169,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Customer> customers = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get customer " + id);
                 ResultSet res = stmt.executeQuery(query);
                 customers = getCustomersFromResultSet(res);
                 con.commit();
@@ -1202,7 +1191,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Customer> customers = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get customer " + name);
                 ResultSet res = stmt.executeQuery(query);
                 customers = getCustomersFromResultSet(res);
                 con.commit();
@@ -1225,7 +1213,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Customer> customers = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Search customers for " + terms);
                 ResultSet res = stmt.executeQuery(query);
                 customers = getCustomersFromResultSet(res);
                 con.commit();
@@ -1253,7 +1240,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Staff> staff = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get all staff");
                 ResultSet set = stmt.executeQuery(query);
                 staff = new LinkedList<>();
                 while (set.next()) {
@@ -1301,7 +1287,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
-                LOG.log(Level.INFO, "Add staff " + s.getId());
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
                 while (set.next()) {
@@ -1325,7 +1310,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Update staff " + s.getId());
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1352,7 +1336,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Remove staff " + id);
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1373,7 +1356,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Staff> staff = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get staff " + id);
                 ResultSet set = stmt.executeQuery(query);
                 staff = getStaffFromResultSet(set);
                 con.commit();
@@ -1398,7 +1380,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Staff> staff = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Login Staff " + username);
                 ResultSet res = stmt.executeQuery(query);
                 staff = getStaffFromResultSet(res);
                 con.commit();
@@ -1428,7 +1409,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             try {
-                LOG.log(Level.INFO, "Get staff count");
                 ResultSet res = stmt.executeQuery(query);
                 while (res.next()) {
                     int count = res.getInt(1);
@@ -1453,7 +1433,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get all discounts");
                 ResultSet set = stmt.executeQuery(query);
                 discounts = new LinkedList<>();
                 while (set.next()) {
@@ -1503,7 +1482,6 @@ public class DBConnect implements DataConnect {
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
-                LOG.log(Level.INFO, "Add discount " + d.getId());
                 stmt.executeUpdate();
                 ResultSet set = stmt.getGeneratedKeys();
                 while (set.next()) {
@@ -1527,7 +1505,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Update discount " + d.getId());
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1554,7 +1531,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             int value;
             try {
-                LOG.log(Level.INFO, "Remove discount " + id);
                 value = stmt.executeUpdate(query);
                 con.commit();
                 if (value == 0) {
@@ -1575,7 +1551,6 @@ public class DBConnect implements DataConnect {
             Statement stmt = con.createStatement();
             List<Discount> discounts = new LinkedList<>();
             try {
-                LOG.log(Level.INFO, "Get discount " + id);
                 ResultSet set = stmt.executeQuery(query);
                 discounts = getDiscountsFromResultSet(set);
                 con.commit();
@@ -1940,7 +1915,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale addSale(Sale s) throws SQLException, IOException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP) VALUES (" + s.getSQLInsertStatement() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -1951,7 +1926,7 @@ public class DBConnect implements DataConnect {
                     s.setId(id);
                 }
                 con.commit();
-                if (s.isChargeAccount()) {
+                if (s.getMOP() == Sale.MOP_CHARGEACCOUNT) {
                     try {
                         final Customer c = DBConnect.this.getCustomer(s.getCustomer());
                         chargeCustomerAccount(c, s.getTotal());
@@ -2105,7 +2080,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Sale> getAllSales() throws SQLException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT FROM SALES s";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP FROM SALES s";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -2120,7 +2095,9 @@ public class DBConnect implements DataConnect {
                     int terminal = set.getInt("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
+                    int mop = set.getInt("MOP");
                     Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
+                    s.setMOP(mop);
                     s.setProducts(getItemsInSale(s));
                     sales.add(s);
                 }
@@ -2771,7 +2748,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException {
+    public boolean emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException {
         Authenticator auth = new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -2780,6 +2757,11 @@ public class DBConnect implements DataConnect {
         };
         Session session = Session.getDefaultInstance(systemSettings.getProperties(), auth);
 
+        final String outgoing_email = systemSettings.getSetting("OUTGOING_MAIL_ADDRESS");
+
+        if (outgoing_email == null || outgoing_email.isEmpty()) {
+            return false;
+        }
         MimeMessage message = new MimeMessage(session);
 
         String text = "";
@@ -2789,7 +2771,7 @@ public class DBConnect implements DataConnect {
         text += "Time: " + sale.getDate().toString() + "\n";
         String symbol = Settings.getInstance().getSetting("CURRENCY_SYMBOL");
         text += "Total: " + symbol + sale.getTotal() + "\n";
-        if (sale.isChargeAccount()) {
+        if (sale.getMOP() == Sale.MOP_CHARGEACCOUNT) {
             text += "You will be invoiced for this sale\n";
         }
         try {
@@ -2797,16 +2779,16 @@ public class DBConnect implements DataConnect {
             text += "You were served by " + staff.getName() + "\n";
             text += "Thank you for your custom";
 
-            message.setFrom(new InternetAddress(systemSettings.getSetting("OUTGOING_MAIL_ADDRESS")));
+            message.setFrom(new InternetAddress(outgoing_email));
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
             message.setSubject("Receipt for sale " + sale.getId());
             message.setText(text);
             Transport.send(message);
-
+            return true;
         } catch (SQLException | StaffNotFoundException ex) {
-            Logger.getLogger(DBConnect.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return false;
     }
 
     private List<Till> getTillsFromResultSet(ResultSet set) throws SQLException {
@@ -4411,9 +4393,9 @@ public class DBConnect implements DataConnect {
                         continue;
                     }
                     int staff = set.getInt("STAFF");
-                    boolean chargeAccount = set.getBoolean("CHARGE_ACCOUNT");
+                    int mop = set.getInt("MOP");
                     Sale s = new Sale(sId, new BigDecimal(Double.toString(price)), cId, new Date(timestamp), id, false, staff);
-                    s.setChargeAccount(chargeAccount);
+                    s.setMOP(mop);
                     sales.add(s);
                 }
                 con.commit();
