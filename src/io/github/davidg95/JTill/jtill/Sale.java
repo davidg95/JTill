@@ -27,11 +27,12 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private boolean cashed;
     private int staff;
     private int mop;
+    private BigDecimal taxValue;
 
     private SaleItem lastAdded;
 
     private transient final List<ProductListener> listeners;
-    
+
     public static final int MOP_CASH = 1;
     public static final int MOP_CARD = 2;
     public static final int MOP_CHARGEACCOUNT = 3;
@@ -46,7 +47,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      */
     public Sale(int terminal, int s) {
         saleItems = new ArrayList<>();
-        total = new BigDecimal("0.00");
+        total = BigDecimal.ZERO;
+        taxValue = BigDecimal.ZERO;
         this.terminal = terminal;
         this.staff = s;
         listeners = new ArrayList<>();
@@ -64,8 +66,9 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param total the total price of the sale.
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
+     * @param taxValue the tax value for the sale.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, List<SaleItem> saleItems) {
+    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, List<SaleItem> saleItems, BigDecimal taxValue) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -74,6 +77,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.staff = staff;
         this.saleItems = saleItems;
         listeners = new ArrayList<>();
+        this.taxValue = taxValue;
     }
 
     /**
@@ -87,8 +91,9 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param total the total price of the sale.
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
+     * @param taxValue the tax value for the sale.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff) {
+    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, BigDecimal taxValue) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -96,6 +101,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.terminal = terminal;
         this.staff = staff;
         listeners = new ArrayList<>();
+        this.taxValue = taxValue;
     }
 
     /**
@@ -154,6 +160,15 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.lastAdded = item; //Set this item to the last item added.
         updateTotal(); //Update the total.
         return false;
+    }
+
+    /**
+     * Add a tax value to the sale.
+     *
+     * @param tax the tax value to add.
+     */
+    public void addTax(BigDecimal tax) {
+        taxValue = taxValue.add(tax);
     }
 
     /**
@@ -302,11 +317,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         return date;
     }
 
-    public int getMOP() {
+    public int getMop() {
         return mop;
     }
 
-    public void setMOP(int mop) {
+    public void setMop(int mop) {
         this.mop = mop;
     }
 
@@ -332,6 +347,14 @@ public class Sale implements Serializable, JTillObject, Cloneable {
 
     public void setStaff(int staff) {
         this.staff = staff;
+    }
+
+    public BigDecimal getTaxValue() {
+        return taxValue;
+    }
+
+    public void setTaxValue(BigDecimal taxValue) {
+        this.taxValue = taxValue;
     }
 
     public void addListener(ProductListener pl) {
@@ -367,7 +390,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + "," + this.terminal
                     + "," + this.cashed
                     + "," + this.staff
-                    + "," + this.mop;
+                    + "," + this.mop
+                    + "," + this.taxValue;
         } else {
             return this.total
                     + "," + this.customer
@@ -375,7 +399,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + "," + this.terminal
                     + "," + this.cashed
                     + "," + this.staff
-                    + "," + this.mop;
+                    + "," + this.mop
+                    + "," + this.taxValue;
         }
     }
 
@@ -389,6 +414,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
                     + ", MOP=" + this.mop
+                    + ", TAX=" + this.taxValue
                     + " WHERE SALES.ID=" + this.id;
         } else {
             return "UPDATE SALES"
@@ -399,6 +425,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
                     + ", MOP=" + this.mop
+                    + ", TAX=" + this.taxValue
                     + " WHERE SALES.ID=" + this.id;
         }
     }

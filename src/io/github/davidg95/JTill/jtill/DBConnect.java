@@ -233,7 +233,8 @@ public class DBConnect implements DataConnect {
                 + "     TERMINAL int not null references TILLS(ID),\n"
                 + "     CASHED boolean not null,\n"
                 + "     STAFF int,\n"
-                + "     MOP int\n"
+                + "     MOP int,\n"
+                + "     TAX DOUBLE\n"
                 + ")";
         String saleItems = "create table APP.SALEITEMS\n"
                 + "(\n"
@@ -1906,7 +1907,8 @@ public class DBConnect implements DataConnect {
             int terminal = set.getInt("TERMINAL");
             boolean cashed = set.getBoolean("CASHED");
             int sId = set.getInt("stId");
-            Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
+            BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
+            Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1915,7 +1917,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale addSale(Sale s) throws SQLException, IOException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP, TAX) VALUES (" + s.getSQLInsertStatement() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -1926,7 +1928,7 @@ public class DBConnect implements DataConnect {
                     s.setId(id);
                 }
                 con.commit();
-                if (s.getMOP() == Sale.MOP_CHARGEACCOUNT) {
+                if (s.getMop() == Sale.MOP_CHARGEACCOUNT) {
                     try {
                         final Customer c = DBConnect.this.getCustomer(s.getCustomer());
                         chargeCustomerAccount(c, s.getTotal());
@@ -2080,7 +2082,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Sale> getAllSales() throws SQLException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP FROM SALES s";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, TAX, MOP FROM SALES s";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -2096,8 +2098,9 @@ public class DBConnect implements DataConnect {
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
                     int mop = set.getInt("MOP");
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
-                    s.setMOP(mop);
+                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
+                    s.setMop(mop);
                     s.setProducts(getItemsInSale(s));
                     sales.add(s);
                 }
@@ -2127,7 +2130,8 @@ public class DBConnect implements DataConnect {
                     int terminal = set.getInt("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
+                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
                     s.setProducts(getItemsInSale(s));
                     if (!s.isCashed()) {
                         result = result.add(s.getTotal());
@@ -2196,7 +2200,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale getSale(int id) throws SQLException, JTillException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP, TAX, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -2771,7 +2775,7 @@ public class DBConnect implements DataConnect {
         text += "Time: " + sale.getDate().toString() + "\n";
         String symbol = Settings.getInstance().getSetting("CURRENCY_SYMBOL");
         text += "Total: " + symbol + sale.getTotal() + "\n";
-        if (sale.getMOP() == Sale.MOP_CHARGEACCOUNT) {
+        if (sale.getMop() == Sale.MOP_CHARGEACCOUNT) {
             text += "You will be invoiced for this sale\n";
         }
         try {
@@ -4394,8 +4398,9 @@ public class DBConnect implements DataConnect {
                     }
                     int staff = set.getInt("STAFF");
                     int mop = set.getInt("MOP");
-                    Sale s = new Sale(sId, new BigDecimal(Double.toString(price)), cId, new Date(timestamp), id, false, staff);
-                    s.setMOP(mop);
+                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    Sale s = new Sale(sId, new BigDecimal(Double.toString(price)), cId, new Date(timestamp), id, false, staff, taxValue);
+                    s.setMop(mop);
                     sales.add(s);
                 }
                 con.commit();
@@ -4476,7 +4481,7 @@ public class DBConnect implements DataConnect {
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
         long startL = start.getTime();
         long endL = end.getTime();
-        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId FROM PRODUCTS p, SALEITEMS i, SALES s WHERE p.ID = i.PRODUCT_ID AND i.SALE_ID = s.ID AND i.TYPE = 1";
+        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId, s.TIMESTAMP as time FROM PRODUCTS p, SALEITEMS i, SALES s WHERE p.ID = i.PRODUCT_ID AND i.SALE_ID = s.ID AND i.TYPE = 1 AND s.TIMESTAMP >= " + startL + " AND s.TIMESTAMP <= " + endL;
         if (department > -1) {
             pQuery = pQuery.concat(" AND p.DEPARTMENT_ID = " + department);
         }
@@ -4522,7 +4527,8 @@ public class DBConnect implements DataConnect {
                     Date date = new Date(set.getLong("TIMESTAMP"));
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
+                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
                     sales.add(s);
                 }
                 con.commit();
@@ -4554,7 +4560,8 @@ public class DBConnect implements DataConnect {
                     int terminal = set.getInt("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
+                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
                     s.setProducts(getItemsInSale(s));
                     if (!s.isCashed()) {
                         result = result.add(s.getTotal());
