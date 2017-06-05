@@ -51,6 +51,8 @@ import org.apache.derby.jdbc.EmbeddedDriver;
 public class DBConnect implements DataConnect {
 
     private static final Logger LOG = Logger.getGlobal();
+    
+    private static final DBConnect connection;
 
     /**
      * The database driver.
@@ -83,6 +85,14 @@ public class DBConnect implements DataConnect {
 
     private final List<Integer> clockedOn;
     private final StampedLock clockLock;
+    
+    static{
+        connection = new DBConnect();
+    }
+    
+    public static DBConnect getInstance(){
+        return connection;
+    }
 
     /**
      * Constructor which initialises the concurrent locks.
@@ -233,8 +243,7 @@ public class DBConnect implements DataConnect {
                 + "     TERMINAL int not null references TILLS(ID),\n"
                 + "     CASHED boolean not null,\n"
                 + "     STAFF int,\n"
-                + "     MOP int,\n"
-                + "     TAX DOUBLE\n"
+                + "     MOP int\n"
                 + ")";
         String saleItems = "create table APP.SALEITEMS\n"
                 + "(\n"
@@ -245,6 +254,7 @@ public class DBConnect implements DataConnect {
                 + "	TYPE INT,\n"
                 + "     QUANTITY INT not null,\n"
                 + "     PRICE double not null,\n"
+                + "     TAX double not null,\n"
                 + "     SALE_ID INT not null references SALES(ID)\n"
                 + ")";
         String customers = "create table \"APP\".CUSTOMERS\n"
@@ -969,6 +979,14 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
+            final Product product = products.get(0);
+            try {
+                product.setTax(this.getTax(product.getTaxID()));
+                product.setCategory(this.getCategory(product.getCategoryID()));
+                product.setDepartment(this.getDepartment(product.getDepartmentID()));
+            } catch (JTillException | IOException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+            }
             return products.get(0);
         }
     }
@@ -1663,7 +1681,7 @@ public class DBConnect implements DataConnect {
         List<Product> products = this.getProductsInTax(id);
         final Tax DEFAULT_TAX = this.getTax(1);
         for (Product p : products) {
-            p.setTax(DEFAULT_TAX.getId());
+            p.setTaxID(DEFAULT_TAX.getId());
             try {
                 this.updateProduct(p);
             } catch (ProductNotFoundException ex) {
@@ -1829,7 +1847,7 @@ public class DBConnect implements DataConnect {
         List<Product> products = getProductsInCategory(id);
         final Category DEFAULT_CATEGORY = getCategory(1);
         for (Product p : products) {
-            p.setCategory(DEFAULT_CATEGORY.getId());
+            p.setCategoryID(DEFAULT_CATEGORY.getId());
             try {
                 updateProduct(p);
             } catch (ProductNotFoundException ex) {
@@ -1907,8 +1925,7 @@ public class DBConnect implements DataConnect {
             int terminal = set.getInt("TERMINAL");
             boolean cashed = set.getBoolean("CASHED");
             int sId = set.getInt("stId");
-            BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
-            Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
+            Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1917,7 +1934,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale addSale(Sale s) throws SQLException, IOException {
-        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP, TAX) VALUES (" + s.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALES (PRICE, CUSTOMER, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP) VALUES (" + s.getSQLInsertStatement() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -2050,7 +2067,7 @@ public class DBConnect implements DataConnect {
                 }
             } else if (o instanceof Department) {
                 try {
-                    final Department dep = getDepartment(pr.getDepartment());
+                    final Department dep = getDepartment(pr.getDepartmentID());
                     if (((Department) o).equals(dep)) {
                         return true;
                     }
@@ -2059,7 +2076,7 @@ public class DBConnect implements DataConnect {
                 }
             } else if (o instanceof Category) {
                 try {
-                    final Category cat = getCategory(pr.getCategory());
+                    final Category cat = getCategory(pr.getCategoryID());
                     if (((Category) o).equals(cat)) {
                         return true;
                     }
@@ -2082,7 +2099,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Sale> getAllSales() throws SQLException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, TAX, MOP FROM SALES s";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP FROM SALES s";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -2098,8 +2115,7 @@ public class DBConnect implements DataConnect {
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
                     int mop = set.getInt("MOP");
-                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     s.setMop(mop);
                     s.setProducts(getItemsInSale(s));
                     sales.add(s);
@@ -2130,8 +2146,7 @@ public class DBConnect implements DataConnect {
                     int terminal = set.getInt("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
-                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     s.setProducts(getItemsInSale(s));
                     if (!s.isCashed()) {
                         result = result.add(s.getTotal());
@@ -2192,7 +2207,8 @@ public class DBConnect implements DataConnect {
             int quantity = set.getInt("QUANTITY");
             int saleId = set.getInt("SALE_ID");
             BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            SaleItem s = new SaleItem(saleId, item, quantity, id, price, type);
+            BigDecimal tax = new BigDecimal(Double.toString(set.getDouble("TAX")));
+            SaleItem s = new SaleItem(saleId, item, quantity, id, price, type, tax);
             sales.add(s);
         }
         return sales;
@@ -3774,7 +3790,7 @@ public class DBConnect implements DataConnect {
     @Override
     public SaleItem addSaleItem(Sale s, SaleItem i) throws IOException, SQLException {
         i.setSale(s.getId());
-        String query = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, SALE_ID) VALUES(" + i.getSQLInsertStatement() + ")";
+        String query = "INSERT INTO SALEITEMS (PRODUCT_ID, TYPE, QUANTITY, PRICE, TAX, SALE_ID) VALUES(" + i.getSQLInsertStatement() + ")";
         try (Connection con = getNewConnection()) {
             try {
                 PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
@@ -3827,7 +3843,8 @@ public class DBConnect implements DataConnect {
                     int quantity = set.getInt("QUANTITY");
                     BigDecimal price = new BigDecimal(set.getDouble("PRICE"));
                     sale_id = set.getInt("SALE_ID");
-                    i = new SaleItem(sale_id, product_id, quantity, id, price, type);
+                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    i = new SaleItem(sale_id, product_id, quantity, id, price, type, tax);
                 }
                 con.commit();
                 return i;
@@ -3855,9 +3872,10 @@ public class DBConnect implements DataConnect {
                     product_id = set.getInt("PRODUCT_ID");
                     type = set.getInt("TYPE");
                     int quantity = set.getInt("QUANTITY");
-                    BigDecimal price = new BigDecimal(set.getDouble("PRICE"));
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble("TAX")));
                     sale_id = set.getInt("SALE_ID");
-                    SaleItem i = new SaleItem(sale_id, product_id, quantity, id, price, type);
+                    SaleItem i = new SaleItem(sale_id, product_id, quantity, id, price, type, tax);
                     items.add(i);
                 }
                 con.commit();
@@ -3888,7 +3906,8 @@ public class DBConnect implements DataConnect {
                     int quantity = set.getInt("QUANTITY");
                     BigDecimal price = new BigDecimal(set.getDouble("PRICE"));
                     sale_id = set.getInt("SALE_ID");
-                    SaleItem i = new SaleItem(sale_id, product_id, quantity, id, price, type);
+                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    SaleItem i = new SaleItem(sale_id, product_id, quantity, id, price, type, tax);
                     items.add(i);
                 }
                 con.commit();
@@ -4398,8 +4417,7 @@ public class DBConnect implements DataConnect {
                     }
                     int staff = set.getInt("STAFF");
                     int mop = set.getInt("MOP");
-                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
-                    Sale s = new Sale(sId, new BigDecimal(Double.toString(price)), cId, new Date(timestamp), id, false, staff, taxValue);
+                    Sale s = new Sale(sId, new BigDecimal(Double.toString(price)), cId, new Date(timestamp), id, false, staff);
                     s.setMop(mop);
                     sales.add(s);
                 }
@@ -4481,7 +4499,7 @@ public class DBConnect implements DataConnect {
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
         long startL = start.getTime();
         long endL = end.getTime();
-        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId, s.TIMESTAMP as time FROM PRODUCTS p, SALEITEMS i, SALES s WHERE p.ID = i.PRODUCT_ID AND i.SALE_ID = s.ID AND i.TYPE = 1 AND s.TIMESTAMP >= " + startL + " AND s.TIMESTAMP <= " + endL;
+        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId, i.TAX as tax, s.TIMESTAMP as time FROM PRODUCTS p, SALEITEMS i, SALES s WHERE p.ID = i.PRODUCT_ID AND i.SALE_ID = s.ID AND i.TYPE = 1 AND s.TIMESTAMP >= " + startL + " AND s.TIMESTAMP <= " + endL;
         if (department > -1) {
             pQuery = pQuery.concat(" AND p.DEPARTMENT_ID = " + department);
         }
@@ -4497,9 +4515,10 @@ public class DBConnect implements DataConnect {
                     int id = set.getInt("iid");
                     int pid = set.getInt("ipid");
                     int qu = set.getInt("iQua");
-                    double price = set.getDouble("iPrice");
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("iPrice")));
                     int iSa = set.getInt("iSaleId");
-                    SaleItem i = new SaleItem(iSa, pid, qu, id, new BigDecimal(Double.toString(price)), 1);
+                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    SaleItem i = new SaleItem(iSa, pid, qu, id, price, 1, tax);
                     items.add(i);
                 }
                 con.commit();
@@ -4527,8 +4546,7 @@ public class DBConnect implements DataConnect {
                     Date date = new Date(set.getLong("TIMESTAMP"));
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
-                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     sales.add(s);
                 }
                 con.commit();
@@ -4560,8 +4578,7 @@ public class DBConnect implements DataConnect {
                     int terminal = set.getInt("TERMINAL");
                     boolean cashed = set.getBoolean("CASHED");
                     int sId = set.getInt("STAFF");
-                    BigDecimal taxValue = new BigDecimal(Double.toString(set.getDouble("TAX")));
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId, taxValue);
+                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
                     s.setProducts(getItemsInSale(s));
                     if (!s.isCashed()) {
                         result = result.add(s.getTotal());

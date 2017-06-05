@@ -22,6 +22,7 @@ public class SaleItem implements Serializable {
     private int quantity;
     private BigDecimal price;
     private String totalPrice;
+    private BigDecimal taxValue;
     private int sale;
     private int type;
     private boolean refundItem;
@@ -39,17 +40,18 @@ public class SaleItem implements Serializable {
      */
     public static final int DISCOUNT = 2;
 
-    public SaleItem(int sale, int item, int quantity, int id, BigDecimal price, int type) {
-        this(sale, item, quantity, price, type);
+    public SaleItem(int sale, int item, int quantity, int id, BigDecimal price, int type, BigDecimal tax) {
+        this(sale, item, quantity, price, type, tax);
         this.id = id;
     }
 
-    public SaleItem(int sale, int item, int quantity, BigDecimal price, int type) {
+    public SaleItem(int sale, int item, int quantity, BigDecimal price, int type, BigDecimal tax) {
         this.sale = sale;
         this.item = item;
         this.quantity = quantity;
         this.price = price;
         this.type = type;
+        this.taxValue = tax;
     }
 
     /**
@@ -113,7 +115,7 @@ public class SaleItem implements Serializable {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
-    
+
     public int getId() {
         return id;
     }
@@ -146,11 +148,20 @@ public class SaleItem implements Serializable {
         this.refundItem = refundItem;
     }
 
+    public BigDecimal getTaxValue() {
+        return taxValue;
+    }
+
+    public void setTaxValue(BigDecimal taxValue) {
+        this.taxValue = taxValue;
+    }
+
     public String getSQLInsertStatement() {
         return this.item
                 + "," + type
                 + "," + this.quantity
                 + "," + this.price.doubleValue()
+                + "," + this.taxValue.doubleValue()
                 + "," + this.sale;
     }
 

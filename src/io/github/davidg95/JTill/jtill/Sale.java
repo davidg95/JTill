@@ -27,7 +27,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private boolean cashed;
     private int staff;
     private int mop;
-    private BigDecimal taxValue;
 
     private SaleItem lastAdded;
 
@@ -48,7 +47,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     public Sale(int terminal, int s) {
         saleItems = new ArrayList<>();
         total = BigDecimal.ZERO;
-        taxValue = BigDecimal.ZERO;
         this.terminal = terminal;
         this.staff = s;
         listeners = new ArrayList<>();
@@ -66,9 +64,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param total the total price of the sale.
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
-     * @param taxValue the tax value for the sale.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, List<SaleItem> saleItems, BigDecimal taxValue) {
+    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, List<SaleItem> saleItems) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -77,7 +74,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.staff = staff;
         this.saleItems = saleItems;
         listeners = new ArrayList<>();
-        this.taxValue = taxValue;
     }
 
     /**
@@ -91,9 +87,8 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param total the total price of the sale.
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
-     * @param taxValue the tax value for the sale.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, BigDecimal taxValue) {
+    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff) {
         this.id = id;
         this.total = total;
         this.customer = customer;
@@ -101,7 +96,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.terminal = terminal;
         this.staff = staff;
         listeners = new ArrayList<>();
-        this.taxValue = taxValue;
     }
 
     /**
@@ -135,7 +129,19 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     if (i.getPrice().compareTo(item.getPrice()) == 0) { //Check if it is the same price.
                         item.increaseQuantity(quantity); //Increace the quantity.
                         this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity()))); //Update the sale total.
-                        this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type); //Set this item to the last added.
+                        if (type == SaleItem.PRODUCT) {
+                            final Product product = (Product) i;
+                            final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).multiply(new BigDecimal(quantity));
+                            BigDecimal taxValue;
+                            if (((Product) i).getTax().getValue() == 0) {
+                                taxValue = BigDecimal.ZERO;
+                            } else {
+                                taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
+                            }
+                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
+                        } else {
+                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
+                        }
                         updateTotal(); //Update the total.
                         return true;
                     }
@@ -145,13 +151,38 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     item.setName(i.getName()); //Set the name for the list box.
                     item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total for the list box.
                     this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
-                    this.lastAdded = new SaleItem(this.id, i.getId(), quantity, item.getPrice(), type); //Set this item to the last item added.
+                    if (type == SaleItem.PRODUCT) {
+                        final Product product = (Product) i;
+                        final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).multiply(new BigDecimal(quantity));
+                        BigDecimal taxValue;
+                        if (((Product) i).getTax().getValue() == 0) {
+                            taxValue = BigDecimal.ZERO;
+                        } else {
+                            taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
+                        }
+                        this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
+                    } else {
+                        this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
+                    }
                     return true;
                 }
             }
         }
         //If the item is not already in the sale
-        SaleItem item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type);
+        SaleItem item;
+        if (type == SaleItem.PRODUCT) {
+            final Product product = (Product) i;
+            final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).multiply(new BigDecimal(quantity));
+            BigDecimal taxValue;
+            if (((Product) i).getTax().getValue() == 0) {
+                taxValue = BigDecimal.ZERO;
+            } else {
+                taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
+            }
+            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
+        } else {
+            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
+        }
         item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
         this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
         item.setName(i.getName()); //Set the name of the item for the list box.
@@ -160,15 +191,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.lastAdded = item; //Set this item to the last item added.
         updateTotal(); //Update the total.
         return false;
-    }
-
-    /**
-     * Add a tax value to the sale.
-     *
-     * @param tax the tax value to add.
-     */
-    public void addTax(BigDecimal tax) {
-        taxValue = taxValue.add(tax);
     }
 
     /**
@@ -349,14 +371,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.staff = staff;
     }
 
-    public BigDecimal getTaxValue() {
-        return taxValue;
-    }
-
-    public void setTaxValue(BigDecimal taxValue) {
-        this.taxValue = taxValue;
-    }
-
     public void addListener(ProductListener pl) {
         listeners.add(pl);
     }
@@ -390,8 +404,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + "," + this.terminal
                     + "," + this.cashed
                     + "," + this.staff
-                    + "," + this.mop
-                    + "," + this.taxValue;
+                    + "," + this.mop;
         } else {
             return this.total
                     + "," + this.customer
@@ -399,8 +412,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + "," + this.terminal
                     + "," + this.cashed
                     + "," + this.staff
-                    + "," + this.mop
-                    + "," + this.taxValue;
+                    + "," + this.mop;
         }
     }
 
@@ -414,7 +426,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
                     + ", MOP=" + this.mop
-                    + ", TAX=" + this.taxValue
                     + " WHERE SALES.ID=" + this.id;
         } else {
             return "UPDATE SALES"
@@ -425,7 +436,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     + ", CASHED=" + this.cashed
                     + ", STAFF=" + this.staff
                     + ", MOP=" + this.mop
-                    + ", TAX=" + this.taxValue
                     + " WHERE SALES.ID=" + this.id;
         }
     }

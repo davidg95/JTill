@@ -20,9 +20,15 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private int order_code;
     private String name;
     private String shortName;
-    private int category;
-    private int department;
-    private int tax;
+
+    private int categoryid;
+    private int departmentid;
+    private int taxid;
+
+    private Category category;
+    private Department department;
+    private Tax tax;
+
     private boolean open;
     private BigDecimal price;
     private BigDecimal costPrice;
@@ -48,10 +54,10 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
-        this.category = category;
-        this.department = department;
+        this.categoryid = category;
+        this.departmentid = department;
         this.comments = comments;
-        this.tax = tax;
+        this.taxid = tax;
         this.open = open;
     }
 
@@ -217,20 +223,20 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.shortName = shortName;
     }
 
-    public int getCategory() {
-        return category;
+    public int getCategoryID() {
+        return categoryid;
     }
 
-    public void setCategory(int category) {
-        this.category = category;
+    public void setCategoryID(int category) {
+        this.categoryid = category;
     }
 
-    public int getTax() {
-        return tax;
+    public int getTaxID() {
+        return taxid;
     }
 
-    public void setTax(int tax) {
-        this.tax = tax;
+    public void setTaxID(int tax) {
+        this.taxid = tax;
     }
 
     public BigDecimal getCostPrice() {
@@ -257,12 +263,12 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.maxStockLevel = maxStockLevel;
     }
 
-    public int getDepartment() {
-        return department;
+    public int getDepartmentID() {
+        return departmentid;
     }
 
-    public void setDepartment(int department) {
-        this.department = department;
+    public void setDepartmentID(int department) {
+        this.departmentid = department;
     }
 
     @Override
@@ -275,17 +281,65 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.open = open;
     }
 
+    public int getCategoryid() {
+        return categoryid;
+    }
+
+    public void setCategoryid(int categoryid) {
+        this.categoryid = categoryid;
+    }
+
+    public int getDepartmentid() {
+        return departmentid;
+    }
+
+    public void setDepartmentid(int departmentid) {
+        this.departmentid = departmentid;
+    }
+
+    public int getTaxid() {
+        return taxid;
+    }
+
+    public void setTaxid(int taxid) {
+        this.taxid = taxid;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public Tax getTax() {
+        return tax;
+    }
+
+    public void setTax(Tax tax) {
+        this.tax = tax;
+    }
+
     public String getSQLInsertString() {
-        return + this.order_code
+        return +this.order_code
                 + ",'" + this.name
                 + "'," + this.open
                 + "," + this.price
                 + "," + this.stock
                 + ",'" + this.comments
                 + "','" + this.shortName
-                + "'," + this.category
-                + "," + this.department
-                + "," + this.tax
+                + "'," + this.categoryid
+                + "," + this.departmentid
+                + "," + this.taxid
                 + "," + this.costPrice
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel;
@@ -300,9 +354,9 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ", PRODUCTS.STOCK=" + this.getStock()
                 + ", PRODUCTS.COMMENTS='" + this.getComments()
                 + "', PRODUCTS.SHORT_NAME='" + this.getName()
-                + "', PRODUCTS.CATEGORY_ID=" + this.getCategory()
-                + ", PRODUCTS.DEPARTMENT_ID=" + this.getDepartment()
-                + ", PRODUCTS.TAX_ID=" + this.getTax()
+                + "', PRODUCTS.CATEGORY_ID=" + this.getCategoryID()
+                + ", PRODUCTS.DEPARTMENT_ID=" + this.getDepartmentID()
+                + ", PRODUCTS.TAX_ID=" + this.getTaxID()
                 + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
