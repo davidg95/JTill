@@ -2099,8 +2099,9 @@ public class ServerConnection implements DataConnect {
             } catch (IOException ex) {
                 throw ex;
             }
-            if (o instanceof List) {
-                return (List<Screen>) o;
+            ConnectionData data = (ConnectionData) o;
+            if (data.getData() instanceof List) {
+                return (List<Screen>) data.getData();
             } else {
                 throw (SQLException) o;
 
@@ -3518,7 +3519,20 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("SEARCHSALEITEMS", new Object[]{department, category, start, end}));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (List) data.getData();
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            sem.release();
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
