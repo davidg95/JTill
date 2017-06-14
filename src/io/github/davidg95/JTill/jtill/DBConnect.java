@@ -51,8 +51,11 @@ import org.apache.derby.jdbc.EmbeddedDriver;
 public class DBConnect implements DataConnect {
 
     private static final Logger LOG = Logger.getGlobal();
-    
-    private static final DBConnect connection;
+
+    /**
+     * The static reference to the DBConnect object.
+     */
+    private static final DBConnect CONNECTION;
 
     /**
      * The database driver.
@@ -85,13 +88,18 @@ public class DBConnect implements DataConnect {
 
     private final List<Integer> clockedOn;
     private final StampedLock clockLock;
-    
-    static{
-        connection = new DBConnect();
+
+    static {
+        CONNECTION = new DBConnect();
     }
-    
-    public static DBConnect getInstance(){
-        return connection;
+
+    /**
+     * Returns an instance of the DBConnect object.
+     *
+     * @return the DBConnect object.
+     */
+    public static DBConnect getInstance() {
+        return CONNECTION;
     }
 
     /**
@@ -138,22 +146,23 @@ public class DBConnect implements DataConnect {
      * @throws SQLException if there was an error getting the connection.
      */
     public Connection getNewConnection() throws SQLException {
-        Connection connection = DriverManager.getConnection(address, username, password);
-        connection.setAutoCommit(false);
+        final Connection conn = DriverManager.getConnection(address, username, password);
+        conn.setAutoCommit(false);
         connected = true;
-        return connection;
+        return conn;
     }
 
+    @Override
     public HashMap integrityCheck() throws SQLException {
-        String query = "SELECT schemaname, tablename,\n"
+        final String query = "SELECT schemaname, tablename,\n"
                 + "SYSCS_UTIL.SYSCS_CHECK_TABLE(schemaname, tablename)\n"
                 + "FROM sys.sysschemas s, sys.systables t\n"
                 + "WHERE s.schemaid = t.schemaid";
-        try (Connection con = getNewConnection()) {
-            Statement stmt = con.createStatement();
+        try (final Connection con = getNewConnection()) {
+            final Statement stmt = con.createStatement();
             try {
-                ResultSet set = stmt.executeQuery(query);
-                HashMap<String, HashMap> map = new HashMap();
+                final ResultSet set = stmt.executeQuery(query); //Execute the check
+                final HashMap<String, HashMap> map = new HashMap();
                 while (set.next()) {
 
                 }
@@ -188,6 +197,11 @@ public class DBConnect implements DataConnect {
         createTables();
     }
 
+    /**
+     * Create the database tables.
+     *
+     * @throws SQLException if there was an error in creating any tables.
+     */
     private void createTables() throws SQLException {
         LOG.log(Level.INFO, "Creating tables");
         String tills = "create table APP.TILLS\n"
@@ -2216,7 +2230,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale getSale(int id) throws SQLException, JTillException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP, TAX, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
+        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -4634,6 +4648,34 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
+        }
+    }
+
+    @Override
+    public List<Sale> getStaffSales(Staff s) throws IOException, StaffNotFoundException {
+        final String query = "SELECT * FROM SALES WHERE STAFF = " + s.getId();
+        try (final Connection con = getNewConnection()) {
+            final Statement stmt = con.createStatement();
+            final ResultSet set = stmt.executeQuery(query);
+            final List<Sale> sales = new ArrayList<>();
+            while (set.next()) {
+                final int id = set.getInt("ID");
+                final BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
+                final int customerId = set.getInt("CUSTOMER");
+                final Date time = new Date(set.getLong("TIMESTAMP"));
+                final int tillId = set.getInt("TERMINAL");
+                final boolean cashed = set.getBoolean("CASHED");
+
+                final Sale sale = new Sale(id, price, customerId, time, tillId, cashed, s.getId(), null);
+                sales.add(sale);
+            }
+            con.commit();
+            for (Sale sale : sales) {
+                sale.setProducts(getItemsInSale(sale));
+            }
+            return sales;
+        } catch (SQLException ex) {
+            throw new IOException("Error");
         }
     }
 }

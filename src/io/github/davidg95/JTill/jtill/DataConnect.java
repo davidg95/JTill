@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import javax.mail.MessagingException;
@@ -49,6 +50,13 @@ public interface DataConnect {
      * @return the GUI.
      */
     public GUIInterface getGUI();
+
+    /**
+     * Perform a database integrity check.
+     *
+     * @return the HashMap result of the check.
+     */
+    public HashMap integrityCheck() throws IOException, SQLException;
 
     /**
      * Send and assistance message to the server.
@@ -737,6 +745,15 @@ public interface DataConnect {
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException;
+
+    /**
+     * Method to get the sales for a member of staff.
+     *
+     * @param s the member of staff to get sales for.
+     * @throws IOException if there was a network error.
+     * @throws StaffNotFoundException if the member of staff could not be found.
+     */
+    public List<Sale> getStaffSales(Staff s) throws IOException, StaffNotFoundException;
 
     //Category
     /**
