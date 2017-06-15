@@ -133,7 +133,7 @@ public class ServerConnection implements DataConnect {
 
             ConnectionData data = (ConnectionData) obIn.readObject();
 
-            if (data.getFlag().equals("RESUME")) {
+            if (data.getFlag().equals("SUCC")) {
                 return (Sale) data.getData();
             } else {
                 throw new IOException(data.getData().toString());
@@ -3537,26 +3537,80 @@ public class ServerConnection implements DataConnect {
 
     @Override
     public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException {
-        return null;
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETTERMINALSALES", terminal, uncashedOnly));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new IOException(data.getData().toString());
+            }
+            return (List) data.getData();
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
     public void cashUncashedSales(int terminal) throws IOException, SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("CASHUNCASHEDSALES", terminal));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw (SQLException) data.getData();
+            }
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
     public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETPRODUCTSADVANCED", WHERE));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw (SQLException) data.getData();
+            }
+            return (List) data.getData();
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
     public List<Sale> getStaffSales(Staff s) throws IOException, StaffNotFoundException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("GETPRODUCTSADVANCED", s));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw (StaffNotFoundException) data.getData();
+            }
+            return (List) data.getData();
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
     public HashMap integrityCheck() throws IOException, SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            sem.acquire();
+            obOut.writeObject(ConnectionData.create("INTEGRITYCHECK"));
+            ConnectionData data = (ConnectionData) obIn.readObject();
+            if (data.getFlag().equals("FAIL")) {
+                throw new SQLException(data.getData().toString());
+            }
+            return (HashMap) data.getData();
+        } catch (InterruptedException | ClassNotFoundException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        throw new IOException("Class error (Update may be required)");
     }
 }
