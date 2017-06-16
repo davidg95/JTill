@@ -50,7 +50,7 @@ public class ConnectionData implements Serializable, Cloneable {
     }
 
     @Override
-    public ConnectionData clone() {
+    public ConnectionData clone() throws CloneNotSupportedException {
         try {
             final ConnectionData result = (ConnectionData) super.clone();
             return result;
@@ -62,6 +62,6 @@ public class ConnectionData implements Serializable, Cloneable {
     @Override
     public String toString() {
         return "Flag- " + this.flag
-                + "\n Data- " + this.data;
+                + "\n Data- " + this.data.length;
     }
 }
