@@ -55,6 +55,8 @@ public interface DataConnect {
      * Perform a database integrity check.
      *
      * @return the HashMap result of the check.
+     * @throws java.io.IOException if there was a network error.
+     * @throws java.sql.SQLException if there was a database error.
      */
     public HashMap integrityCheck() throws IOException, SQLException;
 

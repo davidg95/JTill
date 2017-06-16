@@ -37,7 +37,6 @@ public class ServerConnection implements DataConnect {
     private ObjectOutputStream obOut;
 
     private boolean isConnected;
-    private String site;
 
     private GUIInterface g;
 
@@ -65,7 +64,6 @@ public class ServerConnection implements DataConnect {
     public Till connect(String IP, int PORT, String site, UUID uuid) throws IOException, ConnectException {
         try {
             socket = new Socket();
-            this.site = site;
             socket.connect(new InetSocketAddress(IP, PORT), 2000);
             obOut = new ObjectOutputStream(socket.getOutputStream());
             obOut.flush();
@@ -247,7 +245,7 @@ public class ServerConnection implements DataConnect {
 
             ConnectionData data = (ConnectionData) obIn.readObject();
 
-            if (data.getFlag().equals("GET")) {
+            if (data.getFlag().equals("SUCC")) {
                 return (Till) data.getData();
             } else {
                 if (data.getData() instanceof JTillException) {
@@ -271,10 +269,11 @@ public class ServerConnection implements DataConnect {
 
             Object o = obIn.readObject();
 
-            if (o instanceof List) {
-                return (List<Till>) o;
+            final ConnectionData data = (ConnectionData) o;
+            if (data.getData() instanceof List) {
+                return (List<Till>) data.getData();
             } else {
-                throw (SQLException) o;
+                throw (SQLException) data.getData();
             }
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
@@ -644,11 +643,13 @@ public class ServerConnection implements DataConnect {
                 sem.release();
             }
 
-            if (o instanceof SQLException) {
+            final ConnectionData data = (ConnectionData) o;
+
+            if (data.getData() instanceof SQLException) {
                 throw (SQLException) o;
             }
 
-            return (List<Product>) o;
+            return (List<Product>) data.getData();
         } catch (InterruptedException | ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
@@ -832,12 +833,14 @@ public class ServerConnection implements DataConnect {
             } finally {
                 sem.release();
             }
+            
+            final ConnectionData data = (ConnectionData) o;
 
-            if (o instanceof SQLException) {
-                throw (SQLException) o;
+            if (data.getData() instanceof SQLException) {
+                throw (SQLException) data.getData();
             }
 
-            return (List<Customer>) o;
+            return (List<Customer>) data.getData();
         } catch (InterruptedException | ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
         }
@@ -959,11 +962,13 @@ public class ServerConnection implements DataConnect {
             } finally {
                 sem.release();
             }
+            
+            final ConnectionData data = (ConnectionData) o;
 
-            if (o instanceof List) {
-                return (List<Sale>) o;
+            if (data.getData() instanceof List) {
+                return (List<Sale>) data.getData();
             } else {
-                throw (SQLException) o;
+                throw (SQLException) data.getData();
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
@@ -1177,12 +1182,14 @@ public class ServerConnection implements DataConnect {
             } catch (IOException ex) {
                 throw ex;
             }
+            
+            final ConnectionData data = (ConnectionData) o;
 
-            if (o instanceof SQLException) {
+            if (data.getData() instanceof SQLException) {
                 throw (SQLException) o;
             }
 
-            List<Staff> staff = (List) o;
+            List<Staff> staff = (List) data.getData();
 
             staff.forEach((s) -> {
                 s.setPassword(Encryptor.decrypt(s.getPassword()));
@@ -1483,7 +1490,7 @@ public class ServerConnection implements DataConnect {
             obOut.writeObject(ConnectionData.create("GETCATEGORY", id));
 
             ConnectionData data = (ConnectionData) obIn.readObject();
-
+            
             if (data.getFlag().equals("SUCC")) {
                 return (Category) data.getData();
             } else {
@@ -1517,11 +1524,11 @@ public class ServerConnection implements DataConnect {
             } finally {
                 sem.release();
             }
-
-            if (o instanceof List) {
-                return (List<Category>) o;
+            final ConnectionData data = (ConnectionData) o;
+            if (data.getData() instanceof List) {
+                return (List<Category>) data.getData();
             } else {
-                throw (SQLException) o;
+                throw (SQLException) data.getData();
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
@@ -1682,11 +1689,13 @@ public class ServerConnection implements DataConnect {
             } catch (IOException ex) {
                 throw ex;
             }
+            
+            final ConnectionData data = (ConnectionData) o;
 
-            if (o instanceof List) {
-                return (List<Discount>) o;
+            if (data.getData() instanceof List) {
+                return (List<Discount>) data.getData();
             } else {
-                throw (SQLException) o;
+                throw (SQLException) data.getData();
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
@@ -1819,12 +1828,11 @@ public class ServerConnection implements DataConnect {
             } catch (IOException ex) {
                 throw ex;
             }
-
-            if (o instanceof List) {
-                return (List<Tax>) o;
+            final ConnectionData data = (ConnectionData) o;
+            if (data.getData() instanceof List) {
+                return (List<Tax>) data.getData();
             } else {
-                throw (SQLException) o;
-
+                throw (SQLException) data.getData();
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
@@ -2125,10 +2133,12 @@ public class ServerConnection implements DataConnect {
             } catch (IOException ex) {
                 throw ex;
             }
-            if (o instanceof List) {
-                return (List<TillButton>) o;
+            
+            final ConnectionData data = (ConnectionData) o;
+            if (data.getData() instanceof List) {
+                return (List<TillButton>) data.getData();
             } else {
-                throw (SQLException) o;
+                throw (SQLException) data.getData();
 
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
