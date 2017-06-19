@@ -2752,7 +2752,12 @@ public class DBConnect implements DataConnect {
 
     @Override
     public void assisstance(String message) throws IOException {
-        g.showMessage("Assisstance", message);
+        new Thread("Assisstance Message") {
+            @Override
+            public void run() {
+                g.showMessage("Assisstance", message);
+            }
+        }.start();
         g.log(message);
     }
 

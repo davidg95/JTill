@@ -109,193 +109,149 @@ public class ServerConnection implements DataConnect {
         isConnected = true;
     }
 
+    /**
+     * Method to send data to the server.
+     *
+     * @param data the data to send.
+     * @return the reply from the server.
+     */
+    private ConnectionData sendData(ConnectionData data) throws IOException {
+        try {
+            sem.acquire();
+            obOut.writeObject(data);
+            return (ConnectionData) obIn.readObject();
+        } catch (ClassNotFoundException | InterruptedException ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IOException("Network Error");
+        } finally {
+            sem.release();
+        }
+    }
+
     @Override
     public void suspendSale(Sale sale, Staff staff) throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("SUSPENDSALE", new Object[]{sale, staff}));
-            ConnectionData data = (ConnectionData) obIn.readObject();
-            if (data.getFlag().equals("SUSPEND")) {
+        final ConnectionData data = sendData(ConnectionData.create("SUSPENDSALE", new Object[]{sale, staff}));
+        if (data.getFlag().equals("SUCC")) {
 
-            } else if (data.getFlag().equals("FAIL")) {
-                throw new IOException(data.getData()[0].toString());
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        } else if (data.getFlag().equals("FAIL")) {
+            throw new IOException(data.getData()[0].toString());
         }
     }
 
     @Override
     public Sale resumeSale(Staff s) throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("RESUMESALE", s));
+        final ConnectionData data = sendData(ConnectionData.create("RESUMESALE", s));
 
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("SUCC")) {
-                return (Sale) data.getData()[0];
-            } else {
-                throw new IOException(data.getData()[0].toString());
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        if (data.getFlag().equals("SUCC")) {
+            return (Sale) data.getData()[0];
+        } else {
+            throw new IOException(data.getData()[0].toString());
         }
-        return null;
     }
 
     @Override
     public void assisstance(String message) throws IOException {
-        obOut.writeObject(ConnectionData.create("ASSISSTANCE", message));
+        sendData(ConnectionData.create("ASSISSTANCE", message));
     }
 
     @Override
     public BigDecimal getTillTakings(int terminal) throws IOException, SQLException {
-        try {
-            obOut.writeObject(ConnectionData.create("TAKINGS", terminal));
+        final ConnectionData data = sendData(ConnectionData.create("TAKINGS", terminal));
 
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("GET")) {
-                return (BigDecimal) data.getData()[0];
+        if (data.getFlag().equals("GET")) {
+            return (BigDecimal) data.getData()[0];
+        } else {
+            if (data.getData()[0] instanceof SQLException) {
+                throw (SQLException) data.getData()[0];
             } else {
-                if (data.getData()[0] instanceof SQLException) {
-                    throw (SQLException) data.getData()[0];
-                } else {
-                    throw new IOException(data.getData()[0].toString());
-                }
+                throw new IOException(data.getData()[0].toString());
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
 
     @Override
     public void sendEmail(String message) throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("EMAIL", message));
-            ConnectionData data = (ConnectionData) obIn.readObject();
+        final ConnectionData data = sendData(ConnectionData.create("EMAIL", message));
 
-            if (data.getFlag().equals("FAIL")) {
-                throw new IOException(data.getData()[0].toString());
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        if (data.getFlag().equals("FAIL")) {
+            throw new IOException(data.getData()[0].toString());
         }
     }
 
     @Override
     public boolean emailReceipt(String email, Sale sale) throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("EMAILRECEIPT", new Object[]{email, sale}));
-            ConnectionData data = (ConnectionData) obIn.readObject();
+        final ConnectionData data = sendData(ConnectionData.create("EMAILRECEIPT", new Object[]{email, sale}));
 
-            if (data.getFlag().equals("FAIL")) {
-                throw new IOException(data.getData()[0].toString());
-            }
-            return true;
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        if (data.getFlag().equals("FAIL")) {
+            throw new IOException(data.getData()[0].toString());
         }
-        return false;
+        return true;
     }
 
     @Override
     public Till addTill(Till t) throws IOException, SQLException {
-        try {
-            obOut.writeObject(ConnectionData.create("ADDTILL", t));
-            ConnectionData data = (ConnectionData) obIn.readObject();
+        final ConnectionData data = sendData(ConnectionData.create("ADDTILL", t));
 
-            if (data.getFlag().equals("ADD")) {
-                return (Till) data.getData()[0];
+        if (data.getFlag().equals("ADD")) {
+            return (Till) data.getData()[0];
+        } else {
+            if (data.getData()[0] instanceof SQLException) {
+                throw (SQLException) data.getData()[0];
             } else {
-                if (data.getData()[0] instanceof SQLException) {
-                    throw (SQLException) data.getData()[0];
-                } else {
-                    throw new IOException(data.getData()[0].toString());
-                }
+                throw new IOException(data.getData()[0].toString());
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
 
     @Override
     public void removeTill(int id) throws IOException, SQLException {
-        try {
-            obOut.writeObject(ConnectionData.create("REMOVETILL", id));
-            ConnectionData data = (ConnectionData) obIn.readObject();
+        final ConnectionData data = sendData(ConnectionData.create("REMOVETILL", id));
 
-            if (data.getFlag().equals("FAIL")) {
-                if (data.getData()[0] instanceof SQLException) {
-                    throw (SQLException) data.getData()[0];
-                } else {
-                    throw new IOException(data.getData()[0].toString());
-                }
+        if (data.getFlag().equals("FAIL")) {
+            if (data.getData()[0] instanceof SQLException) {
+                throw (SQLException) data.getData()[0];
+            } else {
+                throw new IOException(data.getData()[0].toString());
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     @Override
     public Till getTill(int id) throws IOException, SQLException, JTillException {
-        try {
-            obOut.writeObject(ConnectionData.create("GETTILL", id));
+        final ConnectionData data = sendData(ConnectionData.create("GETTILL", id));
 
-            ConnectionData data = (ConnectionData) obIn.readObject();
-
-            if (data.getFlag().equals("SUCC")) {
-                return (Till) data.getData()[0];
+        if (data.getFlag().equals("SUCC")) {
+            return (Till) data.getData()[0];
+        } else {
+            if (data.getData()[0] instanceof JTillException) {
+                throw (JTillException) data.getData()[0];
+            } else if (data.getData()[0] instanceof SQLException) {
+                throw (SQLException) data.getData()[0];
             } else {
-                if (data.getData()[0] instanceof JTillException) {
-                    throw (JTillException) data.getData()[0];
-                } else if (data.getData()[0] instanceof SQLException) {
-                    throw (SQLException) data.getData()[0];
-                } else {
-                    throw new IOException(data.getData()[0].toString());
-                }
+                throw new IOException(data.getData()[0].toString());
             }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
     }
 
     @Override
     public List<Till> getAllTills() throws IOException, SQLException {
-        try {
-            obOut.writeObject(ConnectionData.create("GETALLTILLS"));
-
-            Object o = obIn.readObject();
-
-            final ConnectionData data = (ConnectionData) o;
-            if (data.getData()[0] instanceof List) {
-                return (List<Till>) data.getData()[0];
-            } else {
-                throw (SQLException) data.getData()[0];
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        final ConnectionData data = sendData(ConnectionData.create("GETALLTILLS"));
+        if (data.getData()[0] instanceof List) {
+            return (List<Till>) data.getData()[0];
+        } else {
+            throw (SQLException) data.getData()[0];
         }
-        return null;
     }
 
     @Override
     public Till connectTill(String name, UUID uuid) throws IOException {
-        try {
-            obOut.writeObject(ConnectionData.create("CONNECTTILL", new Object[]{name, uuid}));
-            ConnectionData data = (ConnectionData) obIn.readObject();
+        final ConnectionData data = sendData(ConnectionData.create("CONNECTTILL", new Object[]{name, uuid}));
 
-            if (data.getFlag().equals("CONNECT")) {
-                return (Till) data.getData()[0];
-            } else {
-                throw new IOException(data.getData()[0].toString());
-            }
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        if (data.getFlag().equals("CONNECT")) {
+            return (Till) data.getData()[0];
+        } else {
+            throw new IOException(data.getData()[0].toString());
         }
-        throw new IOException("Class error (Update may be required)");
     }
 
     @Override
@@ -3387,7 +3343,7 @@ public class ServerConnection implements DataConnect {
     public DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException {
         try {
             sem.acquire();
-            obOut.writeObject(ConnectionData.create("ADDBUCKET"));
+            obOut.writeObject(ConnectionData.create("ADDBUCKET", b));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData()[0].toString());
@@ -3423,7 +3379,7 @@ public class ServerConnection implements DataConnect {
     public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
-            obOut.writeObject(ConnectionData.create("GETBUCKETTRIGGERES", id));
+            obOut.writeObject(ConnectionData.create("GETBUCKETTRIGGERS", id));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData()[0].toString());
