@@ -1941,27 +1941,27 @@ public class DBConnect implements DataConnect {
             int sId = set.getInt(7);
             final Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
             
-            int cid = set.getInt(8);
-            String name = set.getString(9);
-            String phone = set.getString(10);
-            String mobile = set.getString(11);
-            String email = set.getString(12);
-            String address1 = set.getString(13);
-            String address2 = set.getString(14);
-            String town = set.getString(15);
-            String county = set.getString(16);
-            String country = set.getString(17);
-            String postcode = set.getString(18);
-            String notes = set.getString(19);
-            int loyaltyPoints = set.getInt(20);
-            BigDecimal moneyDue = new BigDecimal(set.getDouble(21));
+            int cid = set.getInt(9);
+            String name = set.getString(10);
+            String phone = set.getString(11);
+            String mobile = set.getString(12);
+            String email = set.getString(13);
+            String address1 = set.getString(14);
+            String address2 = set.getString(15);
+            String town = set.getString(16);
+            String county = set.getString(17);
+            String country = set.getString(18);
+            String postcode = set.getString(19);
+            String notes = set.getString(20);
+            int loyaltyPoints = set.getInt(21);
+            BigDecimal moneyDue = new BigDecimal(set.getDouble(22));
             final Customer c = new Customer(cid, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
             s.setCustomer(c);
             
-            int tid = set.getInt(22);
-            UUID uuid = UUID.fromString(set.getString(23));
-            String tname = set.getString(24);
-            double d = set.getDouble(25);
+            int tid = set.getInt(23);
+            UUID uuid = UUID.fromString(set.getString(24));
+            String tname = set.getString(25);
+            double d = set.getDouble(26);
             BigDecimal uncashed = new BigDecimal(Double.toString(d));
             final Till t = new Till(tname, uncashed, tid, uuid);
             s.setTerminal(t);
@@ -2149,27 +2149,13 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Sale> getAllSales() throws SQLException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP FROM SALES s";
+        String query = "SELECT * FROM SALES s, CUSTOMERS c, TILLS t, STAFF st , SaleItems si WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND si.SALE_ID = s.ID AND s.TERMINAL = t.ID";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
             try {
                 ResultSet set = stmt.executeQuery(query);
-                sales = new LinkedList<>();
-                while (set.next()) {
-                    int id = set.getInt("sId");
-                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                    int customerid = set.getInt("sCus");
-                    Date date = new Date(set.getLong("TIMESTAMP"));
-                    int terminal = set.getInt("TERMINAL");
-                    boolean cashed = set.getBoolean("CASHED");
-                    int sId = set.getInt("STAFF");
-                    int mop = set.getInt("MOP");
-                    Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
-                    s.setMop(mop);
-                    s.setProducts(getItemsInSale(s));
-                    sales.add(s);
-                }
+                sales = getSalesFromResultSet(set);
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -2214,7 +2200,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Sale> getUncashedSales(String t) throws SQLException {
-        String query = "SELECT * FROM SALES s, CUSTOMERS c, TILLS s, STAFF st , SaleItems si WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND si.SALE_ID = s.ID AND s.TERMINAL = t.ID AND t.NAME = '" + t + "'";
+        String query = "SELECT * FROM SALES s, CUSTOMERS c, TILLS t, STAFF st , SaleItems si WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND si.SALE_ID = s.ID AND s.TERMINAL = t.ID AND t.NAME = '" + t + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -2266,7 +2252,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Sale getSale(int id) throws SQLException, JTillException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, TIMESTAMP, TERMINAL, CASHED, STAFF, MOP, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS_LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF";
+        String query = "SELECT * FROM SALES s, CUSTOMERS c, TILLS t, STAFF st , SaleItems si WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND si.SALE_ID = s.ID AND s.TERMINAL = t.ID AND s.ID = " + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();

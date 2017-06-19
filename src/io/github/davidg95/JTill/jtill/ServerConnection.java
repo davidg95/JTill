@@ -921,10 +921,14 @@ public class ServerConnection implements DataConnect {
 
             final ConnectionData data = (ConnectionData) o;
 
-            if (data.getData()[0] instanceof List) {
-                return (List<Sale>) data.getData()[0];
+            if (data.getFlag().equals("SUCC")) {
+                return (List) data.getData()[0];
             } else {
-                throw (SQLException) data.getData()[0];
+                if (data.getData()[0] instanceof SQLException) {
+                    throw (SQLException) data.getData()[0];
+                } else {
+                    throw new IOException(data.getData()[0].toString());
+                }
             }
         } catch (InterruptedException | ClassNotFoundException ex) {
             LOG.log(Level.SEVERE, "Error in ServerConnection", ex);
