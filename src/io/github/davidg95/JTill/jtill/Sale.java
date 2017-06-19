@@ -28,6 +28,10 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private int staff;
     private int mop;
 
+    private Customer c;
+    private Till t;
+    private Staff s;
+
     private SaleItem lastAdded;
 
     private transient final List<ProductListener> listeners;
@@ -313,12 +317,20 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.total = total;
     }
 
-    public int getCustomer() {
+    public int getCustomerID() {
         return customer;
     }
 
-    public void setCustomer(int customer) {
+    public void setCustomerID(int customer) {
         this.customer = customer;
+    }
+
+    public Customer getCustomer() {
+        return c;
+    }
+
+    public void setCustomer(Customer c) {
+        this.c = c;
     }
 
     public int getLineCount() {
@@ -347,12 +359,20 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.mop = mop;
     }
 
-    public int getTerminal() {
+    public int getTerminalID() {
         return terminal;
     }
 
-    public void setTerminal(int terminal) {
+    public void setTerminalID(int terminal) {
         this.terminal = terminal;
+    }
+
+    public Till getTerminal() {
+        return t;
+    }
+
+    public void setTerminal(Till t) {
+        this.t = t;
     }
 
     public boolean isCashed() {
@@ -363,12 +383,20 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.cashed = cashed;
     }
 
-    public int getStaff() {
+    public int getStaffID() {
         return staff;
     }
 
-    public void setStaff(int staff) {
+    public void setStaffID(int staff) {
         this.staff = staff;
+    }
+
+    public Staff getStaff() {
+        return s;
+    }
+
+    public void setStaff(Staff s) {
+        this.s = s;
     }
 
     public void addListener(ProductListener pl) {

@@ -1932,14 +1932,50 @@ public class DBConnect implements DataConnect {
     public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
         List<Sale> sales = new LinkedList<>();
         while (set.next()) {
-            int id = set.getInt("sId");
-            BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-            int customerid = set.getInt("cId");
-            Date date = new Date(set.getLong("TIMESTAMP"));
-            int terminal = set.getInt("TERMINAL");
-            boolean cashed = set.getBoolean("CASHED");
-            int sId = set.getInt("stId");
-            Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
+            int id = set.getInt(1);
+            BigDecimal price = new BigDecimal(Double.toString(set.getDouble(2)));
+            int customerid = set.getInt(3);
+            Date date = new Date(set.getLong(4));
+            int terminal = set.getInt(5);
+            boolean cashed = set.getBoolean(6);
+            int sId = set.getInt(7);
+            final Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
+            
+            int cid = set.getInt(8);
+            String name = set.getString(9);
+            String phone = set.getString(10);
+            String mobile = set.getString(11);
+            String email = set.getString(12);
+            String address1 = set.getString(13);
+            String address2 = set.getString(14);
+            String town = set.getString(15);
+            String county = set.getString(16);
+            String country = set.getString(17);
+            String postcode = set.getString(18);
+            String notes = set.getString(19);
+            int loyaltyPoints = set.getInt(20);
+            BigDecimal moneyDue = new BigDecimal(set.getDouble(21));
+            final Customer c = new Customer(cid, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
+            s.setCustomer(c);
+            
+            int tid = set.getInt(22);
+            UUID uuid = UUID.fromString(set.getString(23));
+            String tname = set.getString(24);
+            double d = set.getDouble(25);
+            BigDecimal uncashed = new BigDecimal(Double.toString(d));
+            final Till t = new Till(tname, uncashed, tid, uuid);
+            s.setTerminal(t);
+            
+            int stid = set.getInt("ID");
+            String stname = set.getString("NAME");
+            int position = set.getInt("POSITION");
+            String uname = set.getString("USERNAME");
+            String pword = set.getString("PASSWORD");
+            String dPass = Encryptor.decrypt(pword);
+            double wage = set.getDouble("WAGE");
+            final Staff st = new Staff(stid, stname, position, uname, dPass, wage);
+            s.setStaff(st);
+            
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -1961,7 +1997,7 @@ public class DBConnect implements DataConnect {
                 con.commit();
                 if (s.getMop() == Sale.MOP_CHARGEACCOUNT) {
                     try {
-                        final Customer c = DBConnect.this.getCustomer(s.getCustomer());
+                        final Customer c = DBConnect.this.getCustomer(s.getCustomerID());
                         chargeCustomerAccount(c, s.getTotal());
                     } catch (SQLException | CustomerNotFoundException ex) {
                         Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
@@ -1975,7 +2011,7 @@ public class DBConnect implements DataConnect {
         }
         Runnable run = () -> {
             try {
-                final Customer cus = getCustomer(s.getCustomer());
+                final Customer cus = getCustomer(s.getCustomerID());
                 s.getSaleItems().forEach((i) -> {
                     try {
                         final Product p = getProduct(i.getItem());
@@ -1995,7 +2031,7 @@ public class DBConnect implements DataConnect {
             }
         };
         Thread thread = new Thread(run);
-        if (s.getCustomer() > 1) {
+        if (s.getCustomerID() > 1) {
             thread.start();
         }
         for (SaleItem p : s.getSaleItems()) {
@@ -2178,7 +2214,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Sale> getUncashedSales(String t) throws SQLException {
-        String query = "SELECT s.ID as sId, PRICE, s.CUSTOMER as sCus, DISCOUNT, TIMESTAMP, TERMINAL, CASHED, STAFF, CHARGE_ACCOUNT, c.ID as cId, c.NAME as cName, PHONE, MOBILE, EMAIL, ADDRESS-LINE_1, ADDRESS_LINE_2, TOWN, COUNTY, COUNTRY, POSTCODE, NOTES, LOYALTY_POINTS, MONEY_DUE, st.ID as stId, st.NAME as stName, POSITION, USERNAME, PASSWORD FROM SALES s, CUSTOMERS c , STAFF st WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND TERMINAL = '" + t + "'";
+        String query = "SELECT * FROM SALES s, CUSTOMERS c, TILLS s, STAFF st , SaleItems si WHERE c.ID = s.CUSTOMER AND st.ID = s.STAFF AND CASHED = FALSE AND si.SALE_ID = s.ID AND s.TERMINAL = t.ID AND t.NAME = '" + t + "'";
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Sale> sales = new LinkedList<>();
@@ -2814,7 +2850,7 @@ public class DBConnect implements DataConnect {
             text += "You will be invoiced for this sale\n";
         }
         try {
-            final Staff staff = getStaff(sale.getStaff());
+            final Staff staff = getStaff(sale.getStaffID());
             text += "You were served by " + staff.getName() + "\n";
             text += "Thank you for your custom";
 
@@ -3021,17 +3057,34 @@ public class DBConnect implements DataConnect {
     private List<Plu> getPlusFromResultSet(ResultSet set) throws SQLException {
         List<Plu> plus = new LinkedList<>();
         while (set.next()) {
-            int id = set.getInt("ID");
-            String code = set.getString("CODE");
-            int product = set.getInt("PRODUCT");
-            plus.add(new Plu(id, code, product));
+            int id = set.getInt(1);
+            String code = set.getString(2);
+            int product = set.getInt(3);
+            final Plu plu = new Plu(id, code, product);
+            int pid = set.getInt(4);
+            int order_code = set.getInt(5);
+            String name = set.getString(6);
+            boolean open = set.getBoolean(7);
+            BigDecimal price = new BigDecimal(Double.toString(set.getDouble(8)));
+            int stock = set.getInt(9);
+            String comments = set.getString(10);
+            String shortName = set.getString(11);
+            int categoryID = set.getInt(12);
+            int dId = set.getInt(13);
+            int taxID = set.getInt(14);
+            BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble(15)));
+            int minStock = set.getInt(16);
+            int maxStock = set.getInt(17);
+            final Product p = new Product(name, shortName, order_code, categoryID, dId, comments, taxID, open, price, costPrice, stock, minStock, maxStock, pid);
+            plu.setProduct(p);
+            plus.add(plu);
         }
         return plus;
     }
 
     @Override
     public Plu addPlu(Plu plu) throws IOException, SQLException {
-        String query = "INSERT INTO APP.PLUS (CODE, PRODUCT) values ('" + plu.getCode() + "'," + plu.getProduct() + ")";
+        String query = "INSERT INTO APP.PLUS (CODE, PRODUCT) values ('" + plu.getCode() + "'," + plu.getProductID() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -3078,7 +3131,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Plu getPlu(int id) throws IOException, JTillException, SQLException {
-        String query = "SELECT * FROM PLUS WHERE ID=" + id;
+        String query = "SELECT * FROM PLUS pl, PRODUCTS p WHERE pl.PRODUCT = p.ID AND ID=" + id;
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             List<Plu> plus = new LinkedList<>();
@@ -3124,18 +3177,26 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<Plu> getAllPlus() throws IOException, SQLException {
-        String query = "SELECT * FROM PLUS";
+        final String query = "SELECT * FROM PLUS pl, PRODUCTS p WHERE pl.PRODUCT = p.ID";
         try (Connection con = getNewConnection()) {
-            Statement stmt = con.createStatement();
+            final Statement stmt = con.createStatement();
             List<Plu> plus = new LinkedList<>();
             try {
-                ResultSet set = stmt.executeQuery(query);
+                final ResultSet set = stmt.executeQuery(query);
                 plus = getPlusFromResultSet(set);
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
+            }
+            
+            for(Plu p: plus){
+                try {
+                    p.setProduct(this.getProductByBarcode(p.getCode()));
+                } catch (ProductNotFoundException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
 
             return plus;
@@ -3144,7 +3205,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
-        String query = "UPDATE PLUS SET CODE='" + p.getCode() + "', PRODUCT=" + p.getProduct() + " WHERE ID=" + p.getId();
+        String query = "UPDATE PLUS SET CODE='" + p.getCode() + "', PRODUCT=" + p.getProductID() + " WHERE ID=" + p.getId();
         try (Connection con = getNewConnection()) {
             Statement stmt = con.createStatement();
             int value;
@@ -4463,9 +4524,9 @@ public class DBConnect implements DataConnect {
                 while (product.next()) {
                     int id = product.getInt(1);
                     p.setId(id);
-                    pl.setProduct(id);
+                    pl.setProductID(id);
                 }
-                String pluAdd = "INSERT INTO PLUS (CODE, PRODUCT) VALUES ('" + pl.getCode() + "'," + pl.getProduct() + ")";
+                String pluAdd = "INSERT INTO PLUS (CODE, PRODUCT) VALUES ('" + pl.getCode() + "'," + pl.getProductID() + ")";
                 PreparedStatement pluStmt = con.prepareStatement(pluAdd, Statement.RETURN_GENERATED_KEYS);
                 pluStmt.executeUpdate();
                 ResultSet plu = pluStmt.getGeneratedKeys();

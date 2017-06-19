@@ -8,7 +8,7 @@ package io.github.davidg95.JTill.jtill;
 import java.io.Serializable;
 
 /**
- * 
+ *
  * @author David
  */
 public class Plu implements Serializable, Cloneable, JTillObject {
@@ -16,6 +16,7 @@ public class Plu implements Serializable, Cloneable, JTillObject {
     private int id;
     private String code;
     private int product;
+    private Product p;
 
     public Plu(int id, String code, int product) {
         this(code, product);
@@ -49,12 +50,20 @@ public class Plu implements Serializable, Cloneable, JTillObject {
         this.code = code;
     }
 
-    public int getProduct() {
+    public int getProductID() {
         return product;
     }
 
-    public void setProduct(int product) {
+    public void setProductID(int product) {
         this.product = product;
+    }
+
+    public Product getProduct() {
+        return p;
+    }
+
+    public void setProduct(Product p) {
+        this.p = p;
     }
 
     @Override

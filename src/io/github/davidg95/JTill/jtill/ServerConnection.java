@@ -69,7 +69,7 @@ public class ServerConnection implements DataConnect {
             obOut.flush();
             obIn = new ObjectInputStream(socket.getInputStream());
             ConnectionData sendUUID;
-            sendUUID = new ConnectionData("CON", new Object[]{site, uuid});
+            sendUUID = new ConnectionData("CON", site, uuid);
             obOut.writeObject(sendUUID);
             g.showModalMessage("Server", "Waing for confirmation");
             Object o = obIn.readObject();
@@ -3487,7 +3487,7 @@ public class ServerConnection implements DataConnect {
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
         try {
             sem.acquire();
-            obOut.writeObject(ConnectionData.create("SEARCHSALEITEMS", new Object[]{department, category, start, end}));
+            obOut.writeObject(ConnectionData.create("SEARCHSALEITEMS", department, category, start, end));
             ConnectionData data = (ConnectionData) obIn.readObject();
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData()[0].toString());
