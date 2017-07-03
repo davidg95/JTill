@@ -1940,7 +1940,7 @@ public class DBConnect implements DataConnect {
             boolean cashed = set.getBoolean(6);
             int sId = set.getInt(7);
             final Sale s = new Sale(id, price, customerid, date, terminal, cashed, sId);
-            
+
             int cid = set.getInt(9);
             String name = set.getString(10);
             String phone = set.getString(11);
@@ -1957,7 +1957,7 @@ public class DBConnect implements DataConnect {
             BigDecimal moneyDue = new BigDecimal(set.getDouble(22));
             final Customer c = new Customer(cid, name, phone, mobile, email, address1, address2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
             s.setCustomer(c);
-            
+
             int tid = set.getInt(23);
             UUID uuid = UUID.fromString(set.getString(24));
             String tname = set.getString(25);
@@ -1965,7 +1965,7 @@ public class DBConnect implements DataConnect {
             BigDecimal uncashed = new BigDecimal(Double.toString(d));
             final Till t = new Till(tname, uncashed, tid, uuid);
             s.setTerminal(t);
-            
+
             int stid = set.getInt("ID");
             String stname = set.getString("NAME");
             int position = set.getInt("POSITION");
@@ -1975,7 +1975,7 @@ public class DBConnect implements DataConnect {
             double wage = set.getDouble("WAGE");
             final Staff st = new Staff(stid, stname, position, uname, dPass, wage);
             s.setStaff(st);
-            
+
             s.setProducts(getItemsInSale(s));
             sales.add(s);
         }
@@ -2014,7 +2014,7 @@ public class DBConnect implements DataConnect {
                 final Customer cus = getCustomer(s.getCustomerID());
                 s.getSaleItems().forEach((i) -> {
                     try {
-                        final Product p = getProduct(i.getItem());
+                        final Product p = getProduct(i.getItemId());
                         if (checkLoyalty(p)) {
                             String value = getSetting("LOYALTY_VALUE");
                             int points = p.getPrice().divide(new BigDecimal(value)).intValue();
@@ -2038,9 +2038,9 @@ public class DBConnect implements DataConnect {
             addSaleItem(s, p);
             try {
                 if (p.getType() == SaleItem.PRODUCT) {
-                    final Product pr = this.getProduct(p.getItem());
+                    final Product pr = this.getProduct(p.getItemId());
                     if (!pr.isOpen()) {
-                        purchaseProduct(p.getItem(), p.getQuantity());
+                        purchaseProduct(p.getItemId(), p.getQuantity());
                     }
                 }
             } catch (OutOfStockException ex) {
@@ -3176,8 +3176,8 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
-            
-            for(Plu p: plus){
+
+            for (Plu p : plus) {
                 try {
                     p.setProduct(this.getProductByBarcode(p.getCode()));
                 } catch (ProductNotFoundException ex) {
@@ -3924,7 +3924,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public List<SaleItem> getAllSaleItems() throws IOException, SQLException {
-        String query = "SELECT * FROM SALEITEMS";
+        String query = "SELECT * FROM SALEITEMS i, PRODUCTS p WHERE i.TYPE = 1 AND i.ITEM = p.ID";
         List<SaleItem> items = new LinkedList<>();
         int product_id;
         int sale_id;
@@ -3934,14 +3934,31 @@ public class DBConnect implements DataConnect {
                 Statement stmt = con.createStatement();
                 ResultSet set = stmt.executeQuery(query);
                 while (set.next()) {
-                    int id = set.getInt("ID");
-                    product_id = set.getInt("PRODUCT_ID");
-                    type = set.getInt("TYPE");
-                    int quantity = set.getInt("QUANTITY");
-                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("PRICE")));
-                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble("TAX")));
-                    sale_id = set.getInt("SALE_ID");
+                    int id = set.getInt(1);
+                    product_id = set.getInt(2);
+                    type = set.getInt(3);
+                    int quantity = set.getInt(4);
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble(5)));
+                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble(6)));
+                    sale_id = set.getInt(7);
                     SaleItem i = new SaleItem(sale_id, product_id, quantity, id, price, type, tax);
+                    int pcode = set.getInt(8);
+                    int order_code = set.getInt(9);
+                    String name = set.getString(10);
+                    boolean open = set.getBoolean(11);
+                    BigDecimal pprice = new BigDecimal(Double.toString(set.getDouble(12)));
+                    int stock = set.getInt(13);
+                    String comments = set.getString(14);
+                    String shortName = set.getString(15);
+                    int categoryID = set.getInt(16);
+                    int dId = set.getInt(17);
+                    int taxID = set.getInt(18);
+                    BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble(19)));
+                    int minStock = set.getInt(20);
+                    int maxStock = set.getInt(21);
+
+                    Product p = new Product(name, shortName, order_code, categoryID, dId, comments, taxID, open, pprice, costPrice, stock, minStock, maxStock, pcode);
+                    i.setItem(p);
                     items.add(i);
                 }
                 con.commit();
@@ -4565,7 +4582,7 @@ public class DBConnect implements DataConnect {
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
         long startL = start.getTime();
         long endL = end.getTime();
-        String pQuery = "SELECT p.ID as pid, p.CATEGORY_ID as cat, p.DEPARTMENT_ID as dep, i.ID as iid, i.PRODUCT_ID as ipid, i.TYPE as type, i.quantity as iQua, i.PRICE as iPrice, i.SALE_ID as iSaleId, i.TAX as tax, s.TIMESTAMP as time FROM PRODUCTS p, SALEITEMS i, SALES s WHERE p.ID = i.PRODUCT_ID AND i.SALE_ID = s.ID AND i.TYPE = 1 AND s.TIMESTAMP >= " + startL + " AND s.TIMESTAMP <= " + endL;
+        String pQuery = "SELECT * FROM SALEITEMS i, PRODUCTS p, SALES s WHERE p.ID = i.PRODUCT_ID AND i.SALE_ID = s.ID AND i.TYPE = 1 AND s.TIMESTAMP >= " + startL + " AND s.TIMESTAMP <= " + endL;
         if (department > -1) {
             pQuery = pQuery.concat(" AND p.DEPARTMENT_ID = " + department);
         }
@@ -4578,13 +4595,30 @@ public class DBConnect implements DataConnect {
                 ResultSet set = stmt.executeQuery(pQuery);
                 List<SaleItem> items = new LinkedList<>();
                 while (set.next()) {
-                    int id = set.getInt("iid");
-                    int pid = set.getInt("ipid");
-                    int qu = set.getInt("iQua");
-                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble("iPrice")));
-                    int iSa = set.getInt("iSaleId");
-                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble("TAX")));
+                    int id = set.getInt(1);
+                    int pid = set.getInt(2);
+                    int qu = set.getInt(3);
+                    BigDecimal price = new BigDecimal(Double.toString(set.getDouble(5)));
+                    int iSa = set.getInt(6);
+                    BigDecimal tax = new BigDecimal(Double.toString(set.getDouble(7)));
                     SaleItem i = new SaleItem(iSa, pid, qu, id, price, 1, tax);
+                    int pcode = set.getInt(8);
+                    int order_code = set.getInt(9);
+                    String name = set.getString(10);
+                    boolean open = set.getBoolean(11);
+                    BigDecimal pprice = new BigDecimal(Double.toString(set.getDouble(12)));
+                    int stock = set.getInt(13);
+                    String comments = set.getString(14);
+                    String shortName = set.getString(15);
+                    int categoryID = set.getInt(16);
+                    int dId = set.getInt(17);
+                    int taxID = set.getInt(18);
+                    BigDecimal costPrice = new BigDecimal(Double.toString(set.getDouble(19)));
+                    int minStock = set.getInt(20);
+                    int maxStock = set.getInt(21);
+
+                    Product p = new Product(name, shortName, order_code, categoryID, dId, comments, taxID, open, pprice, costPrice, stock, minStock, maxStock, pcode);
+                    i.setItem(p);
                     items.add(i);
                 }
                 con.commit();

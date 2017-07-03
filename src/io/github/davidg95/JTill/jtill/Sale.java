@@ -127,7 +127,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         }
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
-            if (item.getItem() == i.getId() && item.getType() == type && item.isRefundItem() == isRefundItem) {
+            if (item.getItemId() == i.getId() && item.getType() == type && item.isRefundItem() == isRefundItem) {
                 //The item has been added
                 if (i.isOpen()) { //Check if it is open price.
                     if (i.getPrice().compareTo(item.getPrice()) == 0) { //Check if it is the same price.
@@ -258,7 +258,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      */
     public void halfPriceItem(SaleItem item) {
         for (SaleItem i : saleItems) {
-            if (i.getItem() == item.getItem()) {
+            if (i.getItemId() == item.getItemId()) {
                 if (i.getPrice().compareTo(new BigDecimal("0.01")) != 0) { //Check it is not at 1p.
                     if (i.getPrice().compareTo(item.getPrice()) == 0) {
                         BigDecimal val = i.getPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);

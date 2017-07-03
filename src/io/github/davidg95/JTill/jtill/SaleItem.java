@@ -17,7 +17,7 @@ import java.text.DecimalFormat;
 public class SaleItem implements Serializable {
 
     private int id;
-    private int item;
+    private int itemId;
     private String name;
     private int quantity;
     private BigDecimal price;
@@ -26,6 +26,8 @@ public class SaleItem implements Serializable {
     private int sale;
     private int type;
     private boolean refundItem;
+
+    private Item item;
 
     /**
      * Indicates the sale item is a Product.
@@ -47,7 +49,7 @@ public class SaleItem implements Serializable {
 
     public SaleItem(int sale, int item, int quantity, BigDecimal price, int type, BigDecimal tax) {
         this.sale = sale;
-        this.item = item;
+        this.itemId = item;
         this.quantity = quantity;
         this.price = price;
         this.type = type;
@@ -76,11 +78,19 @@ public class SaleItem implements Serializable {
         return quantity;
     }
 
-    public int getItem() {
+    public int getItemId() {
+        return itemId;
+    }
+
+    public void setItemId(int item) {
+        this.itemId = item;
+    }
+
+    public Item getItem() {
         return item;
     }
 
-    public void setItem(int item) {
+    public void setItem(Item item) {
         this.item = item;
     }
 
@@ -157,7 +167,7 @@ public class SaleItem implements Serializable {
     }
 
     public String getSQLInsertStatement() {
-        return this.item
+        return this.itemId
                 + "," + type
                 + "," + this.quantity
                 + "," + this.price.doubleValue()
@@ -184,7 +194,7 @@ public class SaleItem implements Serializable {
             return false;
         }
         final SaleItem other = (SaleItem) obj;
-        return this.item == other.item && this.type == other.type;
+        return this.itemId == other.itemId && this.type == other.type;
     }
 
     @Override
@@ -195,7 +205,7 @@ public class SaleItem implements Serializable {
         } else {
             df = new DecimalFormat("0.00");
         }
-        return "Qty. " + this.getQuantity() + "\t" + this.getItem() + "\t\t\t£" + df.format(this.getPrice());
+        return "Qty. " + this.getQuantity() + "\t" + this.getItemId() + "\t\t\t£" + df.format(this.getPrice());
 
     }
 }

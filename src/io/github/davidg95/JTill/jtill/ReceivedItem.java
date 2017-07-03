@@ -5,13 +5,14 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
  *
  * @author David
  */
-public class ReceivedItem {
+public class ReceivedItem implements Serializable{
 
     private int id;
     private int product;

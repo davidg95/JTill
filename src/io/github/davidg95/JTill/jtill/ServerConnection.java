@@ -3166,6 +3166,7 @@ public class ServerConnection implements DataConnect {
             if (data.getFlag().equals("FAIL")) {
                 throw new IOException(data.getData()[0].toString());
             }
+            return;
         } catch (InterruptedException | ClassNotFoundException ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         } finally {

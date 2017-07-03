@@ -153,7 +153,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      *
      * @throws OutOfStockException if the stock level is 0.
      */
-    public void purchace() throws OutOfStockException {
+    public void purchase() throws OutOfStockException {
         if (this.stock > 0) {
             stock--;
         } else {
