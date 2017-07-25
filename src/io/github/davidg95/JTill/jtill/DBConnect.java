@@ -698,16 +698,6 @@ public class DBConnect implements DataConnect {
 
     }
 
-    /**
-     * Method to check if the database is currently connected.
-     *
-     * @return true if it connected, false otherwise.
-     */
-    @Override
-    public boolean isConnected() {
-        return connected;
-    }
-
     @Override
     public List<Product> getAllProducts() throws SQLException {
         String query = "SELECT ID as pId, ORDER_CODE, p.NAME as pName, OPEN_PRICE, PRICE, STOCK, COMMENTS, SHORT_NAME, CATEGORY_ID, DEPARTMENT_ID, TAX_ID, COST_PRICE, MIN_PRODUCT_LEVEL, MAX_PRODUCT_LEVEL FROM PRODUCTS p";
@@ -2998,11 +2988,6 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void disconnectTill(Till t) {
-        connectedTills.remove(t);
-    }
-
-    @Override
     public List<Till> getConnectedTills() {
         return connectedTills;
     }
@@ -3236,11 +3221,6 @@ public class DBConnect implements DataConnect {
     @Override
     public String getSetting(String key, String value) throws IOException {
         return systemSettings.getSetting(key, value);
-    }
-
-    @Override
-    public Settings getSettingsInstance() throws IOException {
-        return systemSettings;
     }
 
     @Override
