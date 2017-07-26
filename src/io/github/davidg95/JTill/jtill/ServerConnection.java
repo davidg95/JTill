@@ -53,16 +53,14 @@ public class ServerConnection implements DataConnect {
     public Till connect(String IP, int PORT, String site, UUID uuid) throws IOException, ConnectException {
         try {
             conn.connect(IP, PORT);
-            conn.sendData(JConnData.create("UUID").addParam("UUID", uuid).addParam("SITE", site), (JConnData reply) -> {
-                final String result = (String) reply.getReturnValue();
-                g.hideModalMessage();
-                if (result.equals("DISALLOW")) {
-                    g.disallow();
-                } else {
-                    g.allow();
-                }
-            });
             g.showModalMessage("Server", "Waing for confirmation");
+            final Till t = (Till) conn.sendData(JConnData.create("UUID").addParam("UUID", uuid).addParam("SITE", site));
+            if(t == null){
+                g.disallow();
+            } else{
+                g.allow();
+            }
+            return t;
         } catch (Exception ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
