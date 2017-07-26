@@ -5,8 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import io.github.davidg95.jconn.JConn;
-import io.github.davidg95.jconn.JConnData;
+import io.github.davidg95.jconn.*;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.ConnectException;
@@ -24,9 +23,7 @@ import java.util.logging.Logger;
  *
  * @author David
  */
-public class ServerConnection implements DataConnect {
-
-    private static final Logger LOG = Logger.getGlobal();
+public class ServerConnection implements DataConnect, JConnListener {
 
     private final JConn conn;
 
@@ -37,6 +34,7 @@ public class ServerConnection implements DataConnect {
      */
     public ServerConnection() {
         conn = new JConn();
+        conn.registerListener(this);
     }
 
     /**
@@ -2257,5 +2255,23 @@ public class ServerConnection implements DataConnect {
                 throw new IOException(ex.getMessage());
             }
         }
+    }
+
+    @Override
+    public void onReceive(JConnData data) {
+    }
+
+    @Override
+    public void onConnectionDrop(JConnEvent event) {
+        g.connectionDrop();
+    }
+
+    @Override
+    public void onConnectionReestablish(JConnEvent event) {
+        g.connectionReestablish();
+    }
+
+    @Override
+    public void onServerGracefulEnd() {
     }
 }

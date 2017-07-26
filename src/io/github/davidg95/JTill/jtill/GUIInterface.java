@@ -32,4 +32,8 @@ public interface GUIInterface {
     public void disallow();
     
     public void updateTills();
+    
+    public void connectionDrop();
+    
+    public void connectionReestablish();
 }
