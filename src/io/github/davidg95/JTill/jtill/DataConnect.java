@@ -24,13 +24,6 @@ import javax.mail.internet.AddressException;
 public interface DataConnect {
 
     /**
-     * Check if there is a database connection.
-     *
-     * @return true if there is a connection.
-     */
-    public boolean isConnected();
-
-    /**
      * Close the connection.
      *
      * @throws IOException if there was an error closing the connection.
@@ -134,15 +127,6 @@ public interface DataConnect {
      * @throws IOException if there was an error.
      */
     public String getSetting(String key, String value) throws IOException;
-
-    /**
-     * Get an instance of the settings object. Not recommended.
-     *
-     * @return the settings object.
-     * @throws IOException if there was an error.
-     */
-    @Deprecated
-    public Settings getSettingsInstance() throws IOException;
 
     //Product
     /**
@@ -1199,13 +1183,6 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      */
     public Till connectTill(String name, UUID uuid) throws IOException;
-
-    /**
-     * Method to disconnect a till.
-     *
-     * @param t the till to disconnect.
-     */
-    public void disconnectTill(Till t);
 
     /**
      * Method to get all current connected tills.
