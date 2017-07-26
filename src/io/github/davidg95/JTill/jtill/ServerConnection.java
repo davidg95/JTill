@@ -766,7 +766,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public Staff login(String username, String password) throws IOException, LoginException, SQLException {
         try {
-            return (Staff) conn.sendData(JConnData.create("LOGIN").addParam("USERNAME", username).addParam("PASSWORD", password));
+            return (Staff) conn.sendData(JConnData.create("LOGIN").addParam("USERNAME", username).addParam("PASSWORD", Encryptor.encrypt(password)));
         } catch (Exception ex) {
             if (ex instanceof LoginException) {
                 throw (LoginException) ex;
@@ -2259,6 +2259,9 @@ public class ServerConnection implements DataConnect, JConnListener {
 
     @Override
     public void onReceive(JConnData data) {
+        if(data.getFlag().equals("LOG")){
+            g.log(data.getData().get("MESSAGE"));
+        }
     }
 
     @Override
