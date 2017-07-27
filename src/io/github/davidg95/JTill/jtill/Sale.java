@@ -127,7 +127,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         }
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
-            if (item.getItemId() == i.getId() && item.getType() == type && item.isRefundItem() == isRefundItem) {
+            if (item.getItem().equals(i) && item.getType() == type && item.isRefundItem() == isRefundItem) {
                 //The item has been added
                 if (i.isOpen()) { //Check if it is open price.
                     if (i.getPrice().compareTo(item.getPrice()) == 0) { //Check if it is the same price.
@@ -142,9 +142,9 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                             } else {
                                 taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
                             }
-                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
+                            this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
                         } else {
-                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
+                            this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
                         }
                         updateTotal(); //Update the total.
                         return true;
@@ -164,9 +164,9 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                         } else {
                             taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
                         }
-                        this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
+                        this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
                     } else {
-                        this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
+                        this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
                     }
                     return true;
                 }
@@ -183,9 +183,9 @@ public class Sale implements Serializable, JTillObject, Cloneable {
             } else {
                 taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
             }
-            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
+            item = new SaleItem(this.id, i, quantity, i.getPrice(), type, taxValue); //Set this item to the last added.
         } else {
-            item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
+            item = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO); //Set this item to the last added.
         }
         item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
         this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
@@ -258,7 +258,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      */
     public void halfPriceItem(SaleItem item) {
         for (SaleItem i : saleItems) {
-            if (i.getItemId() == item.getItemId()) {
+            if (i.equals(item)) {
                 if (i.getPrice().compareTo(new BigDecimal("0.01")) != 0) { //Check it is not at 1p.
                     if (i.getPrice().compareTo(item.getPrice()) == 0) {
                         BigDecimal val = i.getPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);

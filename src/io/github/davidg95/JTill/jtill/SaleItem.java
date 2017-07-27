@@ -17,7 +17,6 @@ import java.text.DecimalFormat;
 public class SaleItem implements Serializable {
 
     private int id;
-    private int itemId;
     private String name;
     private int quantity;
     private BigDecimal price;
@@ -42,14 +41,14 @@ public class SaleItem implements Serializable {
      */
     public static final int DISCOUNT = 2;
 
-    public SaleItem(int sale, int item, int quantity, int id, BigDecimal price, int type, BigDecimal tax) {
+    public SaleItem(int sale, Item item, int quantity, int id, BigDecimal price, int type, BigDecimal tax) {
         this(sale, item, quantity, price, type, tax);
         this.id = id;
     }
 
-    public SaleItem(int sale, int item, int quantity, BigDecimal price, int type, BigDecimal tax) {
+    public SaleItem(int sale, Item item, int quantity, BigDecimal price, int type, BigDecimal tax) {
         this.sale = sale;
-        this.itemId = item;
+        this.item = item;
         this.quantity = quantity;
         this.price = price;
         this.type = type;
@@ -76,14 +75,6 @@ public class SaleItem implements Serializable {
     public int decreaseQuantity(int quantity) {
         this.quantity -= quantity;
         return quantity;
-    }
-
-    public int getItemId() {
-        return itemId;
-    }
-
-    public void setItemId(int item) {
-        this.itemId = item;
     }
 
     public Item getItem() {
@@ -167,7 +158,7 @@ public class SaleItem implements Serializable {
     }
 
     public String getSQLInsertStatement() {
-        return this.itemId
+        return this.item.getId()
                 + "," + type
                 + "," + this.quantity
                 + "," + this.price.doubleValue()
@@ -194,7 +185,7 @@ public class SaleItem implements Serializable {
             return false;
         }
         final SaleItem other = (SaleItem) obj;
-        return this.itemId == other.itemId && this.type == other.type;
+        return this.item.getId() == other.item.getId() && this.type == other.type;
     }
 
     @Override
@@ -205,7 +196,7 @@ public class SaleItem implements Serializable {
         } else {
             df = new DecimalFormat("0.00");
         }
-        return "Qty. " + this.getQuantity() + "\t" + this.getItemId() + "\t\t\t£" + df.format(this.getPrice());
+        return "Qty. " + this.getQuantity() + "\t" + this.getItem().getId() + "\t\t\t£" + df.format(this.getPrice());
 
     }
 }
