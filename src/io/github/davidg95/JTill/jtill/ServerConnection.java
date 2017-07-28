@@ -80,7 +80,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Till connect(String IP, int PORT, String site, UUID uuid) throws IOException, ConnectException {
         try {
             conn.connect(IP, PORT);
-            g.showModalMessage("Server", "Waing for confirmation");
+            g.showModalMessage("Server", "Waitng for confirmation");
             final Till t = (Till) conn.sendData(JConnData.create("UUID").addParam("UUID", uuid).addParam("SITE", site));
             if (t == null) {
                 g.disallow();
@@ -2316,5 +2316,6 @@ public class ServerConnection implements DataConnect, JConnListener {
 
     @Override
     public void onServerGracefulEnd() {
+        g.connectionDrop();
     }
 }
