@@ -2286,7 +2286,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public void onReceive(JConnData data) {
         if (data.getFlag().equals("LOG")) {
-            g.log(data.getData().get("MESSAGE"));
+            g.log(data.getParam("MESSAGE"));
         } else if (data.getFlag().equals("LOGOUT")) {
             g.initTill();
         }
@@ -2298,7 +2298,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void onConnectionReestablish(JConnEvent event) {
+    public void onConnectionEstablish(JConnEvent event) {
         g.connectionReestablish();
         final long stamp = lock.readLock();
         try {
