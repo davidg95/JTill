@@ -13,8 +13,11 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,12 +32,38 @@ public class ServerConnection implements DataConnect, JConnListener {
 
     private GUIInterface g;
 
+    private final List<Runnable> waitingToSend;
+    private final StampedLock lock;
+
     /**
      * Blank constructor.
      */
     public ServerConnection() {
+        waitingToSend = new LinkedList<>();
+        lock = new StampedLock();
         conn = new JConn();
+        init();
+    }
+
+    public Properties getSettings() throws IOException {
+        try {
+            return (Properties) conn.sendData(JConnData.create("PROPERTIES"));
+        } catch (Exception ex) {
+            throw new IOException(ex.getMessage());
+        }
+    }
+
+    private void init() {
         conn.registerListener(this);
+    }
+
+    public void addToWaiting(Runnable run) {
+        final long stamp = lock.writeLock();
+        try {
+            waitingToSend.add(run);
+        } finally {
+            lock.unlockWrite(stamp);
+        }
     }
 
     /**
@@ -53,9 +82,9 @@ public class ServerConnection implements DataConnect, JConnListener {
             conn.connect(IP, PORT);
             g.showModalMessage("Server", "Waing for confirmation");
             final Till t = (Till) conn.sendData(JConnData.create("UUID").addParam("UUID", uuid).addParam("SITE", site));
-            if(t == null){
+            if (t == null) {
                 g.disallow();
-            } else{
+            } else {
                 g.allow();
             }
             return t;
@@ -575,6 +604,10 @@ public class ServerConnection implements DataConnect, JConnListener {
         }
     }
 
+    public void sendSales(List<Sale> sales) throws Exception {
+        conn.sendData(JConnData.create("SENDSALES").addParam("SALES", sales));
+    }
+
     @Override
     public List<Sale> getAllSales() throws IOException, SQLException {
         try {
@@ -831,15 +864,8 @@ public class ServerConnection implements DataConnect, JConnListener {
      */
     @Override
     public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
-        try {
-            conn.sendData(JConnData.create("TILLLOGOUT").addParam("STAFF", s));
-        } catch (Exception ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
+        conn.sendData(JConnData.create("TILLLOGOUT").addParam("STAFF", s), (JConnData reply) -> {
+        });
     }
 
     @Override
@@ -2259,8 +2285,10 @@ public class ServerConnection implements DataConnect, JConnListener {
 
     @Override
     public void onReceive(JConnData data) {
-        if(data.getFlag().equals("LOG")){
+        if (data.getFlag().equals("LOG")) {
             g.log(data.getData().get("MESSAGE"));
+        } else if (data.getFlag().equals("LOGOUT")) {
+            g.initTill();
         }
     }
 
@@ -2272,6 +2300,18 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public void onConnectionReestablish(JConnEvent event) {
         g.connectionReestablish();
+        final long stamp = lock.readLock();
+        try {
+            waitingToSend.forEach((run) -> {
+                try {
+                    run.run();
+                } catch (Exception ex) {
+
+                }
+            });
+        } finally {
+            lock.unlockRead(stamp);
+        }
     }
 
     @Override

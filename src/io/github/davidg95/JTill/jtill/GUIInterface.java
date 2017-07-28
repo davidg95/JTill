@@ -36,4 +36,6 @@ public interface GUIInterface {
     public void connectionDrop();
     
     public void connectionReestablish();
+    
+    public void initTill();
 }
