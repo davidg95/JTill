@@ -296,11 +296,6 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     public void setDepartmentid(int departmentid) {
         this.departmentid = departmentid;
     }
-
-    public int getTaxid() {
-        return taxid;
-    }
-
     public void setTaxid(int taxid) {
         this.taxid = taxid;
     }

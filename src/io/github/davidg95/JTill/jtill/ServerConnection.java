@@ -35,6 +35,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     private final List<Runnable> waitingToSend;
     private final StampedLock lock;
 
+    private UUID uuid;
+    private String site;
+
     /**
      * Blank constructor.
      */
@@ -80,6 +83,8 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Till connect(String IP, int PORT, String site, UUID uuid) throws IOException, ConnectException {
         try {
             conn.connect(IP, PORT);
+            this.uuid = uuid;
+            this.site = site;
             g.showModalMessage("Server", "Waitng for confirmation");
             final Till t = (Till) conn.sendData(JConnData.create("UUID").addParam("UUID", uuid).addParam("SITE", site));
             if (t == null) {
@@ -2191,7 +2196,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public Plu getPluByProduct(int id) throws IOException, JTillException {
         try {
-            return (Plu) conn.sendData(JConnData.create("GETPRODUCTANDPLU").addParam("ID", id));
+            return (Plu) conn.sendData(JConnData.create("GETPLUBYPRODUCT").addParam("ID", id));
         } catch (Exception ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
@@ -2300,6 +2305,11 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public void onConnectionEstablish(JConnEvent event) {
         g.connectionReestablish();
+        try {
+            conn.sendData(JConnData.create("RECONNECT").addParam("UUID", uuid).addParam("SITE", site));
+        } catch (Exception ex) {
+            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+        }
         final long stamp = lock.readLock();
         try {
             waitingToSend.forEach((run) -> {

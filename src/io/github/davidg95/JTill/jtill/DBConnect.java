@@ -724,6 +724,9 @@ public class DBConnect implements DataConnect {
                     int maxStock = set.getInt("MAX_PRODUCT_LEVEL");
 
                     Product p = new Product(name, shortName, order_code, cid, dId, comments, taxID, open, price, costPrice, stock, minStock, maxStock, code);
+                    p.setCategory(this.getCategory(p.getCategoryID()));
+                    p.setDepartment(this.getDepartment(p.getDepartmentID()));
+                    p.setTax(this.getTax(p.getTaxID()));
 
                     products.add(p);
                 }
@@ -732,6 +735,9 @@ public class DBConnect implements DataConnect {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
+            } catch (JTillException ex) {
+                Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
+                throw new SQLException(ex.getMessage());
             }
         }
         return products;
@@ -988,7 +994,7 @@ public class DBConnect implements DataConnect {
                 product.setTax(this.getTax(product.getTaxID()));
                 product.setCategory(this.getCategory(product.getCategoryID()));
                 product.setDepartment(this.getDepartment(product.getDepartmentID()));
-            } catch (JTillException | IOException ex) {
+            } catch (JTillException ex) {
                 Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
             }
             return products.get(0);
@@ -1018,6 +1024,10 @@ public class DBConnect implements DataConnect {
                     if (products.isEmpty()) {
                         throw new ProductNotFoundException(barcode + " could not be found");
                     }
+                    products.get(0).setCategory(this.getCategory(products.get(0).getCategoryID()));
+                    products.get(0).setTax(this.getTax(products.get(0).getTaxID()));
+                } catch (JTillException ex) {
+                    Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 } finally {
                     productLock.unlockRead(stamp);
                 }
@@ -2048,7 +2058,7 @@ public class DBConnect implements DataConnect {
                     int id = Integer.parseInt(line);
                     final Department d = getDepartment(id);
                     contents.add(d);
-                } catch (IOException | SQLException | JTillException ex) {
+                } catch (SQLException | JTillException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -2109,7 +2119,7 @@ public class DBConnect implements DataConnect {
                     if (((Department) o).equals(dep)) {
                         return true;
                     }
-                } catch (IOException | SQLException | JTillException ex) {
+                } catch (SQLException | JTillException ex) {
                     Logger.getLogger(DBConnect.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else if (o instanceof Category) {
@@ -3780,7 +3790,7 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public Department getDepartment(int id) throws IOException, SQLException, JTillException {
+    public Department getDepartment(int id) throws SQLException, JTillException {
         String query = "SELECT * FROM DEPARTMENTS WHERE ID=" + id;
         try (Connection con = getNewConnection()) {
             try {
