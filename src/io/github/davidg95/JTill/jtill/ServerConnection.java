@@ -86,7 +86,7 @@ public class ServerConnection implements DataConnect, JConnListener {
             this.uuid = uuid;
             this.site = site;
             g.showModalMessage("Server", "Waitng for confirmation");
-            final Till t = (Till) conn.sendData(JConnData.create("UUID").addParam("UUID", uuid).addParam("SITE", site));
+                final Till t = (Till) conn.sendData(JConnData.create("CONNECT").addParam("UUID", uuid).addParam("SITE", site));
             if (t == null) {
                 g.disallow();
             } else {
