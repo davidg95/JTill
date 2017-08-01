@@ -51,7 +51,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Properties getSettings() throws IOException {
         try {
             return (Properties) conn.sendData(JConnData.create("PROPERTIES"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -93,7 +93,7 @@ public class ServerConnection implements DataConnect, JConnListener {
                 g.allow();
             }
             return t;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         throw new IOException("Class error (Update may be required)");
@@ -110,7 +110,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void connectNoPermission(String IP, int PORT) throws IOException, ConnectException {
         try {
             conn.sendData(JConnData.create("NOPERM"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -119,7 +119,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void suspendSale(Sale sale, Staff staff) throws IOException {
         try {
             conn.sendData(JConnData.create("SUSPENDSALE").addParam("SALE", sale).addParam("STAFF", staff));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -128,7 +128,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Sale resumeSale(Staff s) throws IOException {
         try {
             return (Sale) conn.sendData(JConnData.create("RESUMESALE").addParam("STAFF", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -137,7 +137,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void assisstance(String message) throws IOException {
         try {
             conn.sendData(JConnData.create("ASSISSTANCE").addParam("MESSAGE", message));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -146,7 +146,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public BigDecimal getTillTakings(int terminal) throws IOException, SQLException {
         try {
             return (BigDecimal) conn.sendData(JConnData.create("TAKINGS").addParam("TERMINAL", terminal));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new SQLException(ex.getMessage());
         }
     }
@@ -155,7 +155,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void sendEmail(String message) throws IOException {
         try {
             conn.sendData(JConnData.create("SENDEMAIL").addParam("MESSAGE", message));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -164,7 +164,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public boolean emailReceipt(String email, Sale sale) throws IOException {
         try {
             return (boolean) conn.sendData(JConnData.create("SENDRECEIPT").addParam("EMAIL", email).addParam("SALE", sale));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
@@ -174,7 +174,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Till addTill(Till t) throws IOException, SQLException {
         try {
             return (Till) conn.sendData(JConnData.create("ADDTILL").addParam("TILL", t));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new SQLException(ex.getMessage());
         }
     }
@@ -183,7 +183,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeTill(int id) throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVETILL").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -192,7 +192,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Till getTill(int id) throws IOException, SQLException, JTillException {
         try {
             return (Till) conn.sendData(JConnData.create("GETTILL").addParam("TERMINAL", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new JTillException(ex.getMessage());
         }
     }
@@ -201,7 +201,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Till> getAllTills() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLTILLS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new SQLException(ex.getMessage());
         }
     }
@@ -210,7 +210,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Till connectTill(String name, UUID uuid) throws IOException {
         try {
             return (Till) conn.sendData(JConnData.create("CONNECTTILL").addParam("NAME", name).addParam("UUID", uuid));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -219,7 +219,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Till> getConnectedTills() throws IOException {
         try {
             return (List) conn.sendData(JConnData.create("GETCONNECTEDTILLS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -228,7 +228,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Sale> getUncashedSales(String t) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("UNCASHEDSALES").addParam("NAME", t));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -237,7 +237,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void setSetting(String key, String value) throws IOException {
         try {
             conn.sendData(JConnData.create("SETSETTING").addParam("KEY", key).addParam("VALUE", value));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -246,7 +246,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public String getSetting(String key) throws IOException {
         try {
             return (String) conn.sendData(JConnData.create("GETSETTING").addParam("KEY", key));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -263,7 +263,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Product addProduct(Product p) throws IOException, SQLException {
         try {
             return (Product) conn.sendData(JConnData.create("NEWPRODUCT").addParam("PRODUCT", p));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -280,7 +280,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeProduct(int code) throws IOException, ProductNotFoundException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVEPRODUCT").addParam("CODE", code));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -312,7 +312,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public int purchaseProduct(int id, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         try {
             return (int) conn.sendData(JConnData.create("PURCHASE").addParam("PRODUCT", id).addParam("AMOUNT", amount));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
             } else if (ex instanceof OutOfStockException) {
@@ -338,7 +338,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException {
         try {
             return (Product) conn.sendData(JConnData.create("GETPRODUCT").addParam("CODE", code));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -362,7 +362,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Product getProductByBarcode(String barcode) throws IOException, ProductNotFoundException, SQLException {
         try {
             return (Product) conn.sendData(JConnData.create("GETPRODUCTBARCODE").addParam("BARCODE", barcode));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -377,7 +377,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Product updateProduct(Product p) throws IOException, SQLException, ProductNotFoundException {
         try {
             return (Product) conn.sendData(JConnData.create("UPDATEPRODUCT").addParam("PRODUCT", p));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -392,7 +392,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public boolean checkBarcode(String barcode) throws IOException, SQLException {
         try {
             return (boolean) conn.sendData(JConnData.create("CHECKBARCODE").addParam("BARCODE", barcode));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -412,7 +412,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Product> getAllProducts() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLPRODUCTS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -425,7 +425,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Product> productLookup(String terms) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("PRODUCTLOOKUP").addParam("TERMS", terms));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -446,7 +446,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Customer addCustomer(Customer customer) throws IOException, SQLException {
         try {
             return (Customer) conn.sendData(JConnData.create("ADDCUSTOMER").addParam("CUSTOMER", customer));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -467,7 +467,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVECUSTOMER").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof CustomerNotFoundException) {
                 throw (CustomerNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -496,7 +496,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
         try {
             return (Customer) conn.sendData(JConnData.create("GETCUSTOMER").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof CustomerNotFoundException) {
                 throw (CustomerNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -511,7 +511,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETCUSTOMERBYNAME").addParam("NAME", name));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof CustomerNotFoundException) {
                 throw (CustomerNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -533,7 +533,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Customer> getAllCustomers() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLCUSTOMERS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -556,7 +556,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Customer updateCustomer(Customer c) throws IOException, SQLException, CustomerNotFoundException {
         try {
             return (Customer) conn.sendData(JConnData.create("UPDATECUSTOMER").addParam("CUSTOMER", c));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof CustomerNotFoundException) {
                 throw (CustomerNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -579,7 +579,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Customer> customerLookup(String terms) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("CUSTOMERLOOKUP").addParam("TERMS", terms));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -600,7 +600,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Sale addSale(Sale s) throws IOException, SQLException {
         try {
             return (Sale) conn.sendData(JConnData.create("ADDSALE").addParam("SALE", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -609,7 +609,7 @@ public class ServerConnection implements DataConnect, JConnListener {
         }
     }
 
-    public void sendSales(List<Sale> sales) throws Exception {
+    public void sendSales(List<Sale> sales) throws Throwable {
         conn.sendData(JConnData.create("SENDSALES").addParam("SALES", sales));
     }
 
@@ -617,7 +617,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Sale> getAllSales() throws IOException, SQLException {
         try {
             return (List<Sale>) (Sale) conn.sendData(JConnData.create("GETALLSALES"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -630,7 +630,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Sale getSale(int id) throws IOException, SQLException, JTillException {
         try {
             return (Sale) conn.sendData(JConnData.create("GETSALE").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -645,7 +645,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Sale updateSale(Sale s) throws IOException, JTillException, SQLException {
         try {
             return (Sale) conn.sendData(JConnData.create("UPDATESALE").addParam("SALE", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -660,7 +660,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETSALEDATERANGE").addParam("START", start).addParam("END", end));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -681,7 +681,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Staff addStaff(Staff s) throws IOException, SQLException {
         try {
             return (Staff) conn.sendData(JConnData.create("ADDSTAFF").addParam("STAFF", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -702,7 +702,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVESTAFF").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -732,7 +732,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException {
         try {
             return (Staff) conn.sendData(JConnData.create("GETSTAFF").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -754,7 +754,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Staff> getAllStaff() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLSTAFF"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -767,7 +767,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Staff updateStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
         try {
             return (Staff) conn.sendData(JConnData.create("UPDATESTAFF").addParam("STAFF", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -782,7 +782,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public int getStaffCount() throws IOException, SQLException {
         try {
             return (int) conn.sendData(JConnData.create("GETSTAFFCOUNT"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -805,7 +805,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Staff login(String username, String password) throws IOException, LoginException, SQLException {
         try {
             return (Staff) conn.sendData(JConnData.create("LOGIN").addParam("USERNAME", username).addParam("PASSWORD", Encryptor.encrypt(password)));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof LoginException) {
                 throw (LoginException) ex;
             } else if (ex instanceof SQLException) {
@@ -829,7 +829,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Staff tillLogin(int id) throws IOException, LoginException, SQLException {
         try {
             return (Staff) conn.sendData(JConnData.create("TILLLOGIN").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof LoginException) {
                 throw (LoginException) ex;
             } else if (ex instanceof SQLException) {
@@ -851,7 +851,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void logout(Staff s) throws IOException, StaffNotFoundException {
         try {
             conn.sendData(JConnData.create("LOGOUT").addParam("STAFF", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else {
@@ -877,7 +877,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Category addCategory(Category c) throws IOException, SQLException {
         try {
             return (Category) conn.sendData(JConnData.create("ADDCATEGORY").addParam("CATEGORY", c));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -890,7 +890,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Category updateCategory(Category c) throws IOException, SQLException, JTillException {
         try {
             return (Category) conn.sendData(JConnData.create("UPDATECATEGORY").addParam("CATEGORY", c));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -910,7 +910,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeCategory(int id) throws IOException, JTillException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVECATEGORY").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -925,7 +925,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Category getCategory(int id) throws IOException, SQLException, JTillException {
         try {
             return (Category) conn.sendData(JConnData.create("GETCATEGORY").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -940,7 +940,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Category> getAllCategorys() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLCATEGORYS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -953,7 +953,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETPRODUCTSINCATEGORY").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -968,7 +968,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Discount addDiscount(Discount d) throws IOException, SQLException {
         try {
             return (Discount) conn.sendData(JConnData.create("ADDDISCOUNT").addParam("DISCOUNT", d));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -981,7 +981,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Discount updateDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException {
         try {
             return (Discount) conn.sendData(JConnData.create("UPDATEDISCOUNT").addParam("DISCOUNT", d));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof DiscountNotFoundException) {
@@ -1001,7 +1001,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeDiscount(int id) throws IOException, DiscountNotFoundException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVEDISCOUNT").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof DiscountNotFoundException) {
@@ -1016,7 +1016,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Discount getDiscount(int id) throws IOException, SQLException, DiscountNotFoundException {
         try {
             return (Discount) conn.sendData(JConnData.create("GETDISCOUNT").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof DiscountNotFoundException) {
@@ -1031,7 +1031,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Discount> getAllDiscounts() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLDISCOUNTS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1044,7 +1044,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Tax addTax(Tax t) throws IOException, SQLException {
         try {
             return (Tax) conn.sendData(JConnData.create("ADDTAX").addParam("TAX", t));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1062,7 +1062,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeTax(int id) throws IOException, JTillException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVETAX").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1077,7 +1077,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Tax getTax(int id) throws IOException, SQLException, JTillException {
         try {
             return (Tax) conn.sendData(JConnData.create("GETTAX").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1092,7 +1092,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Tax updateTax(Tax t) throws IOException, SQLException, JTillException {
         try {
             return (Tax) conn.sendData(JConnData.create("UPDATETAX").addParam("TAX", t));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1107,7 +1107,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Tax> getAllTax() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLTAX"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1120,7 +1120,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Product> getProductsInTax(int id) throws IOException, SQLException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETPRODUCTSINTAX").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1150,7 +1150,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Screen addScreen(Screen s) throws IOException, SQLException {
         try {
             return (Screen) conn.sendData(JConnData.create("ADDSCREEN").addParam("SCREEN", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1163,7 +1163,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public TillButton addButton(TillButton b) throws IOException, SQLException {
         try {
             return (TillButton) conn.sendData(JConnData.create("ADDBUTTON").addParam("BUTTON", b));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1176,7 +1176,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
             conn.sendData(JConnData.create("REMOVESCREEN").addParam("SCREEN", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof ScreenNotFoundException) {
@@ -1191,7 +1191,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeButton(TillButton b) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVEBUTTON").addParam("BUTTON", b));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1206,7 +1206,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException {
         try {
             return (Screen) conn.sendData(JConnData.create("GETSCREEN").addParam("ID", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof ScreenNotFoundException) {
@@ -1221,7 +1221,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public TillButton getButton(int b) throws IOException, SQLException, JTillException {
         try {
             return (TillButton) conn.sendData(JConnData.create("GETBUTTON").addParam("ID", b));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1236,7 +1236,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
             return (Screen) conn.sendData(JConnData.create("UPDATESCREEN").addParam("SCREEN", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof ScreenNotFoundException) {
@@ -1251,7 +1251,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public TillButton updateButton(TillButton b) throws IOException, SQLException, JTillException {
         try {
             return (TillButton) conn.sendData(JConnData.create("UPDATEBUTTON").addParam("BUTTON", b));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1266,7 +1266,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Screen> getAllScreens() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLSCREENS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1279,7 +1279,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<TillButton> getAllButtons() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLBUTTONS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1292,7 +1292,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException {
         try {
             return (List) conn.sendData(JConnData.create("GETBUTTONSONSCREEN").addParam("SCREEN", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof ScreenNotFoundException) {
@@ -1307,7 +1307,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void deleteAllScreensAndButtons() throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("DELETEALLSCREENSANDBUTTONS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1325,7 +1325,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Plu addPlu(Plu plu) throws IOException, SQLException {
         try {
             return (Plu) conn.sendData(JConnData.create("ADDPLU").addParam("PLU", plu));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1338,7 +1338,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removePlu(int id) throws IOException, JTillException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVEPLU").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1358,7 +1358,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Plu getPlu(int id) throws IOException, JTillException, SQLException {
         try {
             return (Plu) conn.sendData(JConnData.create("GETPLU").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1373,7 +1373,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
         try {
             return (Plu) conn.sendData(JConnData.create("GETPLUBYCODE").addParam("CODE", code));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1388,7 +1388,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Plu> getAllPlus() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLPLUS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1401,7 +1401,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
         try {
             return (Plu) conn.sendData(JConnData.create("UPDATEPLU").addParam("PLU", p));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1416,7 +1416,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException {
         try {
             return (boolean) conn.sendData(JConnData.create("ISTILLLOGGEDON").addParam("STAFF", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof StaffNotFoundException) {
@@ -1431,7 +1431,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public boolean checkUsername(String username) throws IOException, SQLException {
         try {
             return (boolean) conn.sendData(JConnData.create("CHECKUSERNAME").addParam("USERNAME", username));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1444,7 +1444,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public String getSetting(String key, String value) throws IOException {
         try {
             return (String) conn.sendData(JConnData.create("GETSETTING").addParam("KEY", key).addParam("VALUE", value));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -1458,7 +1458,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
         try {
             return (WasteReport) conn.sendData(JConnData.create("ADDWASTEREPORT").addParam("WASTE", wr));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1473,7 +1473,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeWasteReport(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVEWASTEREPORT").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1488,7 +1488,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException {
         try {
             return (WasteReport) conn.sendData(JConnData.create("GETWASTEREPORT").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1503,7 +1503,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<WasteReport> getAllWasteReports() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLWASTEREPORTS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1516,7 +1516,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
         try {
             return (WasteReport) conn.sendData(JConnData.create("UPDATEWASTEREPORT").addParam("WASTE", wr));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1531,7 +1531,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
         try {
             return (WasteItem) conn.sendData(JConnData.create("ADDWASTEITEM").addParam("WASTE", wr).addParam("ITEM", wi));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1546,7 +1546,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeWasteItem(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVEWASTEITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1561,7 +1561,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException {
         try {
             return (WasteItem) conn.sendData(JConnData.create("GETWASTEITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1576,7 +1576,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<WasteItem> getAllWasteItems() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLWASTEITEMS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1589,7 +1589,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
         try {
             return (WasteItem) conn.sendData(JConnData.create("UPDATEWASTEITEM").addParam("WASTE", wi));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1604,7 +1604,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
         try {
             return (WasteReason) conn.sendData(JConnData.create("ADDWASTEREASON").addParam("WASTE", wr));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1619,7 +1619,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeWasteReason(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVEWASTEREASON").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1634,7 +1634,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException {
         try {
             return (WasteReason) conn.sendData(JConnData.create("GETWASTEREASON").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else if (ex instanceof JTillException) {
@@ -1649,7 +1649,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<WasteReason> getAllWasteReasons() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLWASTEREASON"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1662,7 +1662,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
         try {
             return (WasteReason) conn.sendData(JConnData.create("UPDATEWASTEREASON"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1677,7 +1677,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException {
         try {
             return (Supplier) conn.sendData(JConnData.create("ADDSUPPLIER"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1692,7 +1692,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeSupplier(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVESUPPLIER"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1707,7 +1707,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Supplier getSupplier(int id) throws IOException, SQLException, JTillException {
         try {
             return (Supplier) conn.sendData(JConnData.create("GETSUPPLIER").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1722,7 +1722,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Supplier> getAllSuppliers() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLSUPPLIERS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1735,7 +1735,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException {
         try {
             return (Supplier) conn.sendData(JConnData.create("UPDATESUPPLIER").addParam("SUPPLIER", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1750,7 +1750,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Department addDepartment(Department d) throws IOException, SQLException {
         try {
             return (Department) conn.sendData(JConnData.create("ADDDEPARTMENT").addParam("DEPARTMENT", d));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1763,7 +1763,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeDepartment(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVEDEPARTMENT"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1778,7 +1778,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Department getDepartment(int id) throws IOException, SQLException, JTillException {
         try {
             return (Department) conn.sendData(JConnData.create("GETDEPARTMENT").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1793,7 +1793,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Department> getAllDepartments() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLDEPARTMENTS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1806,7 +1806,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Department updateDepartment(Department d) throws IOException, SQLException, JTillException {
         try {
             return (Department) conn.sendData(JConnData.create("UPDATEDEPARTMENT").addParam("DEPARTMENT", d));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1821,7 +1821,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public SaleItem addSaleItem(Sale s, SaleItem i) throws IOException, SQLException {
         try {
             return (SaleItem) conn.sendData(JConnData.create("ADDSALEITEM").addParam("SALE", s).addParam("ITEM", i));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1834,7 +1834,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeSaleItem(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVESALEITEMS").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1849,7 +1849,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public SaleItem getSaleItem(int id) throws IOException, SQLException, JTillException {
         try {
             return (SaleItem) conn.sendData(JConnData.create("GETSALEITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1864,7 +1864,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<SaleItem> getAllSaleItems() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLSALEITEMS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1877,7 +1877,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<SaleItem> submitSaleItemQuery(String q) throws IOException {
         try {
             return (List) conn.sendData(JConnData.create("SUBMITSALEITEMQUERY").addParam("QUERY", q));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
     }
@@ -1886,7 +1886,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public SaleItem updateSaleItem(SaleItem i) throws IOException, SQLException, JTillException {
         try {
             return (SaleItem) conn.sendData(JConnData.create("UPDATESALEITEM").addParam("ITEM", i));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -1901,7 +1901,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public int getTotalSoldOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
         try {
             return (int) conn.sendData(JConnData.create("GETTOTALSOLDITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1914,7 +1914,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public BigDecimal getTotalValueSold(int id) throws IOException, SQLException, ProductNotFoundException {
         try {
             return (BigDecimal) conn.sendData(JConnData.create("GETVALUESOLDITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1927,7 +1927,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public int getTotalWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
         try {
             return (int) conn.sendData(JConnData.create("GETTOTALWASTEDITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1940,7 +1940,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
         try {
             return (BigDecimal) conn.sendData(JConnData.create("GETVALUEWASTEDITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1953,7 +1953,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void addReceivedItem(ReceivedItem i) throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("ADDRECEIVEDITEM").addParam("ITEM", i));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1966,7 +1966,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException {
         try {
             return (BigDecimal) conn.sendData(JConnData.create("GETSPENTONITEM").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1984,7 +1984,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void clockOn(int id) throws IOException, SQLException, StaffNotFoundException {
         try {
             conn.sendData(JConnData.create("CLOCKON").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -1999,7 +1999,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void clockOff(int id) throws IOException, SQLException, StaffNotFoundException {
         try {
             conn.sendData(JConnData.create("CLOCKOFF").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -2014,7 +2014,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<ClockItem> getAllClocks(int id) throws IOException, SQLException, StaffNotFoundException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLCLOCKS").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -2029,7 +2029,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException {
         try {
             conn.sendData(JConnData.create("CLEARCLOCKS").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -2044,7 +2044,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Trigger addTrigger(Trigger t) throws IOException, SQLException {
         try {
             return (Trigger) conn.sendData(JConnData.create("ADDTRIGGER").addParam("TRIGGER", t));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2057,7 +2057,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<DiscountBucket> getDiscountBuckets(int id) throws IOException, SQLException, DiscountNotFoundException {
         try {
             return (List<DiscountBucket>) conn.sendData(JConnData.create("GETDISCOUNTBUCKETS").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof DiscountNotFoundException) {
                 throw (DiscountNotFoundException) ex;
             } else if (ex instanceof SQLException) {
@@ -2072,7 +2072,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeTrigger(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVETRIGGER").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2085,7 +2085,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Discount> getValidDiscounts() throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETVALIDDISCOUNTS"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2098,7 +2098,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException {
         try {
             return (DiscountBucket) conn.sendData(JConnData.create("ADDBUCKET").addParam("BUCKET", b));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2111,7 +2111,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeBucket(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("REMOVEBUCKET").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -2126,7 +2126,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETBUCKETTRIGGERS").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -2141,7 +2141,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Trigger updateTrigger(Trigger t) throws IOException, SQLException, JTillException {
         try {
             return (Trigger) conn.sendData(JConnData.create("UPDATETRIGGER").addParam("TRIGGER", t));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -2156,7 +2156,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException {
         try {
             return (DiscountBucket) conn.sendData(JConnData.create("UPDATEBUCKET").addParam("BUCKET", b));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -2171,7 +2171,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETUNCASHEDTILLSALES").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else {
@@ -2184,7 +2184,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Product addProductAndPlu(Product p, Plu pl) throws IOException, SQLException {
         try {
             return (Product) conn.sendData(JConnData.create("ADDPRODUCTANDPLU").addParam("PRODUCT", p).addParam("PLU", pl));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2197,7 +2197,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public Plu getPluByProduct(int id) throws IOException, JTillException {
         try {
             return (Plu) conn.sendData(JConnData.create("GETPLUBYPRODUCT").addParam("ID", id));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else {
@@ -2210,7 +2210,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("SEARCHSALEITEMS").addParam("DEP", department).addParam("CAT", category).addParam("START", start).addParam("END", end));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -2225,7 +2225,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETTERMINALSALES").addParam("TERMINAL", terminal).addParam("UNCASHEDFLAG", uncashedOnly));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
@@ -2240,7 +2240,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void cashUncashedSales(int terminal) throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("CASHUNCASHEDSALES").addParam("TERMINAL", terminal));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2253,7 +2253,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETPRODUCTSADVANCED").addParam("WHERE", WHERE));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2266,7 +2266,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Sale> getStaffSales(Staff s) throws IOException, StaffNotFoundException {
         try {
             return (List) conn.sendData(JConnData.create("GETSTAFFSALES").addParam("STAFF", s));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
             } else {
@@ -2279,7 +2279,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public HashMap integrityCheck() throws IOException, SQLException {
         try {
             return (HashMap) conn.sendData(JConnData.create("INTEGRITYCHECK"));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2307,7 +2307,7 @@ public class ServerConnection implements DataConnect, JConnListener {
         g.connectionReestablish();
         try {
             conn.sendData(JConnData.create("RECONNECT").addParam("UUID", uuid).addParam("SITE", site));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
         final long stamp = lock.readLock();
@@ -2315,7 +2315,7 @@ public class ServerConnection implements DataConnect, JConnListener {
             waitingToSend.forEach((run) -> {
                 try {
                     run.run();
-                } catch (Exception ex) {
+                } catch (Throwable ex) {
 
                 }
             });
