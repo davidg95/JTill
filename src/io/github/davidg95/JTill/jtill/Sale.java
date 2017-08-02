@@ -34,7 +34,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
 
     private SaleItem lastAdded;
 
-    private transient final List<ProductListener> listeners;
+    private final List<ProductListener> listeners;
 
     public static final int MOP_CASH = 1;
     public static final int MOP_CARD = 2;
