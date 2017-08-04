@@ -31,4 +31,20 @@ public class Validator {
     public static boolean validatePhone(String phone) {
         return phone.matches("[0-9]+");
     }
+
+    /**
+     * Method to check a password length.
+     *
+     * @param password the password.
+     * @return true if it is valid, false if it is not.
+     */
+    public static boolean validatePassword(String password) {
+        if (password == null) {
+            return false;
+        }
+        if (password.length() < 6) {
+            return false;
+        }
+        return true;
+    }
 }
