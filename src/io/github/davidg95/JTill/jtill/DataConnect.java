@@ -53,6 +53,8 @@ public interface DataConnect {
      */
     public HashMap integrityCheck() throws IOException, SQLException;
 
+    public Object[] databaseInfo() throws IOException, SQLException;
+
     /**
      * Send and assistance message to the server.
      *

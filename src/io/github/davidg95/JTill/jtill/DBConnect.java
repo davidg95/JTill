@@ -4797,4 +4797,17 @@ public class DBConnect implements DataConnect {
             throw new IOException("Error");
         }
     }
+
+    @Override
+    public Object[] databaseInfo() throws IOException, SQLException {
+        try (final Connection con = getNewConnection()) {
+            final Object[] info = new Object[5];
+            info[0] = con.getCatalog();
+            info[1] = con.getSchema();
+            info[2] = con.getClientInfo();
+            info[3] = con.getMetaData().getDriverName();
+            info[4] = con.getMetaData().getDriverVersion();
+            return info;
+        }
+    }
 }

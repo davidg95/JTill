@@ -86,7 +86,7 @@ public class ServerConnection implements DataConnect, JConnListener {
             this.uuid = uuid;
             this.site = site;
             g.showModalMessage("Server", "Waitng for confirmation");
-                final Till t = (Till) conn.sendData(JConnData.create("CONNECT").addParam("UUID", uuid).addParam("SITE", site));
+            final Till t = (Till) conn.sendData(JConnData.create("CONNECT").addParam("UUID", uuid).addParam("SITE", site));
             if (t == null) {
                 g.disallow();
             } else {
@@ -2327,5 +2327,18 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public void onServerGracefulEnd() {
         g.connectionDrop();
+    }
+
+    @Override
+    public Object[] databaseInfo() throws IOException, SQLException {
+        try {
+            return (Object[]) conn.sendData(JConnData.create("DATABASEINFO"));
+        } catch (Throwable ex) {
+            if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
     }
 }
