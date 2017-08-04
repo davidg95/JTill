@@ -13,6 +13,7 @@ public class Validator {
 
     public static boolean UPPER_AND_LOWER = false;
     public static boolean LETTERS_AND_NUMBERS = false;
+    public static int PASSWORD_LENGTH = 6;
 
     /**
      * Checks that an email contains a . and a @. Also checks that the length is
@@ -36,7 +37,7 @@ public class Validator {
     }
 
     /**
-     * Method to check a password length.
+     * Method to check if a password is valid.
      *
      * @param password the password.
      * @return true if it is valid, false if it is not.
@@ -45,7 +46,7 @@ public class Validator {
         if (password == null) {
             return false;
         }
-        if (password.length() < 6) {
+        if (password.length() < PASSWORD_LENGTH) {
             return false;
         }
         if (UPPER_AND_LOWER) {
