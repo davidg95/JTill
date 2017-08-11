@@ -5,7 +5,6 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import java.awt.Color;
 import java.io.Serializable;
 
 /**
@@ -18,6 +17,7 @@ public class TillButton implements Serializable {
     private int id;
     private String name;
     private int item;
+    private int type;
     private int screen;
     private int color;
     private int width;
@@ -74,7 +74,26 @@ public class TillButton implements Serializable {
      */
     public static final int BLACK = 8;
 
-    public TillButton(String name, int item, int screen, int color, int width, int height, int x, int y) {
+    /**
+     * Indicates that the button is for a product.
+     *
+     * Value: 1.
+     */
+    public static final int ITEM = 1;
+    /**
+     * Indicates that the button is for another screen.
+     *
+     * Value: 2.
+     */
+    public static final int SCREEN = 2;
+    /**
+     * Indicates that the button is a space.
+     *
+     * Value: 3.
+     */
+    public static final int SPACE = 3;
+
+    public TillButton(String name, int item, int type, int screen, int color, int width, int height, int x, int y) {
         this.name = name;
         this.item = item;
         this.screen = screen;
@@ -83,10 +102,11 @@ public class TillButton implements Serializable {
         this.height = height;
         this.x = x;
         this.y = y;
+        this.type = type;
     }
 
-    public TillButton(String name, int item, int screen, int color, int id, int width, int height, int x, int y) {
-        this(name, item, screen, color, width, height, x, y);
+    public TillButton(String name, int item, int type, int screen, int color, int id, int width, int height, int x, int y) {
+        this(name, item, type, screen, color, width, height, x, y);
         this.id = id;
     }
 
@@ -162,9 +182,18 @@ public class TillButton implements Serializable {
         this.y = y;
     }
 
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + item
+                + "," + type
                 + "," + this.color
                 + "," + this.screen
                 + "," + this.width
@@ -177,6 +206,7 @@ public class TillButton implements Serializable {
         return "UPDATE BUTTONS"
                 + " SET NAME='" + this.getName()
                 + "', PRODUCT=" + this.getItem()
+                + ", TYPE=" + this.getType()
                 + ", COLOR=" + this.getColorValue()
                 + ", SCREEN_ID=" + this.getScreen()
                 + ", WIDTH=" + this.getWidth()
