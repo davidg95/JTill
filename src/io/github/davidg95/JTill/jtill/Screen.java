@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import javafx.scene.layout.GridPane;
 
 /**
  * Models a till screen. Each screen on the till has custom buttons on it.
@@ -16,6 +17,8 @@ public class Screen implements Serializable {
 
     private int id;
     private String name;
+    
+    private transient GridPane pane;
 
     public Screen(String name) {
         this.name = name;
@@ -44,6 +47,14 @@ public class Screen implements Serializable {
 
     public String getSQLInsertString() {
         return "'" + this.name + "'";
+    }
+
+    public GridPane getPane() {
+        return pane;
+    }
+
+    public void setPane(GridPane pane) {
+        this.pane = pane;
     }
 
     public String getSQLUpdateString() {
