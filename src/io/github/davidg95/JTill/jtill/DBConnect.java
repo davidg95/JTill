@@ -211,7 +211,8 @@ public class DBConnect implements DataConnect {
                 + "        (START WITH 1, INCREMENT BY 1),\n"
                 + "     UUID VARCHAR(50) not null,\n"
                 + "	NAME VARCHAR(20) not null,\n"
-                + "     UNCASHED DOUBLE not null\n"
+                + "     UNCASHED DOUBLE not null,\n"
+                + "     DEFAULT_SCREEN INT not null\n"
                 + ")";
         String categorys = "create table APP.CATEGORYS\n"
                 + "(\n"
@@ -1926,7 +1927,7 @@ public class DBConnect implements DataConnect {
         }
     }
 
-    public List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
+    private List<Sale> getSalesFromResultSet(ResultSet set) throws SQLException {
         List<Sale> sales = new LinkedList<>();
         while (set.next()) {
             int id = set.getInt(1);
@@ -1959,6 +1960,7 @@ public class DBConnect implements DataConnect {
             UUID uuid = UUID.fromString(set.getString(24));
             String tname = set.getString(25);
             double d = set.getDouble(26);
+            int sc = set.getInt(27);
             BigDecimal uncashed = new BigDecimal(Double.toString(d));
             final Till t = new Till(tname, uncashed, tid, uuid);
             s.setTerminal(t);
