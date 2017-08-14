@@ -22,9 +22,9 @@ public class Till implements Serializable, Cloneable, JTillObject {
     private BigDecimal uncashedTakings;
     private boolean connected;
     private Date lastContact;
-    private Screen defaultScreen;
-
-    public Till(String name, Screen defaultScreen) {
+    private int defaultScreen;
+    
+    public Till(String name, int defaultScreen) {
         this.name = name;
         this.uncashedTakings = new BigDecimal("0");
         uncashedTakings = uncashedTakings.setScale(2);
@@ -32,7 +32,7 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.defaultScreen = defaultScreen;
     }
 
-    public Till(String name, BigDecimal uncashedTakings, int id, UUID uuid, Screen defaultScreen) {
+    public Till(String name, BigDecimal uncashedTakings, int id, UUID uuid, int defaultScreen) {
         this(name, defaultScreen);
         this.uncashedTakings = uncashedTakings;
         this.id = id;
@@ -89,11 +89,11 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.uuid = uuid;
     }
 
-    public Screen getDefaultScreen() {
+    public int getDefaultScreen() {
         return defaultScreen;
     }
 
-    public void setDefaultScreen(Screen defaultScreen) {
+    public void setDefaultScreen(int defaultScreen) {
         this.defaultScreen = defaultScreen;
     }
 
@@ -101,15 +101,15 @@ public class Till implements Serializable, Cloneable, JTillObject {
         return "'" + this.name
                 + "','" + this.uuid.toString()
                 + "'," + this.uncashedTakings
-                + "," + this.defaultScreen.getId();
+                + "," + this.defaultScreen;
     }
 
     public String getSQLUpdateString() {
         return "UPDATE TILLS"
                 + " SET NAME='" + this.name
-                + "' UUID='" + this.uuid.toString()
-                + "' UNCASHED=" + this.uncashedTakings
-                + " DEFAULT_SCREEN=" + this.defaultScreen.getId()
+                + "', UUID='" + this.uuid.toString()
+                + "', UNCASHED=" + this.uncashedTakings
+                + ", DEFAULT_SCREEN=" + this.defaultScreen
                 + " WHERE TILLS.ID=" + this.id;
     }
 

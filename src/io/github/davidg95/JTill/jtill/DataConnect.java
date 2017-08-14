@@ -1168,6 +1168,17 @@ public interface DataConnect {
     public Till getTill(int id) throws IOException, SQLException, JTillException;
 
     /**
+     * Method to update a till.
+     *
+     * @param t the till to update.
+     * @return the updated till.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if there was an error updating the till.
+     */
+    public Till updateTill(Till t) throws IOException, SQLException, JTillException;
+
+    /**
      * Method to get all tills on the server.
      *
      * @return a List of type Till.

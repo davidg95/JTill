@@ -1962,7 +1962,7 @@ public class DBConnect implements DataConnect {
             double d = set.getDouble(26);
             int sc = set.getInt(27);
             BigDecimal uncashed = new BigDecimal(Double.toString(d));
-            final Till t = new Till(tname, uncashed, tid, uuid);
+            final Till t = new Till(tname, uncashed, tid, uuid, sc);
             s.setTerminal(t);
 
             int stid = set.getInt("ID");
@@ -2861,9 +2861,10 @@ public class DBConnect implements DataConnect {
             UUID uuid = UUID.fromString(set.getString("UUID"));
             String name = set.getString("NAME");
             double d = set.getDouble("UNCASHED");
+            int sc = set.getInt("DEFAULT_SCREEN");
             BigDecimal uncashed = new BigDecimal(Double.toString(d));
 
-            Till t = new Till(name, uncashed, id, uuid);
+            Till t = new Till(name, uncashed, id, uuid, sc);
 
             tills.add(t);
         }
@@ -2873,7 +2874,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Till addTill(Till t) throws IOException, SQLException {
-        String query = "INSERT INTO TILLS (NAME, UUID, UNCASHED) VALUES (" + t.getSQLInsertString() + ")";
+        String query = "INSERT INTO TILLS (NAME, UUID, UNCASHED, DEFAULT_SCREEN) VALUES (" + t.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -2980,20 +2981,15 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             LOG.log(Level.SEVERE, "There has been an error adding a till to the database", ex);
         } catch (JTillException ex) {
-            boolean result = true;
-            if (this.getSetting("APPROVE_NEW_CONNECTIONS").equals("TRUE")) {
-                result = g.showYesNoMessage("New Till", "Allow till " + name + " to connect?"); //Show the message on the terminal interface
-            }
-            if (result) { //If the connection was allowed
-                Till newTill = new Till(name);
+            Till till = g.showTillSetupWindow(name);
+            if (till != null) { //If the connection was allowed
                 try {
-                    addTill(newTill);
+                    addTill(till);
                 } catch (IOException | SQLException ex1) {
                     LOG.log(Level.SEVERE, "There has been an error connecting a till the server", ex);
                 }
-                g.addTill(newTill);
-                connectedTills.add(newTill);
-                return newTill;
+                connectedTills.add(till);
+                return till;
             }
         }
         return null;
@@ -4803,5 +4799,26 @@ public class DBConnect implements DataConnect {
             info[4] = con.getMetaData().getDriverVersion();
             return info;
         }
+    }
+
+    @Override
+    public Till updateTill(Till t) throws IOException, SQLException, JTillException {
+        String query = t.getSQLUpdateString();
+        try (Connection con = getNewConnection()) {
+            Statement stmt = con.createStatement();
+            int value;
+            try {
+                value = stmt.executeUpdate(query);
+                if (value == 0) {
+                    throw new JTillException("Till id " + t.getId() + " could not be found");
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        return t;
     }
 }
