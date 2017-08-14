@@ -27,7 +27,7 @@ public interface GUIInterface {
 
     public void addTill(Till t);
 
-    public void allow();
+    public void allow(Till t);
 
     public void disallow();
     
@@ -38,4 +38,6 @@ public interface GUIInterface {
     public void connectionReestablish();
     
     public void initTill();
+    
+    public Till showTillSetupWindow(String name);
 }

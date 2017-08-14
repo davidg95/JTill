@@ -22,16 +22,18 @@ public class Till implements Serializable, Cloneable, JTillObject {
     private BigDecimal uncashedTakings;
     private boolean connected;
     private Date lastContact;
-
-    public Till(String name) {
+    private int defaultScreen;
+    
+    public Till(String name, int defaultScreen) {
         this.name = name;
         this.uncashedTakings = new BigDecimal("0");
         uncashedTakings = uncashedTakings.setScale(2);
         this.uuid = UUID.randomUUID();
+        this.defaultScreen = defaultScreen;
     }
 
-    public Till(String name, BigDecimal uncashedTakings, int id, UUID uuid) {
-        this(name);
+    public Till(String name, BigDecimal uncashedTakings, int id, UUID uuid, int defaultScreen) {
+        this(name, defaultScreen);
         this.uncashedTakings = uncashedTakings;
         this.id = id;
         this.uuid = uuid;
@@ -87,17 +89,27 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.uuid = uuid;
     }
 
+    public int getDefaultScreen() {
+        return defaultScreen;
+    }
+
+    public void setDefaultScreen(int defaultScreen) {
+        this.defaultScreen = defaultScreen;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.uuid.toString()
-                + "'," + this.uncashedTakings;
+                + "'," + this.uncashedTakings
+                + "," + this.defaultScreen;
     }
 
     public String getSQLUpdateString() {
         return "UPDATE TILLS"
                 + " SET NAME='" + this.name
-                + "' UUID='" + this.uuid.toString()
-                + "' UNCASHED=" + this.uncashedTakings
+                + "', UUID='" + this.uuid.toString()
+                + "', UNCASHED=" + this.uncashedTakings
+                + ", DEFAULT_SCREEN=" + this.defaultScreen
                 + " WHERE TILLS.ID=" + this.id;
     }
 

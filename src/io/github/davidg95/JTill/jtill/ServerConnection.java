@@ -90,7 +90,7 @@ public class ServerConnection implements DataConnect, JConnListener {
             if (t == null) {
                 g.disallow();
             } else {
-                g.allow();
+                g.allow(t);
             }
             return t;
         } catch (Throwable ex) {
@@ -2338,6 +2338,19 @@ public class ServerConnection implements DataConnect, JConnListener {
                 throw (SQLException) ex;
             } else {
                 throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public Till updateTill(Till t) throws IOException, SQLException, JTillException {
+        try {
+            return (Till) conn.sendData(JConnData.create("UPDATETILL").addParam("TILL", t));
+        } catch (Throwable ex) {
+            if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new JTillException(ex.getMessage());
             }
         }
     }
