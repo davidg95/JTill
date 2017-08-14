@@ -2293,7 +2293,12 @@ public class ServerConnection implements DataConnect, JConnListener {
         if (data.getFlag().equals("LOG")) {
             g.log(data.getParam("MESSAGE"));
         } else if (data.getFlag().equals("LOGOUT")) {
-            g.initTill();
+            new Thread() {
+                @Override
+                public void run() {
+                    g.initTill();
+                }
+            }.start(); //Search the queue for the reqeust source.
         }
     }
 
