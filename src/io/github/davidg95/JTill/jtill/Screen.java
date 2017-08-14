@@ -13,7 +13,7 @@ import javafx.scene.layout.GridPane;
  *
  * @author David
  */
-public class Screen implements Serializable {
+public class Screen implements Serializable, Cloneable {
 
     private int id;
     private String name;
@@ -61,6 +61,16 @@ public class Screen implements Serializable {
         return "UPDATE SCREENS"
                 + " SET NAME='" + this.getName()
                 + "' WHERE SCREENS.ID=" + this.getId();
+    }
+
+    @Override
+    public Screen clone() {
+        try {
+            final Screen result = (Screen) super.clone();
+            return result;
+        } catch (CloneNotSupportedException ex) {
+            throw new AssertionError();
+        }
     }
 
     @Override
