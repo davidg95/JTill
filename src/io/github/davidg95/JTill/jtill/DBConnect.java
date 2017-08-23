@@ -366,7 +366,9 @@ public class DBConnect implements DataConnect {
                 + "     ID INT not null primary key\n"
                 + "         GENERATED ALWAYS AS IDENTITY\n"
                 + "         (START WITH 1, INCREMENT BY 1),\n"
-                + "     NAME VARCHAR(50) not null\n"
+                + "     NAME VARCHAR(50) not null,\n"
+                + "     WIDTH INT not null,\n"
+                + "     HEIGHT INT not null\n"
                 + ")";
         String buttons = "create table \"APP\".BUTTONS\n"
                 + "(\n"
@@ -2410,7 +2412,9 @@ public class DBConnect implements DataConnect {
         while (set.next()) {
             int id = set.getInt("ID");
             String name = set.getString("NAME");
-            Screen s = new Screen(name, id);
+            int width = set.getInt("WIDTH");
+            int height = set.getInt("HEIGHT");
+            Screen s = new Screen(name, id, width, height);
 
             screens.add(s);
         }
@@ -2441,7 +2445,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Screen addScreen(Screen s) throws SQLException {
-        String query = "INSERT INTO SCREENS (NAME) VALUES (" + s.getSQLInsertString() + ")";
+        String query = "INSERT INTO SCREENS (NAME, WIDTH, HEIGHT) VALUES (" + s.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -2623,7 +2627,9 @@ public class DBConnect implements DataConnect {
                 while (set.next()) {
                     int id = set.getInt("ID");
                     String name = set.getString("NAME");
-                    Screen s = new Screen(name, id);
+                    int width = set.getInt("WIDTH");
+                    int height = set.getInt("HEIGHT");
+                    Screen s = new Screen(name, id, width, height);
 
                     screens.add(s);
                 }
