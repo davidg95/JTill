@@ -2292,7 +2292,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void onReceive(JConnData data) {
         if (data.getFlag().equals("LOG")) {
             g.log(data.getParam("MESSAGE"));
-        } else if (data.getFlag().equals("LOGOUT")) {
+        } else if (data.getFlag().equals("REINIT")) {
             new Thread() {
                 @Override
                 public void run() {
