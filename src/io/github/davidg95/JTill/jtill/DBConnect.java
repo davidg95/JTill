@@ -2981,6 +2981,7 @@ public class DBConnect implements DataConnect {
                 throw new JTillException("No UUID");
             }
             Till till = this.getTillByUUID(uuid);
+            till.setConnected(true);
             g.addTill(till);
             connectedTills.add(till);
             return till;
