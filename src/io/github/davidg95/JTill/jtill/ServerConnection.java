@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import io.github.davidg95.jconn.*;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.ConnectException;
@@ -20,6 +21,7 @@ import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.image.Image;
 
 /**
  * Server connection class which handles communication with the server.
@@ -2357,6 +2359,15 @@ public class ServerConnection implements DataConnect, JConnListener {
             } else {
                 throw new JTillException(ex.getMessage());
             }
+        }
+    }
+
+    @Override
+    public File getLoginBackground() throws IOException {
+        try {
+            return (File) conn.sendData(JConnData.create("GETBGIMAGE"));
+        } catch (Throwable ex) {
+            throw new IOException(ex.getMessage());
         }
     }
 }

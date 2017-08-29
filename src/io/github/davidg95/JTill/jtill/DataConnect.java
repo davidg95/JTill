@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -13,6 +14,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import javafx.scene.image.Image;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
@@ -1629,4 +1631,12 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      */
     public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException;
+
+    /**
+     * Get the login screen background image.
+     *
+     * @return the JavaFX image.
+     * @throws IOException if there was an error.
+     */
+    public File getLoginBackground() throws IOException;
 }

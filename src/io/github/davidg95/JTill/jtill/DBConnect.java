@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.image.Image;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -4827,5 +4828,10 @@ public class DBConnect implements DataConnect {
             }
         }
         return t;
+    }
+
+    @Override
+    public File getLoginBackground() throws IOException {
+        return new File(getSetting("bg_url"));
     }
 }
