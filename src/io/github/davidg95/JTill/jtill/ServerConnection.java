@@ -21,7 +21,6 @@ import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.image.Image;
 
 /**
  * Server connection class which handles communication with the server.
@@ -84,7 +83,7 @@ public class ServerConnection implements DataConnect, JConnListener {
      */
     public Till connect(String IP, int PORT, String site, UUID uuid) throws IOException, ConnectException {
         try {
-            conn.connect(IP, PORT);
+            conn.connect(IP, PORT, true);
             this.uuid = uuid;
             this.site = site;
             g.showModalMessage("Server", "Waitng for confirmation");
