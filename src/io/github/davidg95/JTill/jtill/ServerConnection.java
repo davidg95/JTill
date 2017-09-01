@@ -21,7 +21,6 @@ import java.util.UUID;
 import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.scene.image.Image;
 
 /**
  * Server connection class which handles communication with the server.
@@ -38,7 +37,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     private final StampedLock lock;
 
     private UUID uuid;
-    private String site;
+    private String name;
 
     /**
      * Blank constructor.
@@ -76,19 +75,19 @@ public class ServerConnection implements DataConnect, JConnListener {
      *
      * @param IP the server IP address.
      * @param PORT the server port number.
-     * @param site the name of the terminal.
+     * @param name the name of the terminal.
      * @param uuid the name of the terminal.
      * @return this connection till object.
      * @throws IOException if there was an error connecting.
      * @throws java.net.ConnectException if there was an error connecting.
      */
-    public Till connect(String IP, int PORT, String site, UUID uuid) throws IOException, ConnectException {
+    public Till connect(String IP, int PORT, String name, UUID uuid) throws IOException, ConnectException {
         try {
-            conn.connect(IP, PORT);
+            conn.connect(IP, PORT, true);
             this.uuid = uuid;
-            this.site = site;
+            this.name = name;
             g.showModalMessage("Server", "Waitng for confirmation");
-            final Till t = (Till) conn.sendData(JConnData.create("CONNECT").addParam("UUID", uuid).addParam("SITE", site));
+            final Till t = (Till) conn.sendData(JConnData.create("CONNECT").addParam("UUID", uuid).addParam("NAME", name));
             if (t == null) {
                 g.disallow();
             } else {
@@ -122,7 +121,7 @@ public class ServerConnection implements DataConnect, JConnListener {
         try {
             conn.sendData(JConnData.create("SUSPENDSALE").addParam("SALE", sale).addParam("STAFF", staff));
         } catch (Throwable ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IOException(ex.getMessage());
         }
     }
 
@@ -2301,6 +2300,9 @@ public class ServerConnection implements DataConnect, JConnListener {
                     g.initTill();
                 }
             }.start(); //Search the queue for the reqeust source.
+        } else if (data.getFlag().equals("RENAME")) {
+            final String name = (String) data.getParam("NAME");
+            g.renameTill(name);
         }
     }
 
@@ -2313,7 +2315,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void onConnectionEstablish(JConnEvent event) {
         g.connectionReestablish();
         try {
-            conn.sendData(JConnData.create("RECONNECT").addParam("UUID", uuid).addParam("SITE", site));
+            conn.sendData(JConnData.create("RECONNECT").addParam("UUID", uuid).addParam("SITE", name));
         } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -2366,6 +2368,15 @@ public class ServerConnection implements DataConnect, JConnListener {
     public File getLoginBackground() throws IOException {
         try {
             return (File) conn.sendData(JConnData.create("GETBGIMAGE"));
+        } catch (Throwable ex) {
+            throw new IOException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public void reinitialiseAllTills() throws IOException {
+        try {
+            conn.sendData(JConnData.create("REINITTILLS"));
         } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }

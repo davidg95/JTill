@@ -5,6 +5,8 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import io.github.davidg95.jconn.JConnData;
+import io.github.davidg95.jconn.JConnServer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,7 +33,6 @@ import java.util.logging.Logger;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.scene.image.Image;
 import javax.mail.Authenticator;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -90,6 +91,8 @@ public class DBConnect implements DataConnect {
     private final List<Integer> clockedOn;
     private final StampedLock clockLock;
 
+    private JConnServer server;
+
     static {
         CONNECTION = new DBConnect();
     }
@@ -122,6 +125,10 @@ public class DBConnect implements DataConnect {
         clockedOn = new LinkedList<>();
         clockLock = new StampedLock();
         productLock = new StampedLock();
+    }
+
+    public void setServer(JConnServer server) {
+        this.server = server;
     }
 
     /**
@@ -4833,5 +4840,10 @@ public class DBConnect implements DataConnect {
     @Override
     public File getLoginBackground() throws IOException {
         return new File(getSetting("bg_url"));
+    }
+
+    @Override
+    public void reinitialiseAllTills() throws IOException {
+        server.sendData(null, JConnData.create("REINIT"));
     }
 }

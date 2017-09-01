@@ -39,5 +39,7 @@ public interface GUIInterface {
     
     public void initTill();
     
+    public void renameTill(String name);
+    
     public Till showTillSetupWindow(String name);
 }

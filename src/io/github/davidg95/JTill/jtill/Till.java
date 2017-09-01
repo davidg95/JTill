@@ -18,7 +18,7 @@ public class Till implements Serializable, Cloneable, JTillObject {
 
     private int id;
     private UUID uuid;
-    private final String name;
+    private String name;
     private BigDecimal uncashedTakings;
     private boolean connected;
     private Date lastContact;
@@ -42,6 +42,10 @@ public class Till implements Serializable, Cloneable, JTillObject {
     @Override
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

@@ -1639,4 +1639,11 @@ public interface DataConnect {
      * @throws IOException if there was an error.
      */
     public File getLoginBackground() throws IOException;
+
+    /**
+     * Method to reinitialise all tills.
+     *
+     * @throws IOException if there was an error.
+     */
+    public void reinitialiseAllTills() throws IOException;
 }
