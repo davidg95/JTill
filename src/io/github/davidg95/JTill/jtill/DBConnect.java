@@ -145,6 +145,32 @@ public class DBConnect implements DataConnect {
         this.username = username;
         this.password = password;
         connected = true;
+        updates();
+    }
+
+    private void updates() {
+        try (final Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                int res = stmt.executeUpdate("ALTER TABLE STAFF ADD ENABLED BOOLEAN");
+                LOG.log(Level.SEVERE, "New fields added to staff table, " + res + " rows affected");
+                con.commit();
+                try {
+                    Statement stmt2 = con.createStatement();
+                    int res2 = stmt2.executeUpdate("UPDATE STAFF SET STAFF.ENABLED = TRUE");
+                    LOG.log(Level.SEVERE, "Staff enabled fields set to TRUE, " + res2 + " rows affected");
+                    con.commit();
+                } catch (SQLException ex) {
+                    con.rollback();
+                    throw ex;
+                }
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.INFO, "Column ENABLED already exists, no need to change database.", ex);
+        }
     }
 
     /**
@@ -367,6 +393,7 @@ public class DBConnect implements DataConnect {
                 + "	POSITION INTEGER not null,\n"
                 + "	USERNAME VARCHAR(20) not null,\n"
                 + "	PASSWORD VARCHAR(200) not null,\n"
+                + "     ENABLED BOOLEAN,\n"
                 + "     WAGE DOUBLE\n"
                 + ")";
         String screens = "create table \"APP\".SCREENS\n"
@@ -1290,8 +1317,9 @@ public class DBConnect implements DataConnect {
                     String uname = set.getString("USERNAME");
                     String pword = set.getString("PASSWORD");
                     String dPword = Encryptor.decrypt(pword);
+                    boolean enabled = set.getBoolean("ENABLED");
                     double wage = set.getDouble("WAGE");
-                    Staff s = new Staff(id, name, position, uname, dPword, wage);
+                    Staff s = new Staff(id, name, position, uname, dPword, wage, enabled);
                     staff.add(s);
                 }
                 con.commit();
@@ -1314,8 +1342,9 @@ public class DBConnect implements DataConnect {
             String uname = set.getString("USERNAME");
             String pword = set.getString("PASSWORD");
             String dPass = Encryptor.decrypt(pword);
+            boolean enabled = set.getBoolean("ENABLED");
             double wage = set.getDouble("WAGE");
-            Staff s = new Staff(id, name, position, uname, dPass, wage);
+            Staff s = new Staff(id, name, position, uname, dPass, wage, enabled);
 
             staff.add(s);
         }
@@ -1324,7 +1353,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public Staff addStaff(Staff s) throws SQLException {
-        String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD, WAGE) VALUES (" + s.getSQLInsertString() + ")";
+        String query = "INSERT INTO STAFF (NAME, POSITION, USERNAME, PASSWORD, ENABLED, WAGE) VALUES (" + s.getSQLInsertString() + ")";
         try (Connection con = getNewConnection()) {
             PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             try {
@@ -1435,6 +1464,10 @@ public class DBConnect implements DataConnect {
             }
 
             Staff s = staff.get(0);
+
+            if (!s.isEnabled()) {
+                throw new LoginException("Account not enabled");
+            }
 
             if (s.getPassword().equals(password)) {
                 return s;
@@ -1981,8 +2014,9 @@ public class DBConnect implements DataConnect {
             String uname = set.getString("USERNAME");
             String pword = set.getString("PASSWORD");
             String dPass = Encryptor.decrypt(pword);
+            boolean enabled = set.getBoolean("ENABLED");
             double wage = set.getDouble("WAGE");
-            final Staff st = new Staff(stid, stname, position, uname, dPass, wage);
+            final Staff st = new Staff(stid, stname, position, uname, dPass, wage, enabled);
             s.setStaff(st);
 
             s.setProducts(getItemsInSale(s));
@@ -2376,6 +2410,10 @@ public class DBConnect implements DataConnect {
             }
 
             Staff s = staff.get(0);
+
+            if (!s.isEnabled()) {
+                throw new LoginException("Account not enabled");
+            }
 
             try {
                 loggedInSem.acquire();

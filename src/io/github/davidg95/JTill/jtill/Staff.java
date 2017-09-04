@@ -22,6 +22,7 @@ public class Staff implements Serializable, JTillObject {
     private double wage;
     private double pay;
     private double hours;
+    private boolean enabled;
 
     /**
      * indicates whether they are currently logged into a till.
@@ -63,13 +64,15 @@ public class Staff implements Serializable, JTillObject {
      * @param username their username.
      * @param password their password.
      * @param wage the staff members wage.
+     * @param enabled if the account is enabled or not.
      */
-    public Staff(String name, int position, String username, String password, double wage) {
+    public Staff(String name, int position, String username, String password, double wage, boolean enabled) {
         this.name = name;
         this.position = position;
         this.username = username;
         this.password = password;
         this.wage = wage;
+        this.enabled = enabled;
     }
 
     /**
@@ -82,9 +85,10 @@ public class Staff implements Serializable, JTillObject {
      * @param username their username.
      * @param password their password.
      * @param wage the staff members wage.
+     * @param enabled if the account is enabled or not.
      */
-    public Staff(int id, String name, int position, String username, String password, double wage) {
-        this(name, position, username, password, wage);
+    public Staff(int id, String name, int position, String username, String password, double wage, boolean enabled) {
+        this(name, position, username, password, wage, enabled);
         this.id = id;
     }
 
@@ -209,13 +213,22 @@ public class Staff implements Serializable, JTillObject {
         this.hours = hours;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     public String getSQLInsertString() {
         String ePass = Encryptor.encrypt(this.password);
         return "'" + this.name
                 + "'," + this.position
                 + ",'" + this.username.toLowerCase()
                 + "','" + ePass
-                + "'," + wage;
+                + "'," + enabled
+                + "," + wage;
     }
 
     public String getSQLUpdateString() {
@@ -225,7 +238,8 @@ public class Staff implements Serializable, JTillObject {
                 + "', POSITION=" + this.getPosition()
                 + ", USERNAME='" + this.getUsername().toLowerCase()
                 + "', PASSWORD='" + ePass
-                + "', WAGE=" + wage
+                + "', ENABLED=" + enabled
+                + ", WAGE=" + wage
                 + " WHERE STAFF.ID=" + this.getId();
     }
 
