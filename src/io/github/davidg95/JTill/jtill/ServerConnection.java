@@ -2303,6 +2303,8 @@ public class ServerConnection implements DataConnect, JConnListener {
         } else if (data.getFlag().equals("RENAME")) {
             final String name = (String) data.getParam("NAME");
             g.renameTill(name);
+        } else if(data.getFlag().equals("LOGOUT")){
+            g.logout();
         }
     }
 
