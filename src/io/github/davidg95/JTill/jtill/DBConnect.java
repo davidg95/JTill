@@ -4884,4 +4884,24 @@ public class DBConnect implements DataConnect {
     public void reinitialiseAllTills() throws IOException {
         server.sendData(null, JConnData.create("REINIT"));
     }
+
+    @Override
+    public int clearSalesData() throws IOException, SQLException {
+        String q1 = "DELETE FROM SALEITEMS";
+        String q2 = "DELETE FROM SALES";
+        try (Connection con = getNewConnection()) {
+            Statement stmt = con.createStatement();
+            int value = 0;
+            try {
+                stmt.executeUpdate(q1);
+                value += stmt.executeUpdate(q2);
+                con.commit();
+                return value;
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+    }
 }

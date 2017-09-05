@@ -2303,7 +2303,7 @@ public class ServerConnection implements DataConnect, JConnListener {
         } else if (data.getFlag().equals("RENAME")) {
             final String name = (String) data.getParam("NAME");
             g.renameTill(name);
-        } else if(data.getFlag().equals("LOGOUT")){
+        } else if (data.getFlag().equals("LOGOUT")) {
             g.logout();
         }
     }
@@ -2381,6 +2381,19 @@ public class ServerConnection implements DataConnect, JConnListener {
             conn.sendData(JConnData.create("REINITTILLS"));
         } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
+        }
+    }
+
+    @Override
+    public int clearSalesData() throws IOException, SQLException {
+        try {
+            return (int) conn.sendData(JConnData.create("CLEARSALES"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
         }
     }
 }

@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import javafx.scene.image.Image;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 
@@ -1646,4 +1645,13 @@ public interface DataConnect {
      * @throws IOException if there was an error.
      */
     public void reinitialiseAllTills() throws IOException;
+
+    /**
+     * Clear all sales data to date.
+     *
+     * @return the amount of records deleted.
+     * @throws IOException if there is an error.
+     * @throws java.sql.SQLException if there is a database error.
+     */
+    public int clearSalesData() throws IOException, SQLException;
 }
