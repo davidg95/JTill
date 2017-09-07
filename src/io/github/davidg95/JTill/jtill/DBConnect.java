@@ -169,7 +169,7 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         } catch (SQLException ex) {
-            LOG.log(Level.INFO, "Column ENABLED already exists, no need to change database.", ex);
+            LOG.log(Level.INFO, "Column ENABLED already exists in STAFF, no need to change database.", ex);
         }
 
         try (final Connection con = getNewConnection()) {
@@ -193,7 +193,7 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         } catch (SQLException ex) {
-            LOG.log(Level.INFO, "Column ENABLED already exists, no need to change database.", ex);
+            LOG.log(Level.INFO, "Table RECEIVED_REPORTS already exists, no need to change database.", ex);
         }
 
         try (final Connection con = getNewConnection()) {
@@ -207,7 +207,7 @@ public class DBConnect implements DataConnect {
                 throw ex;
             }
         } catch (SQLException ex) {
-            LOG.log(Level.INFO, "Column ENABLED already exists, no need to change database.", ex);
+            LOG.log(Level.INFO, "Column RECEIVED_REPORT already exists in RECEIVEDITEMS, no need to change database.", ex);
         }
     }
 
