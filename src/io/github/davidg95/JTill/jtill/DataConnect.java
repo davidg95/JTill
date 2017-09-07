@@ -1454,10 +1454,11 @@ public interface DataConnect {
      * Method to add a received item to the database.
      *
      * @param i the item to add.
+     * @param report the report id.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public void addReceivedItem(ReceivedItem i) throws IOException, SQLException;
+    public void addReceivedItem(ReceivedItem i, int report) throws IOException, SQLException;
 
     /**
      * Gets the total spend on an item.
@@ -1654,4 +1655,13 @@ public interface DataConnect {
      * @throws java.sql.SQLException if there is a database error.
      */
     public int clearSalesData() throws IOException, SQLException;
+
+    /**
+     * Add a ReceivedReport to the system.
+     *
+     * @param rep the report.
+     * @throws IOException if there is an error.
+     * @throws java.sql.SQLException if there is a database error.
+     */
+    public void addReceivedReport(ReceivedReport rep) throws IOException, SQLException;
 }

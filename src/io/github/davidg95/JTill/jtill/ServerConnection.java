@@ -1951,9 +1951,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void addReceivedItem(ReceivedItem i) throws IOException, SQLException {
+    public void addReceivedItem(ReceivedItem i, int report) throws IOException, SQLException {
         try {
-            conn.sendData(JConnData.create("ADDRECEIVEDITEM").addParam("ITEM", i));
+            conn.sendData(JConnData.create("ADDRECEIVEDITEM").addParam("ITEM", i).addParam("REP", report));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -2388,6 +2388,19 @@ public class ServerConnection implements DataConnect, JConnListener {
     public int clearSalesData() throws IOException, SQLException {
         try {
             return (int) conn.sendData(JConnData.create("CLEARSALES"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void addReceivedReport(ReceivedReport rep) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("ADDRECREP").addParam("RECREP", rep));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());

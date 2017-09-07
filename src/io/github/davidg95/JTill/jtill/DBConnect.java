@@ -153,17 +153,55 @@ public class DBConnect implements DataConnect {
             try {
                 Statement stmt = con.createStatement();
                 int res = stmt.executeUpdate("ALTER TABLE STAFF ADD ENABLED BOOLEAN");
-                LOG.log(Level.SEVERE, "New fields added to staff table, " + res + " rows affected");
+                LOG.log(Level.INFO, "New fields added to staff table, " + res + " rows affected");
                 con.commit();
                 try {
                     Statement stmt2 = con.createStatement();
                     int res2 = stmt2.executeUpdate("UPDATE STAFF SET STAFF.ENABLED = TRUE");
-                    LOG.log(Level.SEVERE, "Staff enabled fields set to TRUE, " + res2 + " rows affected");
+                    LOG.log(Level.INFO, "Staff enabled fields set to TRUE, " + res2 + " rows affected");
                     con.commit();
                 } catch (SQLException ex) {
                     con.rollback();
                     throw ex;
                 }
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.INFO, "Column ENABLED already exists, no need to change database.", ex);
+        }
+
+        try (final Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                String received_reports = "create table APP.RECEIVED_REPORTS\n"
+                        + "(\n"
+                        + "     ID INT not null primary key\n"
+                        + "         GENERATED ALWAYS AS IDENTITY\n"
+                        + "         (START WITH 1, INCREMENT BY 1),"
+                        + "     INVOICE_NO VARCHAR(30) not null,\n"
+                        + "     SUPPLIER_ID INT not null references SUPPLIERS(ID)\n"
+                        + ")";
+                boolean res = stmt.execute(received_reports);
+                if (res) {
+                    LOG.log(Level.INFO, "New table RECEIVED_REPORTS created");
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.INFO, "Column ENABLED already exists, no need to change database.", ex);
+        }
+
+        try (final Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                int res = stmt.executeUpdate("ALTER TABLE RECEIVEDITEMS ADD RECEIVED_REPORT INT");
+                LOG.log(Level.INFO, "New fields added to RECEIVEDITEMS table, " + res + " rows affected");
+                con.commit();
             } catch (SQLException ex) {
                 con.rollback();
                 throw ex;
@@ -4201,8 +4239,8 @@ public class DBConnect implements DataConnect {
     }
 
     @Override
-    public void addReceivedItem(ReceivedItem i) throws IOException, SQLException {
-        String query = "INSERT INTO RECEIVEDITEMS (PRODUCT, QUANTITY, PRICE) VALUES (" + i.getProduct() + "," + i.getQuantity() + "," + i.getPrice().doubleValue() + ")";
+    public void addReceivedItem(ReceivedItem i, int report) throws IOException, SQLException {
+        String query = "INSERT INTO RECEIVEDITEMS (PRODUCT, QUANTITY, PRICE, RECEIVED_REPORT) VALUES (" + i.getProduct() + "," + i.getQuantity() + "," + i.getPrice().doubleValue() + "," + report + ")";
         try (Connection con = getNewConnection()) {
             try {
                 Statement stmt = con.createStatement();
@@ -4902,6 +4940,29 @@ public class DBConnect implements DataConnect {
                 LOG.log(Level.SEVERE, null, ex);
                 throw ex;
             }
+        }
+    }
+
+    @Override
+    public void addReceivedReport(ReceivedReport rep) throws SQLException, IOException {
+        String query = "INSERT INTO RECEIVED_REPORTS (INVOICE_NO, SUPPLIER_ID) VALUES ('" + rep.getInvoiceId() + "'," + rep.getSupplierId() + ")";
+        try (Connection con = getNewConnection()) {
+            try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                stmt.executeUpdate();
+                ResultSet set = stmt.getGeneratedKeys();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    rep.setId(id);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        for (ReceivedItem item : rep.getItems()) {
+            this.addReceivedItem(item, rep.getId());
         }
     }
 }
