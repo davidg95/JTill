@@ -2409,4 +2409,30 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public List<ReceivedReport> getAllReceivedReports() throws IOException, SQLException {
+        try {
+            return (List<ReceivedReport>) conn.sendData(JConnData.create("GETRECREP"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public ReceivedReport updateReceivedReport(ReceivedReport rr) throws IOException, SQLException {
+        try {
+            return (ReceivedReport) conn.sendData(JConnData.create("UPDATERECREP").addParam("RECREP", rr));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }

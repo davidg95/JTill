@@ -19,17 +19,19 @@ public class ReceivedReport implements Serializable {
     private final String invoiceId;
     private final int supplierId;
     private List<ReceivedItem> items;
+    private boolean paid;
 
-    public ReceivedReport(int id, String invoiceId, int supplierId, List<ReceivedItem> items) {
+    public ReceivedReport(int id, String invoiceId, int supplierId, boolean paid) {
         this(invoiceId, supplierId);
-        this.items = items;
         this.id = id;
+        this.paid = paid;
     }
 
     public ReceivedReport(String invoiceId, int supplierId) {
         this.invoiceId = invoiceId;
         this.supplierId = supplierId;
         items = new LinkedList<>();
+        paid = false;
     }
 
     public int getId() {
@@ -58,6 +60,14 @@ public class ReceivedReport implements Serializable {
 
     public void addItem(ReceivedItem item) {
         this.items.add(item);
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
     }
 
     @Override

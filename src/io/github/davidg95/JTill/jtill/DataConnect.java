@@ -1664,4 +1664,23 @@ public interface DataConnect {
      * @throws java.sql.SQLException if there is a database error.
      */
     public void addReceivedReport(ReceivedReport rep) throws IOException, SQLException;
+
+    /**
+     * Get all received reports.
+     *
+     * @return List of ReceivedReports.
+     * @throws IOException if there is an error.
+     * @throws java.sql.SQLException if there is a database error.
+     */
+    public List<ReceivedReport> getAllReceivedReports() throws IOException, SQLException;
+
+    /**
+     * Updates a ReceivedReport.
+     *
+     * @param rr the ReceivedReport to update
+     * @return the updated ReceivedReport.
+     * @throws IOException if there is an error.
+     * @throws java.sql.SQLException if there is a database error.
+     */
+    public ReceivedReport updateReceivedReport(ReceivedReport rr) throws IOException, SQLException;
 }

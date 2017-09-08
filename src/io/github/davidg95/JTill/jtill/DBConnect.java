@@ -209,6 +209,20 @@ public class DBConnect implements DataConnect {
         } catch (SQLException ex) {
             LOG.log(Level.INFO, "Column RECEIVED_REPORT already exists in RECEIVEDITEMS, no need to change database.", ex);
         }
+
+        try (final Connection con = getNewConnection()) {
+            try {
+                Statement stmt = con.createStatement();
+                int res = stmt.executeUpdate("ALTER TABLE RECEIVED_REPORTS ADD PAID BOOLEAN");
+                LOG.log(Level.INFO, "New fields added to RECEIVED_REPORTS table, " + res + " rows affected");
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                throw ex;
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.INFO, "Column PAID already exists in RECEIVED_REPORTS, no need to change database.", ex);
+        }
     }
 
     /**
@@ -3761,14 +3775,15 @@ public class DBConnect implements DataConnect {
             long stamp = supL.readLock();
             try {
                 ResultSet set = stmt.executeQuery(query);
+                Supplier sup = null;
                 while (set.next()) {
                     String name = set.getString("NAME");
                     String addrs = set.getString("ADDRESS");
                     String phone = set.getString("PHONE");
-                    Supplier sup = new Supplier(id, name, addrs, phone);
-                    return sup;
+                    sup = new Supplier(id, name, addrs, phone);
                 }
                 con.commit();
+                return sup;
             } catch (SQLException ex) {
                 con.rollback();
                 LOG.log(Level.SEVERE, null, ex);
@@ -3777,7 +3792,6 @@ public class DBConnect implements DataConnect {
                 supL.unlockRead(stamp);
             }
         }
-        throw new JTillException("Supplier ID " + id + " not found");
     }
 
     @Override
@@ -4945,7 +4959,7 @@ public class DBConnect implements DataConnect {
 
     @Override
     public void addReceivedReport(ReceivedReport rep) throws SQLException, IOException {
-        String query = "INSERT INTO RECEIVED_REPORTS (INVOICE_NO, SUPPLIER_ID) VALUES ('" + rep.getInvoiceId() + "'," + rep.getSupplierId() + ")";
+        String query = "INSERT INTO RECEIVED_REPORTS (INVOICE_NO, SUPPLIER_ID, PAID) VALUES ('" + rep.getInvoiceId() + "'," + rep.getSupplierId() + "," + rep.isPaid() + ")";
         try (Connection con = getNewConnection()) {
             try (PreparedStatement stmt = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
                 stmt.executeUpdate();
@@ -4964,5 +4978,83 @@ public class DBConnect implements DataConnect {
         for (ReceivedItem item : rep.getItems()) {
             this.addReceivedItem(item, rep.getId());
         }
+    }
+
+    @Override
+    public List<ReceivedReport> getAllReceivedReports() throws IOException, SQLException {
+        String query = "SELECT ID, SUPPLIER_ID, INVOICE_NO, PAID FROM RECEIVED_REPORTS";
+        List<ReceivedReport> reports;
+        try (Connection con = getNewConnection()) {
+            Statement stmt = con.createStatement();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                reports = new LinkedList<>();
+                while (set.next()) {
+                    int id = set.getInt(1);
+                    int supp = set.getInt(2);
+                    String inv = set.getString(3);
+                    boolean paid = set.getBoolean(4);
+
+                    ReceivedReport rr = new ReceivedReport(id, inv, supp, paid);
+
+                    reports.add(rr);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+
+        for (ReceivedReport rr : reports) {
+            rr.setItems(getItemsInReport(rr.getId()));
+        }
+        return reports;
+    }
+
+    private List<ReceivedItem> getItemsInReport(int id) throws SQLException {
+        String query = "SELECT * FROM RECEIVEDITEMS WHERE RECEIVED_REPORT=" + id;
+        List<ReceivedItem> items;
+        try (Connection con = getNewConnection()) {
+            Statement stmt = con.createStatement();
+            try {
+                ResultSet set = stmt.executeQuery(query);
+                items = new LinkedList<>();
+                while (set.next()) {
+                    int iid = set.getInt(1);
+                    int pro = set.getInt(2);
+                    int quantity = set.getInt(3);
+                    BigDecimal price = set.getBigDecimal(4);
+
+                    ReceivedItem ri = new ReceivedItem(iid, pro, quantity, price);
+
+                    items.add(ri);
+                }
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        return items;
+    }
+
+    @Override
+    public ReceivedReport updateReceivedReport(ReceivedReport rr) throws IOException, SQLException {
+        String query = "UPDATE RECEIVED_REPORTS SET PAID = " + rr.isPaid() + " WHERE ID=" + rr.getId();
+        try (Connection con = getNewConnection()) {
+            Statement stmt = con.createStatement();
+            try {
+                stmt.executeUpdate(query);
+                con.commit();
+            } catch (SQLException ex) {
+                con.rollback();
+                LOG.log(Level.SEVERE, null, ex);
+                throw ex;
+            }
+        }
+        return rr;
     }
 }
