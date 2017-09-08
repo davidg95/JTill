@@ -1683,4 +1683,13 @@ public interface DataConnect {
      * @throws java.sql.SQLException if there is a database error.
      */
     public ReceivedReport updateReceivedReport(ReceivedReport rr) throws IOException, SQLException;
+
+    /**
+     * Reinitialise a till.
+     *
+     * @param id the id of the till.
+     * @throws IOException if there is an error.
+     * @throws java.sql.SQLException if there is a database error.
+     */
+    public void reinitTill(int id) throws IOException, SQLException;
 }
