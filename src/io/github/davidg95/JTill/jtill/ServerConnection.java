@@ -100,6 +100,10 @@ public class ServerConnection implements DataConnect, JConnListener {
         throw new IOException("Class error (Update may be required)");
     }
 
+    public void connectAsRemote(String IP, int PORT) throws IOException {
+        conn.connect(IP, PORT, true);
+    }
+
     /**
      * Makes a connection but doesn't wait for server confirmation
      *
@@ -617,7 +621,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public List<Sale> getAllSales() throws IOException, SQLException {
         try {
-            return (List<Sale>) (Sale) conn.sendData(JConnData.create("GETALLSALES"));
+            return (List<Sale>) conn.sendData(JConnData.create("GETALLSALES"));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
