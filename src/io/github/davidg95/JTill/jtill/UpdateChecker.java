@@ -7,6 +7,9 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 /**
  *
@@ -36,7 +39,15 @@ public class UpdateChecker {
         return new String(getHTML(UPDATE_CHECK_URL));
     }
 
-    public static byte[] downloadServerUpdate() throws Exception {
-        return getHTML(SERVER_UPDATE_DOWNLOAD);
+    public static void downloadServerUpdate() throws Exception {
+        String url = "https://jggcomputers.ddns.net/repo/public/jtillserverinstaller.exe";
+
+        URL website = new URL(url);
+        try (InputStream in = website.openStream()) {
+            Path targetPath = new File(System.getProperty("java.io.tmpdir") + File.separator + "serverinstaller.exe").toPath();
+            Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            Runtime.getRuntime().exec(System.getProperty("java.io.tmpdir") + File.separator + "serverinstaller.exe", null, new File(System.getProperty("java.io.tmpdir")));
+            System.exit(0);
+        }
     }
 }
