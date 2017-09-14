@@ -150,7 +150,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public BigDecimal getTillTakings(int terminal) throws IOException, SQLException {
         try {
-            return (BigDecimal) conn.sendData(JConnData.create("TAKINGS").addParam("TERMINAL", terminal));
+            return (BigDecimal) conn.sendData(JConnData.create("GETTAKINGS").addParam("TERMINAL", terminal));
         } catch (Throwable ex) {
             throw new SQLException(ex.getMessage());
         }
