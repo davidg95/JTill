@@ -2404,7 +2404,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public void addReceivedReport(ReceivedReport rep) throws IOException, SQLException {
         try {
-            conn.sendData(JConnData.create("ADDRECREP").addParam("RECREP", rep));
+            conn.sendData(JConnData.create("ADDRECREP").addParam("REP", rep));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
