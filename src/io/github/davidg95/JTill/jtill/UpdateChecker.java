@@ -17,9 +17,9 @@ import java.nio.file.StandardCopyOption;
  */
 public class UpdateChecker {
 
-    public static final String UPDATE_CHECK_URL = "http://jggcomputers.ddns.net/jtill/";
+    public static final String UPDATE_CHECK_URL = "https://jggcomputers.ddns.net/jtill/";
 
-    public static final String SERVER_UPDATE_DOWNLOAD = "http://jggcomputers.ddns.net/repo/public/jtillserverinstaller.exe";
+    public static final String SERVER_UPDATE_DOWNLOAD = "https://jggcomputers.ddns.net/repo/public/jtillserverinstaller.exe";
 
     public static byte[] getHTML(String urlToRead) throws Exception {
         StringBuilder result = new StringBuilder();
@@ -40,9 +40,7 @@ public class UpdateChecker {
     }
 
     public static void downloadServerUpdate() throws Exception {
-        String url = "https://jggcomputers.ddns.net/repo/public/jtillserverinstaller.exe";
-
-        URL website = new URL(url);
+        URL website = new URL(SERVER_UPDATE_DOWNLOAD);
         try (InputStream in = website.openStream()) {
             Path targetPath = new File(System.getProperty("java.io.tmpdir") + File.separator + "serverinstaller.exe").toPath();
             Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
