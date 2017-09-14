@@ -1692,4 +1692,12 @@ public interface DataConnect {
      * @throws java.sql.SQLException if there is a database error.
      */
     public void reinitTill(int id) throws IOException, SQLException;
+
+    /**
+     * Send build updates to tills.
+     * 
+     * @throws IOException if there is an error.
+     * @throws java.sql.SQLException if there is a database error.
+     */
+    public void sendBuildUpdates() throws IOException, SQLException;
 }

@@ -2309,6 +2309,8 @@ public class ServerConnection implements DataConnect, JConnListener {
             g.renameTill(name);
         } else if (data.getFlag().equals("LOGOUT")) {
             g.logout();
+        } else if (data.getFlag().equals("REQUPDATE")) {
+            g.requestUpdate();
         }
     }
 
@@ -2444,6 +2446,19 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void reinitTill(int id) throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("REINITTILL").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void sendBuildUpdates() throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("SENDBUILD"));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());

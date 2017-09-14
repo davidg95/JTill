@@ -5,6 +5,8 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.File;
+
 /**
  *
  * @author David
@@ -44,4 +46,6 @@ public interface GUIInterface {
     public Till showTillSetupWindow(String name);
     
     public void logout();
+    
+    public void requestUpdate();
 }

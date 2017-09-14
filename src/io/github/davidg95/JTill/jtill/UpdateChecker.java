@@ -48,4 +48,15 @@ public class UpdateChecker {
             System.exit(0);
         }
     }
+    
+    public static File downloadTerminalUpdate() throws Exception {
+        String url = "https://jggcomputers.ddns.net/repo/public/jtillfxterminalinstaller.exe";
+
+        URL website = new URL(url);
+        try (InputStream in = website.openStream()) {
+            Path targetPath = new File(System.getProperty("java.io.tmpdir") + File.separator + "terminalinstaller.exe").toPath();
+            Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            return targetPath.toFile();
+        }
+    }
 }
