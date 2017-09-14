@@ -1653,7 +1653,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public List<WasteReason> getAllWasteReasons() throws IOException, SQLException {
         try {
-            return (List) conn.sendData(JConnData.create("GETALLWASTEREASON"));
+            return (List) conn.sendData(JConnData.create("GETALLWASTEREASONS"));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
