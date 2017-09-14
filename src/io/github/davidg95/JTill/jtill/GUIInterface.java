@@ -47,5 +47,5 @@ public interface GUIInterface {
     
     public void logout();
     
-    public void buildUpdate(File f);
+    public void requestUpdate();
 }

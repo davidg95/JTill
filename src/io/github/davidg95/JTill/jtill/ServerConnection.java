@@ -2309,8 +2309,8 @@ public class ServerConnection implements DataConnect, JConnListener {
             g.renameTill(name);
         } else if (data.getFlag().equals("LOGOUT")) {
             g.logout();
-        } else if (data.getFlag().equals("BUILDUPDATE")) {
-            g.buildUpdate((File) data.getParam("FILE"));
+        } else if (data.getFlag().equals("REQUPDATE")) {
+            g.requestUpdate();
         }
     }
 
@@ -2456,7 +2456,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void sendBuildUpdates(File f) throws IOException, SQLException {
+    public void sendBuildUpdates() throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("SENDBUILD"));
         } catch (Throwable ex) {

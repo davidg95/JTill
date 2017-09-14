@@ -1695,10 +1695,9 @@ public interface DataConnect {
 
     /**
      * Send build updates to tills.
-     *
-     * @param f the update file.
+     * 
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public void sendBuildUpdates(File f) throws IOException, SQLException;
+    public void sendBuildUpdates() throws IOException, SQLException;
 }
