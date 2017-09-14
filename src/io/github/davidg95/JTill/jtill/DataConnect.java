@@ -1695,9 +1695,18 @@ public interface DataConnect {
 
     /**
      * Send build updates to tills.
-     * 
+     *
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
     public void sendBuildUpdates() throws IOException, SQLException;
+
+    /**
+     * Download terminal update.
+     *
+     * @return the update file.
+     * @throws IOException if there is an error.
+     * @throws java.sql.SQLException if there is a database error.
+     */
+    public List<byte[]> downloadTerminalUpdate() throws Exception;
 }

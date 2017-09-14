@@ -2310,7 +2310,12 @@ public class ServerConnection implements DataConnect, JConnListener {
         } else if (data.getFlag().equals("LOGOUT")) {
             g.logout();
         } else if (data.getFlag().equals("REQUPDATE")) {
-            g.requestUpdate();
+            new Thread() {
+                @Override
+                public void run() {
+                    g.requestUpdate();
+                }
+            }.start();
         }
     }
 
@@ -2465,6 +2470,15 @@ public class ServerConnection implements DataConnect, JConnListener {
             } else {
                 throw new SQLException(ex.getMessage());
             }
+        }
+    }
+
+    @Override
+    public List<byte[]> downloadTerminalUpdate() throws Exception {
+        try {
+            return (List<byte[]>) conn.sendData(JConnData.create("DOWNLOADTER"));
+        } catch (Throwable ex) {
+            throw new Exception(ex.getMessage());
         }
     }
 }

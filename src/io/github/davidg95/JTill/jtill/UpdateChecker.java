@@ -20,6 +20,8 @@ public class UpdateChecker {
     public static final String UPDATE_CHECK_URL = "https://jggcomputers.ddns.net/jtill/";
 
     public static final String SERVER_UPDATE_DOWNLOAD = "https://jggcomputers.ddns.net/repo/public/jtillserverinstaller.exe";
+    
+    public static final String TERMINAL_UPDATE_DONWLOAD = "https://jggcomputers.ddns.net/repo/public/jtillfxterminalinstaller.exe";
 
     public static byte[] getHTML(String urlToRead) throws Exception {
         StringBuilder result = new StringBuilder();
@@ -50,9 +52,7 @@ public class UpdateChecker {
     }
     
     public static File downloadTerminalUpdate() throws Exception {
-        String url = "https://jggcomputers.ddns.net/repo/public/jtillfxterminalinstaller.exe";
-
-        URL website = new URL(url);
+        URL website = new URL(TERMINAL_UPDATE_DONWLOAD);
         try (InputStream in = website.openStream()) {
             Path targetPath = new File(System.getProperty("java.io.tmpdir") + File.separator + "terminalinstaller.exe").toPath();
             Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
