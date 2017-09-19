@@ -2308,7 +2308,12 @@ public class ServerConnection implements DataConnect, JConnListener {
             final String name = (String) data.getParam("NAME");
             g.renameTill(name);
         } else if (data.getFlag().equals("LOGOUT")) {
-            g.logout();
+            new Thread() {
+                @Override
+                public void run() {
+                    g.logout();
+                }
+            }.start();
         } else if (data.getFlag().equals("REQUPDATE")) {
             new Thread() {
                 @Override
