@@ -19,17 +19,19 @@ public class Screen implements Serializable, Cloneable {
     private String name;
     private int width;
     private int height;
+    private int inherits;
 
     private transient GridPane pane;
 
-    public Screen(String name, int width, int height) {
+    public Screen(String name, int width, int height, int inherits) {
         this.name = name;
         this.width = width;
         this.height = height;
+        this.inherits = inherits;
     }
 
-    public Screen(String name, int id, int width, int height) {
-        this(name, width, height);
+    public Screen(String name, int id, int width, int height, int inherits) {
+        this(name, width, height, inherits);
         this.id = id;
     }
 
@@ -65,10 +67,19 @@ public class Screen implements Serializable, Cloneable {
         this.height = height;
     }
 
+    public int getInherits() {
+        return inherits;
+    }
+
+    public void setInherits(int inherits) {
+        this.inherits = inherits;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + this.getWidth()
-                + "," + this.getHeight();
+                + "," + this.getHeight()
+                + "," + this.getInherits();
     }
 
     public GridPane getPane() {
@@ -84,6 +95,7 @@ public class Screen implements Serializable, Cloneable {
                 + " SET NAME='" + this.getName()
                 + "', WIDTH=" + this.getWidth()
                 + ", HEIGHT=" + this.getHeight()
+                + ", INHERITS=" + this.getInherits()
                 + " WHERE SCREENS.ID=" + this.getId();
     }
 
