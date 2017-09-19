@@ -2297,7 +2297,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void onReceive(JConnData data) {
         if (data.getFlag().equals("LOG")) {
             g.log(data.getParam("MESSAGE"));
-        } else if (data.getFlag().equals("REINIT")) {
+        } else if (data.getFlag().equals("SENDDATA")) {
             new Thread() {
                 @Override
                 public void run() {
@@ -2448,9 +2448,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void reinitTill(int id) throws IOException, SQLException {
+    public void sendData(int id) throws IOException, SQLException {
         try {
-            conn.sendData(JConnData.create("REINITTILL").addParam("ID", id));
+            conn.sendData(JConnData.create("SENDDATA").addParam("ID", id));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
