@@ -1709,4 +1709,13 @@ public interface DataConnect {
      * @throws java.sql.SQLException if there is a database error.
      */
     public List<byte[]> downloadTerminalUpdate() throws Exception;
+
+    /**
+     * Log a staff member our of the till.
+     *
+     * @param id the id of the till.
+     * @throws IOException if there is a network error.
+     * @throws JTillException if there is an error.
+     */
+    public void logoutTill(int id) throws IOException, JTillException;
 }

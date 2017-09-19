@@ -2486,4 +2486,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             throw new Exception(ex.getMessage());
         }
     }
+
+    @Override
+    public void logoutTill(int id) throws IOException, JTillException {
+        try {
+            conn.sendData(JConnData.create("LOGOUTTERMINAL").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new JTillException(ex.getMessage());
+            }
+        }
+    }
 }
