@@ -5,8 +5,6 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import java.io.File;
-
 /**
  *
  * @author David
@@ -48,4 +46,6 @@ public interface GUIInterface {
     public void logout();
     
     public void requestUpdate();
+    
+    public void markNewData();
 }

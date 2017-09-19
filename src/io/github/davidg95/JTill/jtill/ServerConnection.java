@@ -2301,7 +2301,7 @@ public class ServerConnection implements DataConnect, JConnListener {
             new Thread() {
                 @Override
                 public void run() {
-                    g.initTill();
+                    g.markNewData();
                 }
             }.start(); //Search the queue for the reqeust source.
         } else if (data.getFlag().equals("RENAME")) {
