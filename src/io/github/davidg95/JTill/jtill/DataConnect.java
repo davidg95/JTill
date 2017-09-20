@@ -1137,15 +1137,15 @@ public interface DataConnect {
     public void deleteAllScreensAndButtons() throws IOException, SQLException;
 
     /**
-     * Checks if a screen is inherited by another screen.
+     * gets screens which inherit this screen.
      *
      * @param s the screen to check.
-     * @return true if it is being inherited, false if it is not.
+     * @return a list of the child screens.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      * @throws JTillException if there is an error.
      */
-    public boolean isInherited(Screen s) throws IOException, SQLException, JTillException;
+    public List<Screen> checkInheritance(Screen s) throws IOException, SQLException, JTillException;
 
     //Tills
     /**

@@ -2501,9 +2501,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public boolean isInherited(Screen s) throws IOException, SQLException, JTillException {
+    public List<Screen> checkInheritance(Screen s) throws IOException, SQLException, JTillException {
         try {
-            return (boolean) conn.sendData(JConnData.create("ISINHERITED").addParam("SCREEN", s));
+            return (List<Screen>) conn.sendData(JConnData.create("ISINHERITED").addParam("SCREEN", s));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
