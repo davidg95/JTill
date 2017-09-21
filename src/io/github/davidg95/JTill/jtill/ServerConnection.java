@@ -2512,4 +2512,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public Staff getTillStaff(int id) throws IOException, JTillException {
+        try {
+            return (Staff) conn.sendData(JConnData.create("GETTILLSTAFF").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new JTillException(ex.getMessage());
+            }
+        }
+    }
 }

@@ -1729,4 +1729,14 @@ public interface DataConnect {
      * @throws JTillException if there is an error.
      */
     public void logoutTill(int id) throws IOException, JTillException;
+
+    /**
+     * Gets the member of staff if any logged on to the till.
+     *
+     * @param id the till id.
+     * @return the Staff member, can be null.
+     * @throws IOException if there is a network error.
+     * @throws JTillException if there is an error.
+     */
+    public Staff getTillStaff(int id) throws IOException, JTillException;
 }
