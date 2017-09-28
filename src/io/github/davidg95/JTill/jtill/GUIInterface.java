@@ -35,7 +35,7 @@ public interface GUIInterface {
     
     public void connectionDrop();
     
-    public void connectionReestablish();
+    public Staff connectionReestablish();
     
     public void initTill();
     

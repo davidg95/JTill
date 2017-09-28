@@ -212,7 +212,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public Till connectTill(String name, UUID uuid) throws IOException {
+    public Till connectTill(String name, UUID uuid, Staff staff) throws IOException {
         try {
             return (Till) conn.sendData(JConnData.create("CONNECTTILL").addParam("NAME", name).addParam("UUID", uuid));
         } catch (Throwable ex) {
@@ -2331,9 +2331,9 @@ public class ServerConnection implements DataConnect, JConnListener {
 
     @Override
     public void onConnectionEstablish(JConnEvent event) {
-        g.connectionReestablish();
+        Staff s = g.connectionReestablish();
         try {
-            conn.sendData(JConnData.create("RECONNECT").addParam("UUID", uuid).addParam("SITE", name));
+            conn.sendData(JConnData.create("RECONNECT").addParam("UUID", uuid).addParam("SITE", name).addParam("STAFF", s));
         } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
         }

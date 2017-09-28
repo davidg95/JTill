@@ -1204,10 +1204,11 @@ public interface DataConnect {
      *
      * @param name the name of the till to connect.
      * @param uuid the uuid of the till to connect.
+     * @param staff the logged in staff member, can be null.
      * @return the Till object.
      * @throws IOException if there was a network error.
      */
-    public Till connectTill(String name, UUID uuid) throws IOException;
+    public Till connectTill(String name, UUID uuid, Staff staff) throws IOException;
 
     /**
      * Method to get all current connected tills.
