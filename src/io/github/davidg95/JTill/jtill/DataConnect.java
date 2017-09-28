@@ -1740,4 +1740,15 @@ public interface DataConnect {
      * @throws JTillException if there is an error.
      */
     public Staff getTillStaff(int id) throws IOException, JTillException;
+
+    /**
+     * Get all sales for the current session.
+     *
+     * @param session the session start.
+     * @return the List of all sales.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws JTillException if there is an error.
+     */
+    public List<Sale> getZSales(long session) throws IOException, SQLException, JTillException;
 }

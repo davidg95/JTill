@@ -2525,4 +2525,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public List<Sale> getZSales(long session) throws IOException, SQLException, JTillException {
+        try {
+            return (List<Sale>) conn.sendData(JConnData.create("ZSALES").addParam("SESSION", session));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new JTillException(ex.getMessage());
+            }
+        }
+    }
 }
