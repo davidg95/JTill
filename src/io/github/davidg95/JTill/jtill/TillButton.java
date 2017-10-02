@@ -100,6 +100,10 @@ public class TillButton implements Serializable {
      * Indicates the button is to go to the tills main screen.
      */
     public static final int MAIN = 5;
+    /**
+     * Indicates that the button is to log off.
+     */
+    public static final int LOGOFF = 6;
 
     public TillButton(String name, int item, int type, int screen, int color, int width, int height, int x, int y) {
         this.name = name;
