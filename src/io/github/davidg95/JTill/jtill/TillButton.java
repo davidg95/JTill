@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.awt.Color;
 import java.io.Serializable;
 
 /**
@@ -19,60 +20,12 @@ public class TillButton implements Serializable {
     private int item;
     private int type;
     private int screen;
-    private int color;
+    private String color;
+    private String fontColor;
     private int width;
     private int height;
     private int x;
     private int y;
-
-    /**
-     * Indicates that the color of the button is blue.
-     *
-     * Value: 1.
-     */
-    public static final int BLUE = 1;
-    /**
-     * Indicates that the color of the button is red.
-     *
-     * Value: 2.
-     */
-    public static final int RED = 2;
-    /**
-     * Indicates that the color of the button is green.
-     *
-     * Value: 3.
-     */
-    public static final int GREEN = 3;
-    /**
-     * Indicates that the color of the button is yellow.
-     *
-     * Value: 4.
-     */
-    public static final int YELLOW = 4;
-    /**
-     * Indicates that the color of the button is orange.
-     *
-     * Value: 5.
-     */
-    public static final int ORANGE = 5;
-    /**
-     * Indicates that the color of the button is purple.
-     *
-     * Value: 6.
-     */
-    public static final int PURPLE = 6;
-    /**
-     * Indicates that the color of the button is white.
-     *
-     * Value: 7.
-     */
-    public static final int WHITE = 7;
-    /**
-     * Indicates that the color of the button is black.
-     *
-     * Value: 8.
-     */
-    public static final int BLACK = 8;
 
     /**
      * Indicates that the button is for a product.
@@ -105,7 +58,7 @@ public class TillButton implements Serializable {
      */
     public static final int LOGOFF = 6;
 
-    public TillButton(String name, int item, int type, int screen, int color, int width, int height, int x, int y) {
+    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int width, int height, int x, int y) {
         this.name = name;
         this.item = item;
         this.screen = screen;
@@ -115,10 +68,11 @@ public class TillButton implements Serializable {
         this.x = x;
         this.y = y;
         this.type = type;
+        this.fontColor = fontColor;
     }
 
-    public TillButton(String name, int item, int type, int screen, int color, int id, int width, int height, int x, int y) {
-        this(name, item, type, screen, color, width, height, x, y);
+    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int id, int width, int height, int x, int y) {
+        this(name, item, type, screen, color, fontColor, width, height, x, y);
         this.id = id;
     }
 
@@ -154,11 +108,11 @@ public class TillButton implements Serializable {
         this.screen = screen;
     }
 
-    public int getColorValue() {
+    public String getColorValue() {
         return color;
     }
 
-    public void setColorValue(int color) {
+    public void setColorValue(String color) {
         this.color = color;
     }
 
@@ -202,16 +156,49 @@ public class TillButton implements Serializable {
         this.type = type;
     }
 
+    public String getFontColor() {
+        return fontColor;
+    }
+
+    public void setFontColor(String fontColor) {
+        this.fontColor = fontColor;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + item
                 + "," + type
-                + "," + this.color
-                + "," + this.screen
+                + ",'" + this.color
+                + "','" + this.fontColor
+                + "'," + this.screen
                 + "," + this.width
                 + "," + this.height
                 + "," + this.x
                 + "," + this.y;
+    }
+
+    public static Color hex2Rgb(String colorStr) {
+        return new Color(
+                Integer.valueOf(colorStr.substring(0, 2), 16),
+                Integer.valueOf(colorStr.substring(2, 4), 16),
+                Integer.valueOf(colorStr.substring(4, 6), 16));
+    }
+
+    public static String rbg2Hex(Color c) {
+        String hRed = Integer.toHexString(c.getRed());
+        String hGreen = Integer.toHexString(c.getGreen());
+        String hBlue = Integer.toHexString(c.getBlue());
+        if (hRed.length() == 1) {
+            hRed += hRed;
+        }
+        if (hGreen.length() == 1) {
+            hGreen += hGreen;
+        }
+        if (hBlue.length() == 1) {
+            hBlue += hBlue;
+        }
+        String hex = hRed + hGreen + hBlue;
+        return hex;
     }
 
     public String getSQLUpdateString() {
@@ -219,8 +206,9 @@ public class TillButton implements Serializable {
                 + " SET NAME='" + this.getName()
                 + "', PRODUCT=" + this.getItem()
                 + ", TYPE=" + this.getType()
-                + ", COLOR=" + this.getColorValue()
-                + ", SCREEN_ID=" + this.getScreen()
+                + ", COLOR='" + this.getColorValue()
+                + "',FONT_COLOR='" + this.getFontColor()
+                + "', SCREEN_ID=" + this.getScreen()
                 + ", WIDTH=" + this.getWidth()
                 + ", HEIGHT=" + this.getHeight()
                 + ", XPOS=" + this.getX()
