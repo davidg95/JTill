@@ -57,6 +57,10 @@ public class TillButton implements Serializable {
      * Indicates that the button is to log off.
      */
     public static final int LOGOFF = 6;
+    /**
+     * Indicates that this button is for the payment screen.
+     */
+    public static final int PAYMENT = 7;
 
     public TillButton(String name, int item, int type, int screen, String color, String fontColor, int width, int height, int x, int y) {
         this.name = name;
