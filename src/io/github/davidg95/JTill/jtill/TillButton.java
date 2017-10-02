@@ -61,6 +61,10 @@ public class TillButton implements Serializable {
      * Indicates that this button is for the payment screen.
      */
     public static final int PAYMENT = 7;
+    /**
+     * Indicates that this button is a void button.
+     */
+    public static final int VOID = 8;
 
     public TillButton(String name, int item, int type, int screen, String color, String fontColor, int width, int height, int x, int y) {
         this.name = name;
