@@ -32,6 +32,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private boolean open;
     private BigDecimal price;
     private BigDecimal costPrice;
+    private int packSize;
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
@@ -93,17 +94,19 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
+     * @param packSize the pack size.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock) {
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock) {
         this(name, shortName, order_code, category, department, comments, tax, open);
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
         this.minStockLevel = minStock;
         this.maxStockLevel = maxStock;
+        this.packSize = packSize;
     }
 
     /**
@@ -119,13 +122,14 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
+     * @param packSize the pack size.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int stock, int minStock, int maxStock, int productCode) {
-        this(name, shortName, order_code, category, department, comments, tax, open, price, costPrice, stock, minStock, maxStock);
+    public Product(String name, String shortName, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock, int productCode) {
+        this(name, shortName, order_code, category, department, comments, tax, open, price, costPrice, packSize, stock, minStock, maxStock);
         this.productCode = productCode;
     }
 
@@ -324,6 +328,14 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.tax = tax;
     }
 
+    public int getPackSize() {
+        return packSize;
+    }
+
+    public void setPackSize(int packSize) {
+        this.packSize = packSize;
+    }
+
     public String getSQLInsertString() {
         return +this.order_code
                 + ",'" + this.name
@@ -336,6 +348,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + "," + this.departmentid
                 + "," + this.taxid
                 + "," + this.costPrice
+                + "," + this.packSize
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel;
     }
@@ -353,6 +366,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ", PRODUCTS.DEPARTMENT_ID=" + this.getDepartmentID()
                 + ", PRODUCTS.TAX_ID=" + this.getTaxID()
                 + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
+                + ", PRODUCTS.PACK_SIZE=" + this.getPackSize()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
                 + " WHERE PRODUCTS.ID=" + this.getId();
