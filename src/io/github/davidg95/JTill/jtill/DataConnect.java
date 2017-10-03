@@ -1669,6 +1669,14 @@ public interface DataConnect {
     public int clearSalesData() throws IOException, SQLException;
 
     /**
+     * Purges the database, removing all sales, received and wastage data.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void purgeDatabase() throws IOException, SQLException;
+
+    /**
      * Add a ReceivedReport to the system.
      *
      * @param rep the report.
