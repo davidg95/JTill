@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javafx.scene.layout.GridPane;
 
 /**
@@ -97,6 +98,25 @@ public class Screen implements Serializable, Cloneable {
                 + ", HEIGHT=" + this.getHeight()
                 + ", INHERITS=" + this.getInherits()
                 + " WHERE SCREENS.ID=" + this.getId();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Screen)) {
+            return false;
+        }
+        Screen sc = (Screen) o;
+        return sc.getId() == this.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + this.id;
+        hash = 79 * hash + Objects.hashCode(this.name);
+        hash = 79 * hash + this.width;
+        hash = 79 * hash + this.height;
+        return hash;
     }
 
     @Override
