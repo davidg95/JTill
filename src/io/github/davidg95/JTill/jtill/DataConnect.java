@@ -1764,4 +1764,13 @@ public interface DataConnect {
      * @throws JTillException if there is an error.
      */
     public TillReport xReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to remove cashed sales from the database.
+     *
+     * @return the number of sales removed.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public int removeCashedSales() throws IOException, SQLException;
 }

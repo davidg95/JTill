@@ -2551,4 +2551,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public int removeCashedSales() throws IOException, SQLException {
+        try {
+            return (int) conn.sendData(JConnData.create("REMOVECASHED"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }
