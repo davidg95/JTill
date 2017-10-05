@@ -2527,9 +2527,22 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public List<Sale> getZSales(long session) throws IOException, SQLException, JTillException {
+    public TillReport zReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException {
         try {
-            return (List<Sale>) conn.sendData(JConnData.create("ZSALES").addParam("SESSION", session));
+            return (TillReport) conn.sendData(JConnData.create("ZREPORT").addParam("TERMINAL", terminal).addParam("DECLARED", declared));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new JTillException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public TillReport xReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException {
+        try {
+            return (TillReport) conn.sendData(JConnData.create("XREPORT").addParam("TERMINAL", terminal).addParam("DECLARED", declared));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());

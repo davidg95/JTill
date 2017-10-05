@@ -1750,13 +1750,26 @@ public interface DataConnect {
     public Staff getTillStaff(int id) throws IOException, JTillException;
 
     /**
-     * Get all sales for the current session.
+     * Get all sales for the current session. This will reset the readings.
      *
-     * @param session the session start.
-     * @return the List of all sales.
+     * @param terminal the terminal to take a report for.
+     * @param declared the declared takings.
+     * @return the report.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      * @throws JTillException if there is an error.
      */
-    public List<Sale> getZSales(long session) throws IOException, SQLException, JTillException;
+    public TillReport zReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException;
+
+    /**
+     * Get all sales for the current session.
+     *
+     * @param terminal the terminal to take a report for.
+     * @param declared the declared takings.
+     * @return the report.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws JTillException if there is an error.
+     */
+    public TillReport xReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException;
 }
