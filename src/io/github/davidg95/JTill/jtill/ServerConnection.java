@@ -2242,19 +2242,6 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void cashUncashedSales(int terminal) throws IOException, SQLException {
-        try {
-            conn.sendData(JConnData.create("CASHUNCASHEDSALES").addParam("TERMINAL", terminal));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
     public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETPRODUCTSADVANCED").addParam("WHERE", WHERE));
