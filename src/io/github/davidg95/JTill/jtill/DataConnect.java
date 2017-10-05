@@ -1640,8 +1640,9 @@ public interface DataConnect {
      *
      * @return the JavaFX image.
      * @throws IOException if there was an error.
+     * @throws JTillException if no image is set.
      */
-    public File getLoginBackground() throws IOException;
+    public File getLoginBackground() throws IOException, JTillException;
 
     /**
      * Method to reinitialise all tills.

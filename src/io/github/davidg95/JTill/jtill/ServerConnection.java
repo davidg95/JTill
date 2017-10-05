@@ -2370,7 +2370,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public File getLoginBackground() throws IOException {
+    public File getLoginBackground() throws IOException, JTillException {
         try {
             return (File) conn.sendData(JConnData.create("GETBGIMAGE"));
         } catch (Throwable ex) {
