@@ -134,17 +134,6 @@ public interface DataConnect {
     public Product addProduct(Product p) throws IOException, SQLException;
 
     /**
-     * Add a new Product and Plu to the database.
-     *
-     * @param p the product to add.
-     * @param pl the plu to add.
-     * @return the new product.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     */
-    public Product addProductAndPlu(Product p, Plu pl) throws IOException, SQLException;
-
-    /**
      * Remove a product from the system
      *
      * @param code the code of the product to remove.
@@ -238,89 +227,6 @@ public interface DataConnect {
      * @throws SQLException if there was an error getting the product.
      */
     public List<Product> productLookup(String terms) throws IOException, SQLException;
-
-    //Plu
-    /**
-     * Add a new plu barcode to the system.
-     *
-     * @param plu the Plu to add.
-     * @return the Plu that was added.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     */
-    public Plu addPlu(Plu plu) throws IOException, SQLException;
-
-    /**
-     * Method to remove a plu from the system.
-     *
-     * @param id the id of the plu to remove.
-     * @throws IOException if there was a network error.
-     * @throws JTillException if there was an error removing the plu.
-     * @throws SQLException if there was a database error.
-     */
-    public void removePlu(int id) throws IOException, JTillException, SQLException;
-
-    /**
-     * Method to remove a plu from the system.
-     *
-     * @param p the plu to remove.
-     * @throws IOException if there was a network error.
-     * @throws JTillException if there was an error removing the plu.
-     * @throws SQLException if there was a database error.
-     */
-    public void removePlu(Plu p) throws IOException, JTillException, SQLException;
-
-    /**
-     * Method to get a plu from the system.
-     *
-     * @param id the if of the plu to get.
-     * @return the plu that matches the id.
-     * @throws IOException if there was a network error.
-     * @throws JTillException if there was an error getting the plu.
-     * @throws SQLException if there was a database error.
-     */
-    public Plu getPlu(int id) throws IOException, JTillException, SQLException;
-
-    /**
-     * Method to get a plu by its barcode.
-     *
-     * @param code the barcode of the plu to get
-     * @return the plu that matches the barcode.
-     * @throws IOException if there was a network error.
-     * @throws JTillException if the plu could not be found.
-     * @throws SQLException if there was a database error.
-     */
-    public Plu getPluByCode(String code) throws IOException, JTillException, SQLException;
-
-    /**
-     * Method to get a plu by its product.
-     *
-     * @param id the id of the product.
-     * @return the plu for that product.
-     * @throws IOException if there was a network error.
-     * @throws JTillException if the plu could not be found.
-     */
-    public Plu getPluByProduct(int id) throws IOException, JTillException;
-
-    /**
-     * Method to get all plus on the system.
-     *
-     * @return a List of all the plus.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     */
-    public List<Plu> getAllPlus() throws IOException, SQLException;
-
-    /**
-     * Method to update a plu on the system.
-     *
-     * @param p the plu to update.
-     * @return the plu that was updated.
-     * @throws IOException if there was a network error.
-     * @throws JTillException if the plu could not be found.
-     * @throws SQLException if there was a database error.
-     */
-    public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException;
 
     //Customer
     /**

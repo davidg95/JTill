@@ -1327,97 +1327,6 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public Plu addPlu(Plu plu) throws IOException, SQLException {
-        try {
-            return (Plu) conn.sendData(JConnData.create("ADDPLU").addParam("PLU", plu));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public void removePlu(int id) throws IOException, JTillException, SQLException {
-        try {
-            conn.sendData(JConnData.create("REMOVEPLU").addParam("ID", id));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public void removePlu(Plu p) throws IOException, JTillException, SQLException {
-        removePlu(p.getId());
-    }
-
-    @Override
-    public Plu getPlu(int id) throws IOException, JTillException, SQLException {
-        try {
-            return (Plu) conn.sendData(JConnData.create("GETPLU").addParam("ID", id));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public Plu getPluByCode(String code) throws IOException, JTillException, SQLException {
-        try {
-            return (Plu) conn.sendData(JConnData.create("GETPLUBYCODE").addParam("CODE", code));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public List<Plu> getAllPlus() throws IOException, SQLException {
-        try {
-            return (List) conn.sendData(JConnData.create("GETALLPLUS"));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public Plu updatePlu(Plu p) throws IOException, JTillException, SQLException {
-        try {
-            return (Plu) conn.sendData(JConnData.create("UPDATEPLU").addParam("PLU", p));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
     public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException {
         try {
             return (boolean) conn.sendData(JConnData.create("ISTILLLOGGEDON").addParam("STAFF", s));
@@ -2176,32 +2085,6 @@ public class ServerConnection implements DataConnect, JConnListener {
     public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETUNCASHEDTILLSALES").addParam("ID", id));
-        } catch (Throwable ex) {
-            if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public Product addProductAndPlu(Product p, Plu pl) throws IOException, SQLException {
-        try {
-            return (Product) conn.sendData(JConnData.create("ADDPRODUCTANDPLU").addParam("PRODUCT", p).addParam("PLU", pl));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public Plu getPluByProduct(int id) throws IOException, JTillException {
-        try {
-            return (Plu) conn.sendData(JConnData.create("GETPLUBYPRODUCT").addParam("ID", id));
         } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
