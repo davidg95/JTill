@@ -27,6 +27,7 @@ public class TillButton implements Serializable {
     private int x;
     private int y;
     private int accessLevel;
+    private String link;
 
     /**
      * Indicates that the button is for a product.
@@ -66,8 +67,12 @@ public class TillButton implements Serializable {
      * Indicates that this button is a void button.
      */
     public static final int VOID = 8;
+    /**
+     * Indicates that the button opens a web link.
+     */
+    public static final int LINK = 9;
 
-    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int width, int height, int x, int y, int accessLevel) {
+    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int width, int height, int x, int y, int accessLevel, String link) {
         this.name = name;
         this.item = item;
         this.screen = screen;
@@ -79,10 +84,11 @@ public class TillButton implements Serializable {
         this.type = type;
         this.fontColor = fontColor;
         this.accessLevel = accessLevel;
+        this.link = link;
     }
 
-    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int id, int width, int height, int x, int y, int accessLevel) {
-        this(name, item, type, screen, color, fontColor, width, height, x, y, accessLevel);
+    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int id, int width, int height, int x, int y, int accessLevel, String link) {
+        this(name, item, type, screen, color, fontColor, width, height, x, y, accessLevel, link);
         this.id = id;
     }
 
@@ -182,6 +188,14 @@ public class TillButton implements Serializable {
         this.accessLevel = accessLevel;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "'," + item
@@ -193,7 +207,8 @@ public class TillButton implements Serializable {
                 + "," + this.height
                 + "," + this.x
                 + "," + this.y
-                + "," + this.accessLevel;
+                + "," + this.accessLevel
+                + ",'" + this.link + "'";
     }
 
     public static Color hex2Rgb(String colorStr) {
@@ -233,7 +248,8 @@ public class TillButton implements Serializable {
                 + ", XPOS=" + this.getX()
                 + ", YPOS=" + this.getY()
                 + ", ACCESS_LEVEL=" + this.getAccessLevel()
-                + " WHERE BUTTONS.ID=" + this.getId();
+                + ", LINK='" + this.getLink()
+                + "' WHERE BUTTONS.ID=" + this.getId();
     }
 
     @Override
