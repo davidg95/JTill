@@ -1309,19 +1309,6 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void deleteAllScreensAndButtons() throws IOException, SQLException {
-        try {
-            conn.sendData(JConnData.create("DELETEALLSCREENSANDBUTTONS"));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
     public void setGUI(GUIInterface g) {
         this.g = g;
     }
@@ -2397,9 +2384,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public TillReport zReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException {
+    public TillReport zReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException {
         try {
-            return (TillReport) conn.sendData(JConnData.create("ZREPORT").addParam("TERMINAL", terminal).addParam("DECLARED", declared));
+            return (TillReport) conn.sendData(JConnData.create("ZREPORT").addParam("TERMINAL", terminal).addParam("DECLARED", declared).addParam("STAFF", staff));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
@@ -2410,9 +2397,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public TillReport xReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException {
+    public TillReport xReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException {
         try {
-            return (TillReport) conn.sendData(JConnData.create("XREPORT").addParam("TERMINAL", terminal).addParam("DECLARED", declared));
+            return (TillReport) conn.sendData(JConnData.create("XREPORT").addParam("TERMINAL", terminal).addParam("DECLARED", declared).addParam("STAFF", staff));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
@@ -2439,6 +2426,19 @@ public class ServerConnection implements DataConnect, JConnListener {
     public int removeCashedSales() throws IOException, SQLException {
         try {
             return (int) conn.sendData(JConnData.create("REMOVECASHED"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<TillReport> getDeclarationReports(int terminal) throws IOException, SQLException {
+        try {
+            return (List) conn.sendData(JConnData.create("DECLARATIONREPORTS").addParam("TERMINAL", terminal));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());

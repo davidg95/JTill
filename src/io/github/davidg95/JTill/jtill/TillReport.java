@@ -16,22 +16,38 @@ import java.util.List;
  */
 public class TillReport implements Serializable {
 
-    private final String terminal;
+    private final Till terminal;
     private BigDecimal declared;
     private BigDecimal expected;
-    private BigDecimal difference;
     private int transactions;
-    private BigDecimal averageSpend;
     private BigDecimal tax;
-    private final List<Sale> sales;
+    private List<Sale> sales;
+    private final Staff staff;
+    private final long time;
 
-    public TillReport(String terminal, List<Sale> sales, BigDecimal declared) {
+    public String getInsert() {
+        return terminal.getId() + "," + declared.doubleValue() + "," + expected.doubleValue() + "," + transactions + "," + tax.doubleValue() + "," + staff.getId() + "," + time;
+    }
+
+    public TillReport(Till terminal, List<Sale> sales, BigDecimal declared, Staff staff, long time) {
         this.terminal = terminal;
         this.sales = sales;
         this.declared = declared;
         this.expected = BigDecimal.ZERO;
         this.tax = BigDecimal.ZERO;
+        this.staff = staff;
+        this.time = time;
         init();
+    }
+
+    public TillReport(Till terminal, BigDecimal declared, BigDecimal expected, int transactions, BigDecimal tax, Staff staff, long time) {
+        this.terminal = terminal;
+        this.declared = declared;
+        this.expected = expected;
+        this.transactions = transactions;
+        this.tax = tax;
+        this.staff = staff;
+        this.time = time;
     }
 
     private void init() {
@@ -42,8 +58,6 @@ public class TillReport implements Serializable {
             }
         }
         transactions = sales.size();
-        averageSpend = expected.divide(new BigDecimal(transactions), RoundingMode.HALF_DOWN);
-        difference = expected.subtract(declared);
     }
 
     public BigDecimal getDeclared() {
@@ -63,11 +77,7 @@ public class TillReport implements Serializable {
     }
 
     public BigDecimal getDifference() {
-        return difference;
-    }
-
-    public void setDifference(BigDecimal difference) {
-        this.difference = difference;
+        return expected.subtract(declared);
     }
 
     public int getTransactions() {
@@ -79,11 +89,7 @@ public class TillReport implements Serializable {
     }
 
     public BigDecimal getAverageSpend() {
-        return averageSpend;
-    }
-
-    public void setAverageSpend(BigDecimal averageSpend) {
-        this.averageSpend = averageSpend;
+        return expected.divide(new BigDecimal(transactions), RoundingMode.HALF_DOWN);
     }
 
     public BigDecimal getTax() {
@@ -94,12 +100,20 @@ public class TillReport implements Serializable {
         this.tax = tax;
     }
 
-    public String getTerminal() {
+    public Till getTerminal() {
         return terminal;
     }
 
     public List<Sale> getSales() {
         return sales;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public long getTime() {
+        return time;
     }
 
     @Override

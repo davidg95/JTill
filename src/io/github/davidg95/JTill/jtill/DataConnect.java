@@ -1026,14 +1026,6 @@ public interface DataConnect {
     public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
     /**
-     * Method to delete all screens and button on the server.
-     *
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     */
-    public void deleteAllScreensAndButtons() throws IOException, SQLException;
-
-    /**
      * gets screens which inherit this screen.
      *
      * @param s the screen to check.
@@ -1652,24 +1644,26 @@ public interface DataConnect {
      *
      * @param terminal the terminal to take a report for.
      * @param declared the declared takings.
+     * @param staff the user who completed the report.
      * @return the report.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      * @throws JTillException if there is an error.
      */
-    public TillReport zReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException;
+    public TillReport zReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException;
 
     /**
      * Get all sales for the current session.
      *
      * @param terminal the terminal to take a report for.
      * @param declared the declared takings.
+     * @param staff the user who completed the report.
      * @return the report.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      * @throws JTillException if there is an error.
      */
-    public TillReport xReport(int terminal, BigDecimal declared) throws IOException, SQLException, JTillException;
+    public TillReport xReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove cashed sales from the database.
@@ -1679,4 +1673,14 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public int removeCashedSales() throws IOException, SQLException;
+
+    /**
+     * Method to get till declaration reports.
+     *
+     * @param terminal the terminal to get reports from, -1 for all.
+     * @return a list of declaration reports.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<TillReport> getDeclarationReports(int terminal) throws IOException, SQLException;
 }
