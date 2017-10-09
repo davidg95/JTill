@@ -23,7 +23,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private BigDecimal total;
     private int customer;
     private Date date;
-    private int terminal;
+    private volatile int terminal;
     private boolean cashed;
     private int staff;
     private int mop;
@@ -373,6 +373,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
 
     public void setTerminal(Till t) {
         this.t = t;
+        this.terminal = t.getId();
     }
 
     public boolean isCashed() {
