@@ -57,11 +57,6 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.id = id;
     }
 
-    @Deprecated
-    public BigDecimal getUncashedTakings() {
-        return uncashedTakings;
-    }
-
     public void setUncashedTakings(BigDecimal uncashedTakings) {
         this.uncashedTakings = uncashedTakings;
     }
