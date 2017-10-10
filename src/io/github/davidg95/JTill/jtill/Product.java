@@ -20,7 +20,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private int order_code;
     private String name;
     private String shortName;
-    
+
     private String barcode;
 
     private int categoryid;
@@ -32,6 +32,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private Tax tax;
 
     private boolean open;
+    private double scale;
+    private String scaleName;
     private BigDecimal price;
     private BigDecimal costPrice;
     private int packSize;
@@ -52,9 +54,10 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param department the department the product belongs to.
      * @param comments the comments.
      * @param tax the tax class for this product.
-     * @param open if the price is open.
+     * @param scale the value of the scale.
+     * @param scaleName the name of the scale.
      */
-    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, boolean open) {
+    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, double scale, String scaleName) {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
@@ -62,8 +65,12 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.departmentid = department;
         this.comments = comments;
         this.taxid = tax;
-        this.open = open;
+        this.open = true;
         this.barcode = barcode;
+        this.scale = scale;
+        this.scaleName = scaleName;
+        this.packSize = 1;
+        this.costPrice = BigDecimal.ZERO;
     }
 
     /**
@@ -78,11 +85,12 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param department the department the product belongs to.
      * @param comments the comments.
      * @param tax the tax class for this product.
-     * @param open if the price is open.
+     * @param scale the value of the scale.
+     * @param scaleName the name of the scale.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, boolean open, int productCode) {
-        this(name, shortName, barcode, order_code, category, department, comments, tax, open);
+    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, double scale, String scaleName, int productCode) {
+        this(name, shortName, barcode, order_code, category, department, comments, tax, scale, scaleName);
         this.productCode = productCode;
     }
 
@@ -97,7 +105,6 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param department the department the product belongs to.
      * @param price the price for the product.
      * @param tax the tax class for this product.
-     * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param packSize the pack size.
@@ -105,8 +112,18 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock) {
-        this(name, shortName, barcode, order_code, category, department, comments, tax, open);
+    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock) {
+        this.name = name;
+        this.shortName = shortName;
+        this.order_code = order_code;
+        this.categoryid = category;
+        this.departmentid = department;
+        this.comments = comments;
+        this.taxid = tax;
+        this.open = false;
+        this.scale = 1;
+        this.scaleName = "";
+        this.barcode = barcode;
         this.price = price;
         this.costPrice = costPrice;
         this.stock = stock;
@@ -126,7 +143,6 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param department the department the product belongs to.
      * @param price the price for the product.
      * @param tax the tax class for this product.
-     * @param open if the price is open.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
      * @param packSize the pack size.
@@ -135,8 +151,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, boolean open, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock, int productCode) {
-        this(name, shortName, barcode, order_code, category, department, comments, tax, open, price, costPrice, packSize, stock, minStock, maxStock);
+    public Product(String name, String shortName, String barcode, int order_code, int category, int department, String comments, int tax, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock, int productCode) {
+        this(name, shortName, barcode, order_code, category, department, comments, tax, price, costPrice, packSize, stock, minStock, maxStock);
         this.productCode = productCode;
     }
 
@@ -170,6 +186,15 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         } else {
             throw new OutOfStockException(this.productCode + "");
         }
+    }
+    
+    /**
+     * Calculates the price from the scale.
+     * @param value the value.
+     * @return the price.
+     */
+    public double priceFromScale(double value){
+        return this.scale * value;
     }
 
     @Override
@@ -315,6 +340,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     public void setDepartmentid(int departmentid) {
         this.departmentid = departmentid;
     }
+
     public void setTaxid(int taxid) {
         this.taxid = taxid;
     }
@@ -351,8 +377,24 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.packSize = packSize;
     }
 
+    public double getScale() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale = scale;
+    }
+
+    public String getScaleName() {
+        return scaleName;
+    }
+
+    public void setScaleName(String scaleName) {
+        this.scaleName = scaleName;
+    }
+
     public String getSQLInsertString() {
-        return +this.order_code
+        return this.order_code
                 + ",'" + this.name
                 + "'," + this.open
                 + "," + this.price
@@ -365,7 +407,9 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + "," + this.costPrice
                 + "," + this.packSize
                 + "," + this.minStockLevel
-                + "," + this.maxStockLevel;
+                + "," + this.maxStockLevel
+                + "," + this.scale
+                + ",'" + this.scaleName + "'";
     }
 
     public String getSQlUpdateString() {
@@ -384,7 +428,9 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ", PRODUCTS.PACK_SIZE=" + this.getPackSize()
                 + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
-                + " WHERE PRODUCTS.ID=" + this.getId();
+                + ", PRODUCTS.SCALE=" + this.getScale()
+                + ",PRODUCTS.SCALE_NAME='" + this.getScaleName()
+                + "' WHERE PRODUCTS.ID=" + this.getId();
     }
 
     @Override
