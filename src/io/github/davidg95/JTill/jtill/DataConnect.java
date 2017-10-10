@@ -1096,8 +1096,9 @@ public interface DataConnect {
      * @param staff the logged in staff member, can be null.
      * @return the Till object.
      * @throws IOException if there was a network error.
+     * @throws JTillException if the till is already connected.
      */
-    public Till connectTill(String name, UUID uuid, Staff staff) throws IOException;
+    public Till connectTill(String name, UUID uuid, Staff staff) throws IOException, JTillException;
 
     /**
      * Method to get all current connected tills.
@@ -1116,9 +1117,10 @@ public interface DataConnect {
      * @throws JTillException if there was another error.
      */
     public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException;
-    
+
     /**
      * Method to check if a till name is being used.
+     *
      * @param name the name to check.
      * @return true if it is getting used, false if it is not.
      * @throws IOException if there was a network error.

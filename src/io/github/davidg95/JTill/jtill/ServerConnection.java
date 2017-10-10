@@ -81,7 +81,7 @@ public class ServerConnection implements DataConnect, JConnListener {
      * @throws IOException if there was an error connecting.
      * @throws java.net.ConnectException if there was an error connecting.
      */
-    public Till connect(String IP, int PORT, String name, UUID uuid) throws IOException, ConnectException {
+    public Till connect(String IP, int PORT, String name, UUID uuid) throws IOException, ConnectException, JTillException {
         try {
             conn.connect(IP, PORT, true);
             this.uuid = uuid;
@@ -95,7 +95,9 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
             return t;
         } catch (Throwable ex) {
-            Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
+            if(ex instanceof JTillException){
+                throw (JTillException) ex;
+            }
         }
         throw new IOException("Class error (Update may be required)");
     }
