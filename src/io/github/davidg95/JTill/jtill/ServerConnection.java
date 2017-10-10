@@ -2447,4 +2447,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public boolean isTillNameUsed(String name) throws IOException, SQLException {
+        try {
+            return (boolean) conn.sendData(JConnData.create("CHECKNAME").addParam("NAME", name));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }

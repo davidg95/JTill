@@ -1116,6 +1116,15 @@ public interface DataConnect {
      * @throws JTillException if there was another error.
      */
     public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException;
+    
+    /**
+     * Method to check if a till name is being used.
+     * @param name the name to check.
+     * @return true if it is getting used, false if it is not.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public boolean isTillNameUsed(String name) throws IOException, SQLException;
 
     //Waste Report
     /**
