@@ -41,7 +41,7 @@ public interface GUIInterface {
     
     public void renameTill(String name);
     
-    public Till showTillSetupWindow(String name);
+    public Till showTillSetupWindow(String name) throws JTillException;
     
     public void logout();
     
