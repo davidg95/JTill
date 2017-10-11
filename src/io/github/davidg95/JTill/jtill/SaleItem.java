@@ -22,11 +22,13 @@ public class SaleItem implements Serializable {
     private BigDecimal price;
     private String totalPrice;
     private BigDecimal taxValue;
+    private BigDecimal cost;
     private int sale;
     private int type;
     private boolean refundItem;
-
-    private Item item;
+    private int item;
+    
+    private Item product;
 
     /**
      * Indicates the sale item is a Product.
@@ -41,18 +43,19 @@ public class SaleItem implements Serializable {
      */
     public static final int DISCOUNT = 2;
 
-    public SaleItem(int sale, Item item, int quantity, int id, BigDecimal price, int type, BigDecimal tax) {
-        this(sale, item, quantity, price, type, tax);
+    public SaleItem(int sale, int item, int quantity, int id, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
+        this(sale, item, quantity, price, type, tax, cost);
         this.id = id;
     }
 
-    public SaleItem(int sale, Item item, int quantity, BigDecimal price, int type, BigDecimal tax) {
+    public SaleItem(int sale, int item, int quantity, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
         this.sale = sale;
         this.item = item;
         this.quantity = quantity;
         this.price = price;
         this.type = type;
         this.taxValue = tax;
+        this.cost = cost;
     }
 
     /**
@@ -77,11 +80,11 @@ public class SaleItem implements Serializable {
         return quantity;
     }
 
-    public Item getItem() {
+    public int getItem() {
         return item;
     }
 
-    public void setItem(Item item) {
+    public void setItem(int item) {
         this.item = item;
     }
 
@@ -157,8 +160,24 @@ public class SaleItem implements Serializable {
         this.taxValue = taxValue;
     }
 
+    public BigDecimal getCost() {
+        return cost;
+    }
+
+    public void setCost(BigDecimal cost) {
+        this.cost = cost;
+    }
+
+    public Item getProduct() {
+        return product;
+    }
+
+    public void setProduct(Item product) {
+        this.product = product;
+    }
+
     public String getSQLInsertStatement() {
-        return this.item.getId()
+        return this.item
                 + "," + type
                 + "," + this.quantity
                 + "," + this.price.doubleValue()
@@ -185,7 +204,7 @@ public class SaleItem implements Serializable {
             return false;
         }
         final SaleItem other = (SaleItem) obj;
-        return this.item.getId() == other.item.getId() && this.type == other.type;
+        return this.item == other.item && this.type == other.type && this.quantity == other.quantity;
     }
 
     @Override
@@ -196,7 +215,7 @@ public class SaleItem implements Serializable {
         } else {
             df = new DecimalFormat("0.00");
         }
-        return "Qty. " + this.getQuantity() + "\t" + this.getItem().getId() + "\t\t\t£" + df.format(this.getPrice());
+        return "Qty. " + this.getQuantity() + "\t" + this.getItem() + "\t\t\t£" + df.format(this.getPrice());
 
     }
 }
