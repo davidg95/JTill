@@ -361,7 +361,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + "," + this.packSize
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel
-                + "," + this.scale
+                + ",'" + this.barcode
+                + "'," + this.scale
                 + ",'" + this.scaleName + "'";
     }
 
