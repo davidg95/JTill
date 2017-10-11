@@ -54,7 +54,7 @@ public class SaleItem implements Serializable {
         this.quantity = quantity;
         this.price = price.setScale(2, BigDecimal.ROUND_HALF_EVEN);
         this.type = type;
-        this.taxValue = tax;
+        this.taxValue = tax.setScale(2, BigDecimal.ROUND_HALF_EVEN);
         this.cost = cost.setScale(2, BigDecimal.ROUND_HALF_EVEN);
     }
 
