@@ -135,12 +135,12 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                         this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity()))); //Update the sale total.
                         if (type == SaleItem.PRODUCT) {
                             final Product product = (Product) i;
-                            final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).multiply(new BigDecimal(quantity));
+                            final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).setScale(2, BigDecimal.ROUND_HALF_EVEN).multiply(new BigDecimal(quantity)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
                             BigDecimal taxValue;
                             if (((Product) i).getTax().getValue() == 0) {
                                 taxValue = BigDecimal.ZERO;
                             } else {
-                                taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
+                                taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100).setScale(2, BigDecimal.ROUND_HALF_EVEN));
                             }
                             this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue, BigDecimal.ZERO); //Set this item to the last added.
                         } else {
@@ -157,14 +157,14 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
                     if (type == SaleItem.PRODUCT) {
                         final Product product = (Product) i;
-                        final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).multiply(new BigDecimal(quantity));
+                        final BigDecimal money = (i.getPrice().subtract(product.getCostPrice().divide(new BigDecimal(product.getPackSize())).setScale(2, BigDecimal.ROUND_HALF_EVEN))).multiply(new BigDecimal(quantity));
                         BigDecimal taxValue;
                         if (((Product) i).getTax().getValue() == 0) {
                             taxValue = BigDecimal.ZERO;
                         } else {
-                            taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
+                            taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100).setScale(2, BigDecimal.ROUND_HALF_EVEN));
                         }
-                        BigDecimal cost = product.getCostPrice().multiply(new BigDecimal(quantity));
+                        BigDecimal cost = product.getCostPrice().divide(new BigDecimal(product.getPackSize())).multiply(new BigDecimal(quantity));
                         this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue, cost); //Set this item to the last added.
                     } else {
                         this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
@@ -177,14 +177,14 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         SaleItem item;
         if (type == SaleItem.PRODUCT) {
             final Product product = (Product) i;
-            final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).multiply(new BigDecimal(quantity));
+            final BigDecimal money = (i.getPrice().subtract(product.getCostPrice().divide(new BigDecimal(product.getPackSize())).setScale(2, BigDecimal.ROUND_HALF_EVEN))).multiply(new BigDecimal(quantity));
             BigDecimal taxValue;
-            if (((Product) i).getTax().getValue() == 0) {
+            if (product.getTax().getValue() == 0) {
                 taxValue = BigDecimal.ZERO;
             } else {
-                taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100));
+                taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100).setScale(2, BigDecimal.ROUND_HALF_EVEN));
             }
-            BigDecimal cost = product.getCostPrice().multiply(new BigDecimal(quantity));
+            BigDecimal cost = product.getCostPrice().divide(new BigDecimal(product.getPackSize())).multiply(new BigDecimal(quantity));
             item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue, cost); //Set this item to the last added.
         } else {
             item = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.

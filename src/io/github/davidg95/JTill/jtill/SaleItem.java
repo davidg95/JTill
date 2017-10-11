@@ -182,7 +182,8 @@ public class SaleItem implements Serializable {
                 + "," + this.quantity
                 + "," + this.price.doubleValue()
                 + "," + this.taxValue.doubleValue()
-                + "," + this.sale;
+                + "," + this.sale
+                + "," + this.cost;
     }
 
     @Override
