@@ -52,10 +52,10 @@ public class SaleItem implements Serializable {
         this.sale = sale;
         this.item = item;
         this.quantity = quantity;
-        this.price = price;
+        this.price = price.setScale(2, BigDecimal.ROUND_HALF_EVEN);
         this.type = type;
         this.taxValue = tax;
-        this.cost = cost;
+        this.cost = cost.setScale(2, BigDecimal.ROUND_HALF_EVEN);
     }
 
     /**
