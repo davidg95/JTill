@@ -136,13 +136,9 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                         if (type == SaleItem.PRODUCT) {
                             final Product product = (Product) i;
                             final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).setScale(2, BigDecimal.ROUND_HALF_EVEN).multiply(new BigDecimal(quantity)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-                            BigDecimal taxValue;
-                            if (((Product) i).getTax().getValue() == 0) {
-                                taxValue = BigDecimal.ZERO;
-                            } else {
-                                taxValue = money.multiply(new BigDecimal(product.getTax().getValue() / 100).setScale(2, BigDecimal.ROUND_HALF_EVEN));
-                            }
-                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue, BigDecimal.ZERO); //Set this item to the last added.
+                            final BigDecimal cost = product.getOpenCost();
+                            BigDecimal taxValue = product.calculateVAT();
+                            this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, taxValue, cost); //Set this item to the last added.
                         } else {
                             this.lastAdded = new SaleItem(this.id, i.getId(), quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
                         }
@@ -174,7 +170,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         if (type == SaleItem.PRODUCT) {
             final Product product = (Product) i;
             this.total = total.add(product.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
-            final BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
+            final BigDecimal cost = product.getIndividualCost();
             final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
             item = new SaleItem(this.id, i.getId(), quantity, product.getSellingPrice(), type, vat, cost); //Set this item to the last added.
             item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total of the item for the list box.

@@ -53,8 +53,9 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param tax the tax class for this product.
      * @param scale the value of the scale.
      * @param scaleName the name of the scale.
+     * @param cost the cost percentage.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, double scale, String scaleName) {
+    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, double scale, String scaleName, BigDecimal cost) {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
@@ -67,7 +68,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.scale = scale;
         this.scaleName = scaleName;
         this.packSize = 1;
-        this.costPrice = BigDecimal.ZERO;
+        this.costPrice = cost;
     }
 
     /**
@@ -84,10 +85,11 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param tax the tax class for this product.
      * @param scale the value of the scale.
      * @param scaleName the name of the scale.
+     * @param cost the cost percentage.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, double scale, String scaleName, int productCode) {
-        this(name, shortName, barcode, order_code, category, department, comments, tax, scale, scaleName);
+    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, double scale, String scaleName, BigDecimal cost, int productCode) {
+        this(name, shortName, barcode, order_code, category, department, comments, tax, scale, scaleName, cost);
         this.productCode = productCode;
     }
 
@@ -276,6 +278,23 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.costPrice = costPrice;
     }
 
+    public BigDecimal getCostPercentage() {
+        return costPrice;
+    }
+
+    public void setCostPercentage(BigDecimal costPrice) {
+        this.costPrice = costPrice;
+    }
+
+    /**
+     * Gets the cost price for an open product.
+     *
+     * @return the cost price as a BigDecimal.
+     */
+    public BigDecimal getOpenCost() {
+        return this.price.divide(new BigDecimal(100), 2, 6).multiply(this.getCostPercentage());
+    }
+
     public int getMinStockLevel() {
         return minStockLevel;
     }
@@ -351,7 +370,11 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     }
 
     public BigDecimal getIndividualCost() {
-        return this.costPrice.divide(new BigDecimal(this.packSize), 2, BigDecimal.ROUND_HALF_EVEN);
+        if (!open) {
+            return this.costPrice.divide(new BigDecimal(this.packSize), 2, BigDecimal.ROUND_HALF_EVEN);
+        } else {
+            return this.getOpenCost();
+        }
     }
 
     public boolean isPriceIncVat() {
@@ -368,7 +391,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @return selling price as a BigDecimal.
      */
     public BigDecimal getSellingPrice() {
-        if (priceIncVat) {
+        if (priceIncVat || open) {
             return this.getPrice();
         }
         BigDecimal vat = this.getPrice().multiply(new BigDecimal(this.tax.getValue()).divide(new BigDecimal(100)));
@@ -381,7 +404,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @return the VAT as a BigDecimal.
      */
     public BigDecimal calculateVAT() {
-        if (priceIncVat) {
+        if (priceIncVat || open) {
             return this.getPrice().divide(new BigDecimal(100), 2, 6).multiply(new BigDecimal(tax.getValue()));
         }
         return getSellingPrice().subtract(getPrice());
