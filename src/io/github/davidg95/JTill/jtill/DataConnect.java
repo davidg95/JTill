@@ -1694,4 +1694,13 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public List<TillReport> getDeclarationReports(int terminal) throws IOException, SQLException;
+
+    /**
+     * Method to remove a declaration report.
+     *
+     * @param id the report to remove.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void removeDeclarationReport(int id) throws IOException, SQLException;
 }

@@ -95,7 +95,7 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
             return t;
         } catch (Throwable ex) {
-            if(ex instanceof JTillException){
+            if (ex instanceof JTillException) {
                 throw (JTillException) ex;
             }
         }
@@ -2454,6 +2454,19 @@ public class ServerConnection implements DataConnect, JConnListener {
     public boolean isTillNameUsed(String name) throws IOException, SQLException {
         try {
             return (boolean) conn.sendData(JConnData.create("CHECKNAME").addParam("NAME", name));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void removeDeclarationReport(int id) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("REMOVEDECLARATIONREPORT").addParam("ID", id));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());

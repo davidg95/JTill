@@ -16,6 +16,7 @@ import java.util.List;
  */
 public class TillReport implements Serializable {
 
+    private int id;
     private final Till terminal;
     private BigDecimal declared;
     private BigDecimal expected;
@@ -40,7 +41,8 @@ public class TillReport implements Serializable {
         init();
     }
 
-    public TillReport(Till terminal, BigDecimal declared, BigDecimal expected, int transactions, BigDecimal tax, Staff staff, long time) {
+    public TillReport(int id, Till terminal, BigDecimal declared, BigDecimal expected, int transactions, BigDecimal tax, Staff staff, long time) {
+        this.id = id;
         this.terminal = terminal;
         this.declared = declared;
         this.expected = expected;
@@ -114,6 +116,14 @@ public class TillReport implements Serializable {
 
     public long getTime() {
         return time;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
