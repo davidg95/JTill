@@ -32,6 +32,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private String scaleName;
     private BigDecimal price;
     private BigDecimal costPrice;
+    private boolean priceIncVat;
     private int packSize;
     private int stock;
     private int minStockLevel;
@@ -39,7 +40,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private String comments;
 
     /**
-     * Constructor which takes in only a name and comments. This can be used for
+     * Constructor which takes in only a name and comments. This is used for
      * open products.
      *
      * @param name the name of the product.
@@ -71,7 +72,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     /**
      * Constructor which takes in only a name, comments and product code. This
-     * can be used for open products.
+     * is used for open products.
      *
      * @param name the name of the product.
      * @param shortName the shortened name of the product.
@@ -103,12 +104,13 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param tax the tax class for this product.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
+     * @param priceIncVat whether the price is inclusive of VAT or not.
      * @param packSize the pack size.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock) {
+    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock) {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
@@ -126,6 +128,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.minStockLevel = minStock;
         this.maxStockLevel = maxStock;
         this.packSize = packSize;
+        this.priceIncVat = priceIncVat;
     }
 
     /**
@@ -141,14 +144,15 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param tax the tax class for this product.
      * @param stock the initial stock level for the product.
      * @param costPrice the cost price of the product.
+     * @param priceIncVat whether the price is inclusive of VAT or not.
      * @param packSize the pack size.
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, int packSize, int stock, int minStock, int maxStock, int productCode) {
-        this(name, shortName, barcode, order_code, category, department, comments, tax, price, costPrice, packSize, stock, minStock, maxStock);
+    public Product(String name, String shortName, String barcode, int order_code, Category category, Department department, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int productCode) {
+        this(name, shortName, barcode, order_code, category, department, comments, tax, price, costPrice, priceIncVat, packSize, stock, minStock, maxStock);
         this.productCode = productCode;
     }
 
@@ -346,6 +350,43 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.scaleName = scaleName;
     }
 
+    public BigDecimal getIndividualCost() {
+        return this.costPrice.divide(new BigDecimal(this.packSize), 2, BigDecimal.ROUND_HALF_EVEN);
+    }
+
+    public boolean isPriceIncVat() {
+        return priceIncVat;
+    }
+
+    public void setPriceIncVat(boolean priceIncVat) {
+        this.priceIncVat = priceIncVat;
+    }
+
+    /**
+     * The selling price with VAT added on.
+     *
+     * @return selling price as a BigDecimal.
+     */
+    public BigDecimal getSellingPrice() {
+        if (priceIncVat) {
+            return this.getPrice();
+        }
+        BigDecimal vat = this.getPrice().multiply(new BigDecimal(this.tax.getValue()).divide(new BigDecimal(100)));
+        return this.getPrice().add(vat);
+    }
+
+    /**
+     * Calculates the vat for one unit of this product,
+     *
+     * @return the VAT as a BigDecimal.
+     */
+    public BigDecimal calculateVAT() {
+        if (priceIncVat) {
+            return this.getPrice().divide(new BigDecimal(100), 2, 6).multiply(new BigDecimal(tax.getValue()));
+        }
+        return getSellingPrice().subtract(getPrice());
+    }
+
     public String getSQLInsertString() {
         return this.order_code
                 + ",'" + this.name
@@ -363,7 +404,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + "," + this.maxStockLevel
                 + ",'" + this.barcode
                 + "'," + this.scale
-                + ",'" + this.scaleName + "'";
+                + ",'" + this.scaleName
+                + "'," + this.priceIncVat;
     }
 
     public String getSQlUpdateString() {
@@ -384,7 +426,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
                 + ", PRODUCTS.SCALE=" + this.getScale()
                 + ",PRODUCTS.SCALE_NAME='" + this.getScaleName()
-                + "' WHERE PRODUCTS.ID=" + this.getId();
+                + "', PRODUCTS.INCVAT=" + this.priceIncVat
+                + " WHERE PRODUCTS.ID=" + this.getId();
     }
 
     @Override
