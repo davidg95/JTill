@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -23,6 +24,8 @@ public class Category implements Serializable, JTillObject {
     private Time endSell;
     private boolean timeRestrict;
     private int minAge;
+    
+    private BigDecimal sales = BigDecimal.ZERO;
 
     /**
      * Constructor which takes in all values.
@@ -125,6 +128,14 @@ public class Category implements Serializable, JTillObject {
 
     public void setMinAge(int minAge) {
         this.minAge = minAge;
+    }
+    
+    public void addToSales(BigDecimal toAdd) {
+        sales = sales.add(toAdd);
+    }
+
+    public BigDecimal getSales() {
+        return sales;
     }
 
     public String getSQLInsertString() {
