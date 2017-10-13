@@ -18,13 +18,13 @@ public class TillReport implements Serializable {
 
     private int id;
     private final Till terminal;
+    private final long time;
+    private final Staff staff;
     private BigDecimal declared;
     private BigDecimal expected;
     private int transactions;
     private BigDecimal tax;
     private List<Sale> sales;
-    private final Staff staff;
-    private final long time;
 
     public String getInsert() {
         return terminal.getId() + "," + declared.doubleValue() + "," + expected.doubleValue() + "," + transactions + "," + tax.doubleValue() + "," + staff.getId() + "," + time;
@@ -33,7 +33,7 @@ public class TillReport implements Serializable {
     public TillReport(Till terminal, List<Sale> sales, BigDecimal declared, Staff staff, long time) {
         this.terminal = terminal;
         this.sales = sales;
-        this.declared = declared;
+        this.declared = declared.setScale(2, 6);
         this.expected = BigDecimal.ZERO;
         this.tax = BigDecimal.ZERO;
         this.staff = staff;
@@ -44,10 +44,10 @@ public class TillReport implements Serializable {
     public TillReport(int id, Till terminal, BigDecimal declared, BigDecimal expected, int transactions, BigDecimal tax, Staff staff, long time) {
         this.id = id;
         this.terminal = terminal;
-        this.declared = declared;
-        this.expected = expected;
+        this.declared = declared.setScale(2, 6);
+        this.expected = expected.setScale(2, 6);
         this.transactions = transactions;
-        this.tax = tax;
+        this.tax = tax.setScale(2, 6);
         this.staff = staff;
         this.time = time;
     }
@@ -59,6 +59,7 @@ public class TillReport implements Serializable {
                 tax = tax.add(si.getTaxValue());
             }
         }
+        expected = expected.setScale(2, 6);
         transactions = sales.size();
     }
 
@@ -79,7 +80,7 @@ public class TillReport implements Serializable {
     }
 
     public BigDecimal getDifference() {
-        return expected.subtract(declared);
+        return expected.subtract(declared).setScale(2, 6);
     }
 
     public int getTransactions() {
@@ -91,7 +92,7 @@ public class TillReport implements Serializable {
     }
 
     public BigDecimal getAverageSpend() {
-        return expected.divide(new BigDecimal(transactions), RoundingMode.HALF_DOWN);
+        return expected.divide(new BigDecimal(transactions), 2, 6);
     }
 
     public BigDecimal getTax() {
