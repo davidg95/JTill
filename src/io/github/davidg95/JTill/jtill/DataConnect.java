@@ -65,16 +65,6 @@ public interface DataConnect {
     public void assisstance(String message) throws IOException;
 
     /**
-     * Get the takings for a specified terminal.
-     *
-     * @param terminal the name of the terminal to get the takings for.
-     * @return the takings as a BigDecimal.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     */
-    public BigDecimal getTillTakings(int terminal) throws IOException, SQLException;
-
-    /**
      * Send an email to the report email set in the server.
      *
      * @param message the message to send.
@@ -634,10 +624,12 @@ public interface DataConnect {
      * Method to get the sales for a member of staff.
      *
      * @param s the member of staff to get sales for.
+     * @return the list of sales.
      * @throws IOException if there was a network error.
+     * @throws java.sql.SQLException if there is a database error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
-    public List<Sale> getStaffSales(Staff s) throws IOException, StaffNotFoundException;
+    public List<Sale> getStaffSales(Staff s) throws IOException, SQLException, StaffNotFoundException;
 
     //Category
     /**

@@ -21,17 +21,14 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private int id;
     private List<SaleItem> saleItems;
     private BigDecimal total;
-    private int customer;
     private Date date;
-    private volatile int terminal;
     private boolean cashed;
-    private int staff;
     private int mop;
 
-    private Customer c;
-    private Till t;
-    private Staff s;
-
+    private Customer customer;
+    private Till till;
+    private Staff staff;
+    
     private SaleItem lastAdded;
 
     private final List<ProductListener> listeners;
@@ -48,10 +45,10 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param terminal the name of the terminal the sale is done it.
      * @param s the staff member the sale is done by.
      */
-    public Sale(int terminal, int s) {
+    public Sale(Till terminal, Staff s) {
         saleItems = new ArrayList<>();
         total = BigDecimal.ZERO;
-        this.terminal = terminal;
+        this.till = terminal;
         this.staff = s;
         listeners = new ArrayList<>();
     }
@@ -69,12 +66,12 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff, List<SaleItem> saleItems) {
+    public Sale(int id, BigDecimal total, Customer customer, Date date, Till terminal, boolean cashed, Staff staff, List<SaleItem> saleItems) {
         this.id = id;
         this.total = total;
         this.customer = customer;
         this.date = date;
-        this.terminal = terminal;
+        this.till = terminal;
         this.staff = staff;
         this.saleItems = saleItems;
         listeners = new ArrayList<>();
@@ -92,12 +89,12 @@ public class Sale implements Serializable, JTillObject, Cloneable {
      * @param date the data of the sale.
      * @param staff the staff member the sale was done by.
      */
-    public Sale(int id, BigDecimal total, int customer, Date date, int terminal, boolean cashed, int staff) {
+    public Sale(int id, BigDecimal total, Customer customer, Date date, Till terminal, boolean cashed, Staff staff) {
         this.id = id;
         this.total = total;
         this.customer = customer;
         this.date = date;
-        this.terminal = terminal;
+        this.till = terminal;
         this.staff = staff;
         listeners = new ArrayList<>();
     }
@@ -307,20 +304,12 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.total = total;
     }
 
-    public int getCustomerID() {
+    public Customer getCustomer() {
         return customer;
     }
 
-    public void setCustomerID(int customer) {
-        this.customer = customer;
-    }
-
-    public Customer getCustomer() {
-        return c;
-    }
-
     public void setCustomer(Customer c) {
-        this.c = c;
+        this.customer = c;
     }
 
     public int getLineCount() {
@@ -349,23 +338,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.mop = mop;
     }
 
-    public int getTerminalID() {
-        return terminal;
-    }
-
-    public void setTerminalID(int terminal) {
-        this.terminal = terminal;
-    }
-
-    public Till getTerminal() {
-        return t;
-    }
-
-    public void setTerminal(Till t) {
-        this.t = t;
-        this.terminal = t.getId();
-    }
-
     public boolean isCashed() {
         return cashed;
     }
@@ -374,22 +346,21 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         this.cashed = cashed;
     }
 
-    public int getStaffID() {
+    public Staff getStaff() {
         return staff;
     }
 
-    public void setStaffID(int staff) {
-        this.staff = staff;
-    }
-
-    public Staff getStaff() {
-        return s;
-    }
-
     public void setStaff(Staff s) {
-        this.s = s;
+        this.staff = s;
     }
 
+    public Till getTill() {
+        return till;
+    }
+
+    public void setTill(Till till) {
+        this.till = till;
+    }
     public void addListener(ProductListener pl) {
         listeners.add(pl);
     }
@@ -416,44 +387,44 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     }
 
     public String getSQLInsertStatement() {
-        if (this.customer == 0) { //If no customer was assigned then set the customer ID to -1
+        if (this.customer == null) { //If no customer was assigned then set the customer ID to -1
             return this.total
                     + ",-1"
                     + "," + this.date.getTime()
-                    + "," + this.terminal
+                    + "," + this.till.getId()
                     + "," + this.cashed
-                    + "," + this.staff
+                    + "," + this.staff.getId()
                     + "," + this.mop;
         } else {
             return this.total
-                    + "," + this.customer
+                    + "," + this.customer.getId()
                     + "," + this.date.getTime()
-                    + "," + this.terminal
+                    + "," + this.till.getId()
                     + "," + this.cashed
-                    + "," + this.staff
+                    + "," + this.staff.getId()
                     + "," + this.mop;
         }
     }
 
     public String getSQLUpdateStatement() {
-        if (this.customer == 0) {
+        if (this.customer == null) {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
                     + ", CUSTOMER=-1"
                     + ", TIMESTAMP=" + this.date.getTime()
-                    + ", TERMINAL=" + this.terminal
+                    + ", TERMINAL=" + this.till.getId()
                     + ", CASHED=" + this.cashed
-                    + ", STAFF=" + this.staff
+                    + ", STAFF=" + this.staff.getId()
                     + ", MOP=" + this.mop
                     + " WHERE SALES.ID=" + this.id;
         } else {
             return "UPDATE SALES"
                     + " SET PRICE=" + this.total
-                    + ", CUSTOMER=" + this.customer
+                    + ", CUSTOMER=" + this.customer.getId()
                     + ", TIMESTAMP=" + this.date.getTime()
-                    + ", TERMINAL=" + this.terminal
+                    + ", TERMINAL=" + this.till.getId()
                     + ", CASHED=" + this.cashed
-                    + ", STAFF=" + this.staff
+                    + ", STAFF=" + this.staff.getId()
                     + ", MOP=" + this.mop
                     + " WHERE SALES.ID=" + this.id;
         }

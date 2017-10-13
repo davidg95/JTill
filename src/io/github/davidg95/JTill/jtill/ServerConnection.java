@@ -150,15 +150,6 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public BigDecimal getTillTakings(int terminal) throws IOException, SQLException {
-        try {
-            return (BigDecimal) conn.sendData(JConnData.create("GETTAKINGS").addParam("TERMINAL", terminal));
-        } catch (Throwable ex) {
-            throw new SQLException(ex.getMessage());
-        }
-    }
-
-    @Override
     public void sendEmail(String message) throws IOException {
         try {
             conn.sendData(JConnData.create("SENDEMAIL").addParam("MESSAGE", message));
@@ -2127,12 +2118,14 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public List<Sale> getStaffSales(Staff s) throws IOException, StaffNotFoundException {
+    public List<Sale> getStaffSales(Staff s) throws IOException, SQLException, StaffNotFoundException {
         try {
             return (List) conn.sendData(JConnData.create("GETSTAFFSALES").addParam("STAFF", s));
         } catch (Throwable ex) {
             if (ex instanceof StaffNotFoundException) {
                 throw (StaffNotFoundException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
             } else {
                 throw new IOException(ex.getMessage());
             }
