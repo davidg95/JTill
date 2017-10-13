@@ -458,9 +458,8 @@ public interface DataConnect {
      * @return the total number of units of that item sold.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws ProductNotFoundException if the item was not found.
      */
-    public int getTotalSoldOfItem(int id) throws IOException, SQLException, ProductNotFoundException;
+    public int getTotalSoldOfItem(int id) throws IOException, SQLException;
 
     /**
      * Method which gets the total value sold of a particular item.
@@ -469,9 +468,8 @@ public interface DataConnect {
      * @return the amount of money taken selling this item.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws ProductNotFoundException if the item was not found.
      */
-    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException, ProductNotFoundException;
+    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException;
 
     /**
      * Method to submit a query to the sale items table.
@@ -1242,9 +1240,8 @@ public interface DataConnect {
      * @return the total units wasted.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws ProductNotFoundException if the product was not found.
      */
-    public int getTotalWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException;
+    public int getTotalWastedOfItem(int id) throws IOException, SQLException;
 
     /**
      * Method to get the total value wasted of a certain product.
@@ -1253,9 +1250,8 @@ public interface DataConnect {
      * @return the value wasted.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
-     * @throws ProductNotFoundException if the product was not found.
      */
-    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException;
+    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException;
 
     /**
      * Method to add a waste reason.
@@ -1379,9 +1375,18 @@ public interface DataConnect {
      * @return the total spent on the item.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws ProductNotFoundException if the product was not found.
      */
-    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException;
+    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException;
+
+    /**
+     * Get the total amount received of this item.
+     *
+     * @param id the item ID.
+     * @return the total amount received.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
+    public int getTotalReceivedOfItem(int id) throws IOException, SQLException;
 
     /**
      * Clocks on a member of staff.

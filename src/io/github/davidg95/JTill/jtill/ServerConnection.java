@@ -1801,7 +1801,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public int getTotalSoldOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+    public int getTotalSoldOfItem(int id) throws IOException, SQLException {
         try {
             return (int) conn.sendData(JConnData.create("GETTOTALSOLDITEM").addParam("ID", id));
         } catch (Throwable ex) {
@@ -1814,7 +1814,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException, ProductNotFoundException {
+    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException {
         try {
             return (BigDecimal) conn.sendData(JConnData.create("GETVALUESOLDITEM").addParam("ID", id));
         } catch (Throwable ex) {
@@ -1827,7 +1827,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public int getTotalWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+    public int getTotalWastedOfItem(int id) throws IOException, SQLException {
         try {
             return (int) conn.sendData(JConnData.create("GETTOTALWASTEDITEM").addParam("ID", id));
         } catch (Throwable ex) {
@@ -1840,7 +1840,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException, ProductNotFoundException {
+    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException {
         try {
             return (BigDecimal) conn.sendData(JConnData.create("GETVALUEWASTEDITEM").addParam("ID", id));
         } catch (Throwable ex) {
@@ -1866,7 +1866,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException, ProductNotFoundException {
+    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException {
         try {
             return (BigDecimal) conn.sendData(JConnData.create("GETSPENTONITEM").addParam("ID", id));
         } catch (Throwable ex) {
@@ -2467,6 +2467,19 @@ public class ServerConnection implements DataConnect, JConnListener {
     public void removeDeclarationReport(int id) throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVEDECLARATIONREPORT").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public int getTotalReceivedOfItem(int id) throws IOException, SQLException {
+        try {
+            return (int) conn.sendData(JConnData.create("TOTALRECEIVED").addParam("ID", id));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
