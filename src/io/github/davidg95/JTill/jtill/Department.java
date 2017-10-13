@@ -6,15 +6,18 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  *
  * @author David
  */
-public class Department implements Serializable, JTillObject{
-    
+public class Department implements Serializable, JTillObject {
+
     private int id;
     private String name;
+
+    private BigDecimal sales = BigDecimal.ZERO;
 
     public Department(int id, String name) {
         this.id = id;
@@ -50,6 +53,14 @@ public class Department implements Serializable, JTillObject{
         return hash;
     }
 
+    public void addToSales(BigDecimal toAdd) {
+        sales = sales.add(toAdd);
+    }
+
+    public BigDecimal getSales() {
+        return sales;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -69,5 +80,5 @@ public class Department implements Serializable, JTillObject{
     public String toString() {
         return id + " - " + name;
     }
-    
+
 }

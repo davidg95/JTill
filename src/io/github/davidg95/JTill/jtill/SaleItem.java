@@ -26,9 +26,7 @@ public class SaleItem implements Serializable {
     private int sale;
     private int type;
     private boolean refundItem;
-    private int item;
-    
-    private Item product;
+    private Item item;
 
     /**
      * Indicates the sale item is a Product.
@@ -43,12 +41,12 @@ public class SaleItem implements Serializable {
      */
     public static final int DISCOUNT = 2;
 
-    public SaleItem(int sale, int item, int quantity, int id, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
+    public SaleItem(int sale, Item item, int quantity, int id, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
         this(sale, item, quantity, price, type, tax, cost);
         this.id = id;
     }
 
-    public SaleItem(int sale, int item, int quantity, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
+    public SaleItem(int sale, Item item, int quantity, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
         this.sale = sale;
         this.item = item;
         this.quantity = quantity;
@@ -78,14 +76,6 @@ public class SaleItem implements Serializable {
     public int decreaseQuantity(int quantity) {
         this.quantity -= quantity;
         return quantity;
-    }
-
-    public int getItem() {
-        return item;
-    }
-
-    public void setItem(int item) {
-        this.item = item;
     }
 
     public String getName() {
@@ -168,16 +158,16 @@ public class SaleItem implements Serializable {
         this.cost = cost;
     }
 
-    public Item getProduct() {
-        return product;
+    public Item getItem() {
+        return item;
     }
 
-    public void setProduct(Item product) {
-        this.product = product;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public String getSQLInsertStatement() {
-        return this.item
+        return this.item.getId()
                 + "," + type
                 + "," + this.quantity
                 + "," + this.price.doubleValue()

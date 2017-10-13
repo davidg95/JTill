@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  *
@@ -16,6 +17,8 @@ public class Tax implements Serializable, JTillObject {
     private int id;
     private String name;
     private double value;
+
+    private BigDecimal sales = BigDecimal.ZERO;
 
     public Tax(int id, String name, double value) {
         this(name, value);
@@ -51,6 +54,14 @@ public class Tax implements Serializable, JTillObject {
 
     public void setValue(double value) {
         this.value = value;
+    }
+
+    public void addToSales(BigDecimal toAdd) {
+        sales = sales.add(toAdd);
+    }
+
+    public BigDecimal getSales() {
+        return sales;
     }
 
     public String getSQLInsertString() {
