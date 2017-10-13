@@ -1700,4 +1700,16 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public void removeDeclarationReport(int id) throws IOException, SQLException;
+
+    /**
+     * Consolodated report.
+     *
+     * @param start the start time.
+     * @param end the end time.
+     * @param t the terminal or -1 for all.
+     * @return list of sales.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<Sale> consolodated(Date start, Date end, int t) throws IOException, SQLException;
 }

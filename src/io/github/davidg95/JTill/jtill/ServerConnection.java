@@ -2481,4 +2481,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public List<Sale> consolodated(Date start, Date end, int t) throws IOException, SQLException {
+        try {
+            return (List<Sale>) conn.sendData(JConnData.create("CONSOLODATED").addParam("START", start).addParam("END", end).addParam("TILL", t));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }
