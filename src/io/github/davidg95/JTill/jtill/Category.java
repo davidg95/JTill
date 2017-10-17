@@ -158,8 +158,6 @@ public class Category implements Serializable, JTillObject {
         } else {
             return "UPDATE CATEGORYS"
                     + " SET NAME='" + this.getName()
-                    + "', SELL_START='" + this.getStartSell().toString()
-                    + "', SELL_END='" + this.getEndSell().toString()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
                     + ", MINIMUM_AGE=" + this.getMinAge()
                     + " WHERE CATEGORYS.ID=" + this.getId();
