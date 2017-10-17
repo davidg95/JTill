@@ -147,13 +147,13 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     item.setName(i.getName()); //Set the name for the list box.
                     if (type == SaleItem.PRODUCT) {
                         final Product product = (Product) i;
-                        item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total for the list box.
+                        item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
                         this.total = total.add(product.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
                         final BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
                         final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
                         this.lastAdded = new SaleItem(this.id, i, quantity, product.getSellingPrice(), type, vat, cost); //Set this item to the last added.
                     } else {
-                        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total for the list box.
+                        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
                         this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
                         this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
                     }
@@ -169,10 +169,10 @@ public class Sale implements Serializable, JTillObject, Cloneable {
             BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
             final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
             item = new SaleItem(this.id, i, quantity, product.getSellingPrice(), type, vat, cost); //Set this item to the last added.
-            item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total of the item for the list box.
+            item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
         } else {
             item = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
-            item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total of the item for the list box.
+            item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
             this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
         }
         item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
