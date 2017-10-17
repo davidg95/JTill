@@ -2507,4 +2507,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public BigDecimal getWastage(Date start, Date end) throws IOException, SQLException {
+        try {
+            return (BigDecimal) conn.sendData(JConnData.create("GETWASTAGE").addParam("START", start).addParam("END", end));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }

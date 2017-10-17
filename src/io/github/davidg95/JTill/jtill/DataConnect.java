@@ -1724,4 +1724,15 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public BigDecimal getRefunds(Date start, Date end, int t) throws IOException, SQLException;
+
+    /**
+     * Get the total wastage value.
+     *
+     * @param start the start period.
+     * @param end the end period.
+     * @return the value of the wastage.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public BigDecimal getWastage(Date start, Date end) throws IOException, SQLException;
 }

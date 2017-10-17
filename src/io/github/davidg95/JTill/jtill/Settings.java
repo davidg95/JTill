@@ -225,9 +225,10 @@ public class Settings implements Serializable {
             setSetting("LOYALTY_VALUE", "0");
             setSetting("LOYALTY_SPEND_VALUE", "0");
             setSetting("UPDATE_STARTUP", "false");
-            setSetting("LOGINTYPE", "BUTTONS");
+            setSetting("LOGINTYPE", "CODE");
             setSetting("PROMPT_EMAIL_RECEIPT", "false");
             setSetting("UNLOCK_CODE", "OFF");
+            setSetting("TERMINAL_BG", "000000");
 
             properties.store(out, null);
             out.close();
