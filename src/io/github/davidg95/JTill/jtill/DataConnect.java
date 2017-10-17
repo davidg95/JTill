@@ -1702,7 +1702,7 @@ public interface DataConnect {
     public void removeDeclarationReport(int id) throws IOException, SQLException;
 
     /**
-     * Consolodated report.
+     * Consolidated report.
      *
      * @param start the start time.
      * @param end the end time.
@@ -1711,5 +1711,17 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<Sale> consolodated(Date start, Date end, int t) throws IOException, SQLException;
+    public List<Sale> consolidated(Date start, Date end, int t) throws IOException, SQLException;
+
+    /**
+     * Get total refunds for a terminal within a date range.
+     *
+     * @param start the start date.
+     * @param end the end date.
+     * @param t the terminal, -1 for all.
+     * @return the total value of refunds.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public BigDecimal getRefunds(Date start, Date end, int t) throws IOException, SQLException;
 }

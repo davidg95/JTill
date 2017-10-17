@@ -54,6 +54,9 @@ public class SaleItem implements Serializable {
         this.type = type;
         this.taxValue = tax.setScale(2, BigDecimal.ROUND_HALF_EVEN);
         this.cost = cost.setScale(2, BigDecimal.ROUND_HALF_EVEN);
+        if (quantity < 0) {
+            this.price = this.price.negate();
+        }
     }
 
     /**
@@ -63,6 +66,9 @@ public class SaleItem implements Serializable {
      * @return the new quantity.
      */
     public int increaseQuantity(int quantity) {
+        this.cost = cost.divide(new BigDecimal(this.quantity)).multiply(new BigDecimal(this.quantity + quantity));
+        this.price = price.divide(new BigDecimal(this.quantity)).multiply(new BigDecimal(this.quantity + quantity));
+        this.taxValue = taxValue.divide(new BigDecimal(this.quantity)).multiply(new BigDecimal(this.quantity + quantity));
         this.quantity += quantity;
         return quantity;
     }

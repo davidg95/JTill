@@ -2483,9 +2483,22 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public List<Sale> consolodated(Date start, Date end, int t) throws IOException, SQLException {
+    public List<Sale> consolidated(Date start, Date end, int t) throws IOException, SQLException {
         try {
-            return (List<Sale>) conn.sendData(JConnData.create("CONSOLODATED").addParam("START", start).addParam("END", end).addParam("TILL", t));
+            return (List<Sale>) conn.sendData(JConnData.create("CONSOLIDATED").addParam("START", start).addParam("END", end).addParam("TILL", t));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public BigDecimal getRefunds(Date start, Date end, int t) throws IOException, SQLException {
+        try {
+            return (BigDecimal) conn.sendData(JConnData.create("GETREFUNDS").addParam("START", start).addParam("END", end).addParam("TILL", t));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());

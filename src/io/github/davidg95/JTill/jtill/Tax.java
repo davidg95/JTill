@@ -19,6 +19,7 @@ public class Tax implements Serializable, JTillObject {
     private double value;
 
     private BigDecimal sales = BigDecimal.ZERO;
+    private BigDecimal payable = BigDecimal.ZERO;
 
     public Tax(int id, String name, double value) {
         this(name, value);
@@ -62,6 +63,14 @@ public class Tax implements Serializable, JTillObject {
 
     public BigDecimal getSales() {
         return sales;
+    }
+    
+    public void addToPayable(BigDecimal toAdd) {
+        payable = payable.add(toAdd);
+    }
+
+    public BigDecimal getPayable() {
+        return payable;
     }
 
     public String getSQLInsertString() {

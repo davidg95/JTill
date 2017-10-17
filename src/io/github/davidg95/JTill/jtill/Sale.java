@@ -28,7 +28,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     private Customer customer;
     private Till till;
     private Staff staff;
-    
+
     private SaleItem lastAdded;
 
     private final List<ProductListener> listeners;
@@ -132,7 +132,6 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                         this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity()))); //Update the sale total.
                         if (type == SaleItem.PRODUCT) {
                             final Product product = (Product) i;
-                            final BigDecimal money = (i.getPrice().subtract(product.getCostPrice())).setScale(2, BigDecimal.ROUND_HALF_EVEN).multiply(new BigDecimal(quantity)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
                             final BigDecimal cost = product.getOpenCost();
                             BigDecimal taxValue = product.calculateVAT();
                             this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, taxValue, cost); //Set this item to the last added.
@@ -167,7 +166,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         if (type == SaleItem.PRODUCT) {
             final Product product = (Product) i;
             this.total = total.add(product.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
-            final BigDecimal cost = product.getIndividualCost();
+            BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
             final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
             item = new SaleItem(this.id, i, quantity, product.getSellingPrice(), type, vat, cost); //Set this item to the last added.
             item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2).toString()); //Set the total of the item for the list box.
@@ -180,7 +179,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         item.setName(i.getName()); //Set the name of the item for the list box.
         saleItems.add(item); //Add the item to the list of sale items.
         this.lastAdded = item; //Set this item to the last item added.
-        updateTotal(); //Update the total.
+//        updateTotal(); //Update the total.
         return false;
     }
 
@@ -270,7 +269,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     public void updateTotal() {
         total = new BigDecimal("0");
         saleItems.forEach((item) -> {
-            total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity())));
+            total = total.add(item.getPrice());
         });
     }
 
@@ -361,6 +360,7 @@ public class Sale implements Serializable, JTillObject, Cloneable {
     public void setTill(Till till) {
         this.till = till;
     }
+
     public void addListener(ProductListener pl) {
         listeners.add(pl);
     }
