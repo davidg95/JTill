@@ -54,7 +54,7 @@ public class Settings implements Serializable {
     public Settings() {
         properties = new Properties();
         meta = new Properties();
-        loadProperties();
+//        loadProperties();
     }
 
     /**
@@ -142,7 +142,7 @@ public class Settings implements Serializable {
     /**
      * Method to load the settings from the server.properties file.
      */
-    public void loadProperties() {
+    public boolean loadProperties() {
         InputStream in;
         try {
             in = new FileInputStream("server.properties");
@@ -151,6 +151,7 @@ public class Settings implements Serializable {
             in.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
             initProperties();
+            return false;
         } catch (IOException ex) {
         }
 
@@ -163,6 +164,7 @@ public class Settings implements Serializable {
             initMeta();
         } catch (IOException ex) {
         }
+        return true;
     }
 
     /**
@@ -224,6 +226,8 @@ public class Settings implements Serializable {
             setSetting("LOYALTY_SPEND_VALUE", "0");
             setSetting("UPDATE_STARTUP", "false");
             setSetting("LOGINTYPE", "BUTTONS");
+            setSetting("PROMPT_EMAIL_RECEIPT", "false");
+            setSetting("UNLOCK_CODE", "OFF");
 
             properties.store(out, null);
             out.close();
