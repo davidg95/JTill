@@ -15,19 +15,22 @@ import java.math.BigDecimal;
 public class ReceivedItem implements Serializable{
 
     private int id;
-    private int product;
     private int quantity;
     private BigDecimal price;
+    
+    private Product product;
 
-    public ReceivedItem(int id, int product, int quantity, BigDecimal price) {
-        this(product, quantity, price);
+    public ReceivedItem(int id, Product product, int quantity, BigDecimal price) {
         this.id = id;
-    }
-
-    public ReceivedItem(int product, int quantity, BigDecimal price) {
         this.product = product;
         this.quantity = quantity;
         this.price = price;
+    }
+
+    public ReceivedItem(Product product, int quantity) {
+        this.product = product;
+        this.quantity = quantity;
+        this.price = product.getCostPrice().divide(new BigDecimal(product.getPackSize()), 2, 6).multiply(new BigDecimal(quantity));
     }
 
     public int getId() {
@@ -38,11 +41,11 @@ public class ReceivedItem implements Serializable{
         this.id = id;
     }
 
-    public int getProduct() {
+    public Product getProduct() {
         return product;
     }
 
-    public void setProduct(int product) {
+    public void setProduct(Product product) {
         this.product = product;
     }
 
@@ -86,7 +89,7 @@ public class ReceivedItem implements Serializable{
 
     @Override
     public String toString() {
-        return "ID: " + id + " Product: " + product;
+        return product.getLongName();
     }
 
 }
