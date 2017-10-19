@@ -1735,4 +1735,15 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public BigDecimal getWastage(Date start, Date end) throws IOException, SQLException;
+
+    /**
+     * Submit a stock take report.
+     *
+     * @param products the products to update.
+     * @param zeroRest true if products not in the list should be set to zero,
+     * false if they should be left.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void submitStockTake(List<Product> products, boolean zeroRest) throws IOException, SQLException;
 }
