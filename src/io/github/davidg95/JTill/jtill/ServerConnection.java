@@ -2533,4 +2533,30 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public List<Category> getCategoriesInDepartment(int department) throws IOException, SQLException {
+        try {
+            return (List<Category>) conn.sendData(JConnData.create("CATSINDEP").addParam("DEP", department));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<Product> getProductsInDepartment(int id) throws IOException, SQLException {
+        try {
+            return (List<Product>) conn.sendData(JConnData.create("GETPRODUCTSINDEPARTMENT").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }

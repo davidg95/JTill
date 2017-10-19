@@ -704,6 +704,16 @@ public interface DataConnect {
      */
     public List<Product> getProductsInCategory(int id) throws IOException, SQLException, JTillException;
 
+    /**
+     * Method to get all the products in a department.
+     *
+     * @param id the department to search.
+     * @return the list of products.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public List<Product> getProductsInDepartment(int id) throws IOException, SQLException;
+
     //Department
     /**
      * Add a new department to the system.
@@ -1746,4 +1756,14 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public void submitStockTake(List<Product> products, boolean zeroRest) throws IOException, SQLException;
+
+    /**
+     * Get all categories in a department.
+     *
+     * @param department the department to search.
+     * @return a list of categories.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<Category> getCategoriesInDepartment(int department) throws IOException, SQLException;
 }
