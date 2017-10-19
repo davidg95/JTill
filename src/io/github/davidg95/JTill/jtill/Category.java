@@ -19,12 +19,13 @@ import java.text.SimpleDateFormat;
 public class Category implements Serializable, JTillObject {
 
     private int ID;
+    private Department department;
     private String name;
     private Time startSell;
     private Time endSell;
     private boolean timeRestrict;
     private int minAge;
-    
+
     private BigDecimal sales = BigDecimal.ZERO;
 
     /**
@@ -38,8 +39,8 @@ public class Category implements Serializable, JTillObject {
      * @param timeRestrict if the time restrictions should apply.
      * @param minAge the minimum age for items in the category.
      */
-    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
-        this(name, startSell, endSell, timeRestrict, minAge);
+    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, Department dep) {
+        this(name, startSell, endSell, timeRestrict, minAge, dep);
         this.ID = ID;
     }
 
@@ -53,7 +54,7 @@ public class Category implements Serializable, JTillObject {
      * @param timeRestrict if the time restrictions should apply.
      * @param minAge the minimum age for items in the category.
      */
-    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge) {
+    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, Department dep) {
         this.name = name;
         this.timeRestrict = timeRestrict;
         this.startSell = startSell;
@@ -67,6 +68,7 @@ public class Category implements Serializable, JTillObject {
             }
         }
         this.minAge = minAge;
+        this.department = dep;
     }
 
     /**
@@ -129,7 +131,7 @@ public class Category implements Serializable, JTillObject {
     public void setMinAge(int minAge) {
         this.minAge = minAge;
     }
-    
+
     public void addToSales(BigDecimal toAdd) {
         sales = sales.add(toAdd);
     }
@@ -138,12 +140,21 @@ public class Category implements Serializable, JTillObject {
         return sales;
     }
 
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.startSell.toString()
                 + "','" + this.endSell.toString()
                 + "','" + this.timeRestrict
-                + "'," + this.minAge;
+                + "'," + this.minAge
+                + "," + this.department.getId();
     }
 
     public String getSQLUpdateString() {
@@ -154,12 +165,14 @@ public class Category implements Serializable, JTillObject {
                     + "', SELL_END='" + this.getEndSell().toString()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
                     + ", MINIMUM_AGE=" + this.getMinAge()
+                    + ", DEPARTMENT=" + this.getDepartment().getId()
                     + " WHERE CATEGORYS.ID=" + this.getId();
         } else {
             return "UPDATE CATEGORYS"
                     + " SET NAME='" + this.getName()
                     + "', TIME_RESTRICT=" + this.isTimeRestrict()
                     + ", MINIMUM_AGE=" + this.getMinAge()
+                    + ", DEPARTMENT=" + this.getDepartment().getId()
                     + " WHERE CATEGORYS.ID=" + this.getId();
         }
     }
@@ -185,7 +198,7 @@ public class Category implements Serializable, JTillObject {
         final Category other = (Category) obj;
         return this.ID == other.ID;
     }
-    
+
     @Override
     public String toString() {
         return this.ID + " - " + this.name;
