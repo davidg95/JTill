@@ -7,6 +7,7 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Class of type product which implements Serializable. This class models a
@@ -25,6 +26,10 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     private Category category;
     private Tax tax;
+
+    private List<Condiment> condiments;
+    private int maxCon;
+    private int minCon;
 
     private boolean open;
     private double scale;
@@ -106,8 +111,10 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param minStock the minimum stock level.
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
+     * @param maxCon the maximum condiments.
+     * @param minCon the minimum condiments.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock) {
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon) {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
@@ -125,6 +132,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.maxStockLevel = maxStock;
         this.packSize = packSize;
         this.priceIncVat = priceIncVat;
+        this.maxCon = maxCon;
+        this.minCon = minCon;
     }
 
     /**
@@ -145,9 +154,11 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param comments any comments about the product.
      * @param maxStock the maximum stock level.
      * @param productCode the product code.
+     * @param maxCon the maximum condiments.
+     * @param minCon the minimum condiments.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int productCode) {
-        this(name, shortName, barcode, order_code, category, comments, tax, price, costPrice, priceIncVat, packSize, stock, minStock, maxStock);
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int productCode, int maxCon, int minCon) {
+        this(name, shortName, barcode, order_code, category, comments, tax, price, costPrice, priceIncVat, packSize, stock, minStock, maxStock, maxCon, minCon);
         this.productCode = productCode;
     }
 
@@ -395,6 +406,30 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         return getSellingPrice().subtract(getPrice());
     }
 
+    public List<Condiment> getCondiments() {
+        return condiments;
+    }
+
+    public void setCondiments(List<Condiment> condiments) {
+        this.condiments = condiments;
+    }
+
+    public int getMaxCon() {
+        return maxCon;
+    }
+
+    public void setMaxCon(int maxCon) {
+        this.maxCon = maxCon;
+    }
+
+    public int getMinCon() {
+        return minCon;
+    }
+
+    public void setMinCon(int minCon) {
+        this.minCon = minCon;
+    }
+
     public String getSQLInsertString() {
         return this.order_code
                 + ",'" + this.name
@@ -432,7 +467,9 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
                 + ", PRODUCTS.SCALE=" + this.getScale()
                 + ",PRODUCTS.SCALE_NAME='" + this.getScaleName()
-                + "', PRODUCTS.INCVAT=" + this.priceIncVat
+                + "', PRODUCTS.INCVAT=" + this.isPriceIncVat()
+                + ", PRODUCTS.MAXCON=" + this.getMaxCon()
+                + ", PRODUCTS.MINCON=" + this.getMinCon()
                 + " WHERE PRODUCTS.ID=" + this.getId();
     }
 

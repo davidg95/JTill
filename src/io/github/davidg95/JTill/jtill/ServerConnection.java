@@ -2559,4 +2559,56 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public Condiment addCondiment(Condiment c) throws IOException, SQLException {
+        try {
+            return (Condiment) conn.sendData(JConnData.create("ADDCONDIMENT").addParam("C", c));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<Condiment> getProductsCondiments(int id) throws IOException, SQLException {
+        try {
+            return (List<Condiment>) conn.sendData(JConnData.create("GETPRODUCTSCONDIMENTS").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public Condiment updateCondiment(Condiment c) throws IOException, SQLException {
+        try {
+            return (Condiment) conn.sendData(JConnData.create("UPDATECONDIMENT").addParam("C", c));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void removeCondiment(int id) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("REMOVECONDIMENT").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }

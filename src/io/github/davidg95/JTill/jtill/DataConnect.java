@@ -1766,4 +1766,43 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public List<Category> getCategoriesInDepartment(int department) throws IOException, SQLException;
+
+    /**
+     * Adds a new condiments.
+     *
+     * @param c the condiment.
+     * @return the condiment.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public Condiment addCondiment(Condiment c) throws IOException, SQLException;
+
+    /**
+     * Get a products condiments.
+     *
+     * @param id the product id.
+     * @return a list of condiments.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<Condiment> getProductsCondiments(int id) throws IOException, SQLException;
+
+    /**
+     * Updates a condiment.
+     *
+     * @param c the condiment to update.
+     * @return the updated condiment.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public Condiment updateCondiment(Condiment c) throws IOException, SQLException;
+
+    /**
+     * Removes a condiment.
+     *
+     * @param id the condiment to remove.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void removeCondiment(int id) throws IOException, SQLException;
 }
