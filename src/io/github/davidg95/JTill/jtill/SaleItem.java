@@ -85,7 +85,13 @@ public class SaleItem implements Serializable {
     }
 
     public String getName() {
-        return name;
+        String con = "";
+        if (item instanceof Product) {
+            for (Condiment c : ((Product) item).getSaleCondiments()) {
+                con += "\n    - " + c.getName();
+            }
+        }
+        return name + con;
     }
 
     public void setName(String name) {
@@ -212,7 +218,13 @@ public class SaleItem implements Serializable {
         } else {
             df = new DecimalFormat("0.00");
         }
-        return "Qty. " + this.getQuantity() + "\t" + this.getItem() + "\t\t\t£" + df.format(this.getPrice());
+        String con = "";
+        if (item instanceof Product) {
+            for (Condiment c : ((Product) item).getSaleCondiments()) {
+                con += "\n    - " + c.getName();
+            }
+        }
+        return "Qty. " + this.getQuantity() + "\t" + this.getItem() + con + "\t\t\t£" + df.format(this.getPrice());
 
     }
 }

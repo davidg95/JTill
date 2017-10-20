@@ -7,6 +7,7 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -30,6 +31,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private List<Condiment> condiments;
     private int maxCon;
     private int minCon;
+    private List<Condiment> saleCondiments = new LinkedList<>();
 
     private boolean open;
     private double scale;
@@ -428,6 +430,14 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
 
     public void setMinCon(int minCon) {
         this.minCon = minCon;
+    }
+
+    public void setSaleCondiments(List<Condiment> c) {
+        saleCondiments = c;
+    }
+
+    public List<Condiment> getSaleCondiments() {
+        return saleCondiments;
     }
 
     public String getSQLInsertString() {

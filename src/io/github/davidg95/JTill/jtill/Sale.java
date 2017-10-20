@@ -147,6 +147,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
                     item.setName(i.getName()); //Set the name for the list box.
                     if (type == SaleItem.PRODUCT) {
                         final Product product = (Product) i;
+                        if (!product.getSaleCondiments().isEmpty()) {
+                            for (Condiment c : product.getSaleCondiments()) {
+                                item.setPrice(item.getPrice().add(c.getValue()));
+                            }
+                        }
                         item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
                         this.total = total.add(product.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
                         final BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
@@ -165,11 +170,16 @@ public class Sale implements Serializable, JTillObject, Cloneable {
         SaleItem item;
         if (type == SaleItem.PRODUCT) {
             final Product product = (Product) i;
-            this.total = total.add(product.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
             BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
             final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
             item = new SaleItem(this.id, i, quantity, product.getSellingPrice(), type, vat, cost); //Set this item to the last added.
-            item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
+            if (!product.getSaleCondiments().isEmpty()) {
+                for (Condiment c : product.getSaleCondiments()) {
+                    item.setPrice(item.getPrice().add(c.getValue()));
+                }
+            }
+            item.setTotalPrice(item.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
+            this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
         } else {
             item = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
             item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
