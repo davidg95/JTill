@@ -1570,7 +1570,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     @Override
     public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException {
         try {
-            return (Supplier) conn.sendData(JConnData.create("ADDSUPPLIER"));
+            return (Supplier) conn.sendData(JConnData.create("ADDSUPPLIER").addParam("SUPPLIER", s));
         } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
