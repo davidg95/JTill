@@ -20,9 +20,10 @@ public class WasteItem implements Serializable, JTillObject {
     private int quantity;
     private int reason;
 
-    public WasteItem(int id, Product product, int quantity, int reason) {
+    public WasteItem(int id, Product product, int quantity, int reason, BigDecimal value) {
         this(product, quantity, reason);
         this.id = id;
+        this.totalValue = value;
     }
 
     public WasteItem(Product product, int quantity, int reason) {
