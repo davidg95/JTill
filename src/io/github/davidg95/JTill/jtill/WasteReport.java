@@ -17,22 +17,16 @@ import java.util.List;
 public class WasteReport implements Serializable, JTillObject {
 
     private int id;
-    private BigDecimal totalValue;
     private Date date;
     private List<WasteItem> items;
 
-    public WasteReport(int id, BigDecimal totalValue, Date date) {
-        this(totalValue, date);
+    public WasteReport(int id, Date date) {
+        this(date);
         this.id = id;
     }
 
-    public WasteReport(BigDecimal totalValue, Date date) {
-        this.totalValue = totalValue;
-        this.date = date;
-    }
-
     public WasteReport(Date date) {
-        this(BigDecimal.ZERO, date);
+        this.date = date;
     }
 
     @Override
@@ -50,11 +44,11 @@ public class WasteReport implements Serializable, JTillObject {
     }
 
     public BigDecimal getTotalValue() {
-        return totalValue;
-    }
-
-    public void setTotalValue(BigDecimal totalValue) {
-        this.totalValue = totalValue;
+        BigDecimal value = BigDecimal.ZERO;
+        for (WasteItem i : items) {
+            value = value.add(i.getTotalValue());
+        }
+        return value;
     }
 
     public Date getDate() {

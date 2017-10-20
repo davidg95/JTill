@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  *
@@ -15,6 +16,7 @@ public class WasteItem implements Serializable, JTillObject {
 
     private int id;
     private Product product;
+    private BigDecimal totalValue;
     private int quantity;
     private int reason;
 
@@ -27,6 +29,7 @@ public class WasteItem implements Serializable, JTillObject {
         this.product = product;
         this.quantity = quantity;
         this.reason = reason;
+        this.totalValue = product.getIndividualCost().multiply(new BigDecimal(quantity));
     }
 
     @Override
@@ -57,6 +60,10 @@ public class WasteItem implements Serializable, JTillObject {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public BigDecimal getTotalValue() {
+        return totalValue;
     }
 
     public int getReason() {
