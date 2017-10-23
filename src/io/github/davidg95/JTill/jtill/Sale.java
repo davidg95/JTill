@@ -172,7 +172,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
             final Product product = (Product) i;
             BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
             final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
-            item = new SaleItem(this.id, i, quantity, product.getSellingPrice(), type, vat, cost); //Set this item to the last added.
+            BigDecimal sellingPrice = product.getSellingPrice();
+            if(isRefundItem){
+                sellingPrice = sellingPrice.negate();
+            }
+            item = new SaleItem(this.id, i, quantity, sellingPrice, type, vat, cost); //Set this item to the last added.
             if (!product.getSaleCondiments().isEmpty()) {
                 for (Condiment c : product.getSaleCondiments()) {
                     item.setPrice(item.getPrice().add(c.getValue()));
