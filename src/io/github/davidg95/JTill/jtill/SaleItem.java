@@ -88,7 +88,7 @@ public class SaleItem implements Serializable {
         String con = "";
         if (item instanceof Product) {
             for (Condiment c : ((Product) item).getSaleCondiments()) {
-                con += "\n    - " + c.getName();
+                con += "\n    - " + c.getProduct_con().getName();
             }
         }
         return name + con;
@@ -221,7 +221,7 @@ public class SaleItem implements Serializable {
         String con = "";
         if (item instanceof Product) {
             for (Condiment c : ((Product) item).getSaleCondiments()) {
-                con += "\n    - " + c.getName();
+                con += "\n    - " + c.getProduct_con().getName();
             }
         }
         return "Qty. " + this.getQuantity() + "\t" + this.getItem() + con + "\t\t\t£" + df.format(this.getPrice());
