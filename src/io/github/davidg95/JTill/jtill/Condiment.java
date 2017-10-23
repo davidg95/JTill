@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 
 /**
  *
@@ -76,6 +77,6 @@ public class Condiment implements Serializable {
 
     @Override
     public String toString() {
-        return "Condiment{" + "product=" + product_con.getLongName() + '}';
+        return "£" + new DecimalFormat("0.00").format(product_con.getSellingPrice()) + "\t\t" + product_con.getLongName();
     }
 }
