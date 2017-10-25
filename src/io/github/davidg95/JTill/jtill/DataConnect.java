@@ -1132,67 +1132,24 @@ public interface DataConnect {
     /**
      * Method to add a new waste report to the system.
      *
-     * @param wr the waste report to add.
-     * @return the waste report that was added with an ID assigned.
+     * @param items the items to add.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error with the report.
      */
-    public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException;
-
-    /**
-     * Method to remove a waste report from the system.
-     *
-     * @param id the id of the report to remove.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     * @throws JTillException if the waste report could not be found.
-     */
-    public void removeWasteReport(int id) throws IOException, SQLException, JTillException;
-
-    /**
-     * Method to get a waste report from the system.
-     *
-     * @param id the waste report to get.
-     * @return if waste report.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     * @throws JTillException if the waste report could not be found.
-     */
-    public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException;
-
-    /**
-     * Method to get all waste reports from the system.
-     *
-     * @return a list of all the waste reports.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     */
-    public List<WasteReport> getAllWasteReports() throws IOException, SQLException;
-
-    /**
-     * Method to update a waste report.
-     *
-     * @param wr the waste report to update.
-     * @return the waste report after getting updated.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     * @throws JTillException if the waste report could not be found.
-     */
-    public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException;
+    public void addWasteReport(List<WasteItem> items) throws IOException, SQLException, JTillException;
 
     //Waste Item
     /**
      * Method to add a waste item to the system.
      *
-     * @param wr the report to add the item to.
      * @param wi the waste item to add.
      * @return the waste item with an ID assigned.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error with the waste item.
      */
-    public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException;
+    public WasteItem addWasteItem(WasteItem wi) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a waste item from the system.
@@ -1223,17 +1180,6 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      */
     public List<WasteItem> getAllWasteItems() throws IOException, SQLException;
-
-    /**
-     * Method to update a waste item on the system.
-     *
-     * @param wi the waste item to update.
-     * @return the waste item after getting updated.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     * @throws JTillException if the waste item could not be found.
-     */
-    public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get the total units wasted of a certain product.

@@ -1349,9 +1349,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public WasteReport addWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
+    public void addWasteReport(List<WasteItem> items) throws IOException, SQLException, JTillException {
         try {
-            return (WasteReport) conn.sendData(JConnData.create("ADDWASTEREPORT").addParam("WASTE", wr));
+            conn.sendData(JConnData.create("ADDWASTEREPORT").addParam("WASTE", items));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1364,67 +1364,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void removeWasteReport(int id) throws IOException, SQLException, JTillException {
+    public WasteItem addWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
         try {
-            conn.sendData(JConnData.create("REMOVEWASTEREPORT").addParam("ID", id));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public WasteReport getWasteReport(int id) throws IOException, SQLException, JTillException {
-        try {
-            return (WasteReport) conn.sendData(JConnData.create("GETWASTEREPORT").addParam("ID", id));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public List<WasteReport> getAllWasteReports() throws IOException, SQLException {
-        try {
-            return (List) conn.sendData(JConnData.create("GETALLWASTEREPORTS"));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public WasteReport updateWasteReport(WasteReport wr) throws IOException, SQLException, JTillException {
-        try {
-            return (WasteReport) conn.sendData(JConnData.create("UPDATEWASTEREPORT").addParam("WASTE", wr));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public WasteItem addWasteItem(WasteReport wr, WasteItem wi) throws IOException, SQLException, JTillException {
-        try {
-            return (WasteItem) conn.sendData(JConnData.create("ADDWASTEITEM").addParam("WASTE", wr).addParam("ITEM", wi));
+            return (WasteItem) conn.sendData(JConnData.create("ADDWASTEITEM").addParam("ITEM", wi));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1473,21 +1415,6 @@ public class ServerConnection implements DataConnect, JConnListener {
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
-    public WasteItem updateWasteItem(WasteItem wi) throws IOException, SQLException, JTillException {
-        try {
-            return (WasteItem) conn.sendData(JConnData.create("UPDATEWASTEITEM").addParam("WASTE", wi));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
             } else {
                 throw new IOException(ex.getMessage());
             }

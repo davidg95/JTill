@@ -7,6 +7,7 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  *
@@ -18,19 +19,21 @@ public class WasteItem implements Serializable, JTillObject {
     private Product product;
     private BigDecimal totalValue;
     private int quantity;
-    private int reason;
+    private WasteReason reason;
+    private Date timestamp;
 
-    public WasteItem(int id, Product product, int quantity, int reason, BigDecimal value) {
-        this(product, quantity, reason);
+    public WasteItem(int id, Product product, int quantity, WasteReason reason, BigDecimal value, Date timestamp) {
+        this(product, quantity, reason, timestamp);
         this.id = id;
         this.totalValue = value;
     }
 
-    public WasteItem(Product product, int quantity, int reason) {
+    public WasteItem(Product product, int quantity, WasteReason reason, Date timestamp) {
         this.product = product;
         this.quantity = quantity;
         this.reason = reason;
         this.totalValue = product.getIndividualCost().multiply(new BigDecimal(quantity));
+        this.timestamp = timestamp;
     }
 
     @Override
@@ -67,12 +70,20 @@ public class WasteItem implements Serializable, JTillObject {
         return totalValue;
     }
 
-    public int getReason() {
+    public WasteReason getReason() {
         return reason;
     }
 
-    public void setReason(int reason) {
+    public void setReason(WasteReason reason) {
         this.reason = reason;
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override
