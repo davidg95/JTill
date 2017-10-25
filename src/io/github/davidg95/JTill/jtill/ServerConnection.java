@@ -2538,4 +2538,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public List<SaleItem> getSalesByDepartment(int id) throws IOException, SQLException {
+        try {
+            return (List<SaleItem>) conn.sendData(JConnData.create("SALESBYDEPARTMENT").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }

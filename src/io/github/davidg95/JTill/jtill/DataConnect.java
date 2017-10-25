@@ -1751,4 +1751,14 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public void removeCondiment(int id) throws IOException, SQLException;
+
+    /**
+     * Get sales by department.
+     *
+     * @param id the department id.
+     * @return the List of sale items.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<SaleItem> getSalesByDepartment(int id) throws IOException, SQLException;
 }
