@@ -2551,4 +2551,43 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public Order addOrder(Order o) throws IOException, SQLException {
+        try {
+            return (Order) conn.sendData(JConnData.create("ADDORDER").addParam("ORDER", o));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void updateOrder(Order o) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("UPDATEORDER").addParam("ORDER", o));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<Order> getAllOrders() throws IOException, SQLException {
+        try {
+            return (List<Order>) conn.sendData(JConnData.create("GETALLORDERS"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }

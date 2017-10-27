@@ -1761,4 +1761,32 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public List<SaleItem> getSalesByDepartment(int id) throws IOException, SQLException;
+
+    /**
+     * Add an order to the database. This does NOT send the order.
+     *
+     * @param o the order.
+     * @return the order with its ID.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public Order addOrder(Order o) throws IOException, SQLException;
+
+    /**
+     * Update an order.
+     *
+     * @param o the order to update.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void updateOrder(Order o) throws IOException, SQLException;
+
+    /**
+     * Get all orders.
+     *
+     * @return all orders.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<Order> getAllOrders() throws IOException, SQLException;
 }

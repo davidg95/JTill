@@ -30,6 +30,13 @@ public class OrderItem implements Serializable {
         this.price = product.getCostPrice().multiply(new BigDecimal(quantity));
     }
 
+    public OrderItem(int id, Product product, int quantity, BigDecimal price) {
+        this.id = id;
+        this.product = product;
+        this.quantity = quantity;
+        this.price = price;
+    }
+
     public int getId() {
         return id;
     }
