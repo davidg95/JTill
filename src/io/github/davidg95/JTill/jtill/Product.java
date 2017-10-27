@@ -36,6 +36,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private boolean open;
     private double scale;
     private String scaleName;
+    private BigDecimal priceLimit;
     private BigDecimal price;
     private BigDecimal costPrice;
     private boolean priceIncVat;
@@ -59,8 +60,9 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param scale the value of the scale.
      * @param scaleName the name of the scale.
      * @param cost the cost percentage.
+     * @param price the price limit.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, BigDecimal cost) {
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, BigDecimal cost, BigDecimal price) {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
@@ -73,6 +75,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         this.scaleName = scaleName;
         this.packSize = 1;
         this.costPrice = cost;
+        this.priceLimit = price;
     }
 
     /**
@@ -89,10 +92,11 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
      * @param scale the value of the scale.
      * @param scaleName the name of the scale.
      * @param cost the cost percentage.
+     * @param price the price limit.
      * @param productCode the product code.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, BigDecimal cost, int productCode) {
-        this(name, shortName, barcode, order_code, category, comments, tax, scale, scaleName, cost);
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, BigDecimal cost, BigDecimal price, int productCode) {
+        this(name, shortName, barcode, order_code, category, comments, tax, scale, scaleName, cost, price);
         this.productCode = productCode;
     }
 
@@ -440,6 +444,14 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
         return saleCondiments;
     }
 
+    public BigDecimal getPriceLimit() {
+        return priceLimit;
+    }
+
+    public void setPriceLimit(BigDecimal priceLimit) {
+        this.priceLimit = priceLimit;
+    }
+
     public String getSQLInsertString() {
         return this.order_code
                 + ",'" + this.name
@@ -457,7 +469,8 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + ",'" + this.barcode
                 + "'," + this.scale
                 + ",'" + this.scaleName
-                + "'," + this.priceIncVat;
+                + "'," + this.priceIncVat
+                + "," + this.isPriceIncVat();
     }
 
     public String getSQlUpdateString() {
@@ -480,6 +493,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + "', PRODUCTS.INCVAT=" + this.isPriceIncVat()
                 + ", PRODUCTS.MAXCON=" + this.getMaxCon()
                 + ", PRODUCTS.MINCON=" + this.getMinCon()
+                + ", PRODUCTS.LIMIT=" + this.getPriceLimit()
                 + " WHERE PRODUCTS.ID=" + this.getId();
     }
 
