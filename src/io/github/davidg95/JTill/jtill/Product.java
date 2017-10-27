@@ -470,7 +470,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
                 + "'," + this.scale
                 + ",'" + this.scaleName
                 + "'," + this.priceIncVat
-                + "," + this.isPriceIncVat();
+                + "," + this.priceLimit;
     }
 
     public String getSQlUpdateString() {
