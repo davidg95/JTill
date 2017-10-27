@@ -1789,4 +1789,13 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      */
     public List<Order> getAllOrders() throws IOException, SQLException;
+
+    /**
+     * Remove an order.
+     *
+     * @param id the order id.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void deleteOrder(int id) throws IOException, SQLException;
 }

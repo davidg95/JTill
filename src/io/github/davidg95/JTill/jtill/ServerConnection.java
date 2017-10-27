@@ -2590,4 +2590,17 @@ public class ServerConnection implements DataConnect, JConnListener {
             }
         }
     }
+
+    @Override
+    public void deleteOrder(int id) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("DELETEORDER").addParam("ID", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw new IOException(ex.getMessage());
+            } else {
+                throw new SQLException(ex.getMessage());
+            }
+        }
+    }
 }
