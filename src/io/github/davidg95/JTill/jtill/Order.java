@@ -33,7 +33,9 @@ public class Order {
         this.items = items;
     }
 
-    public Order() {
+    public Order(Supplier s, List<OrderItem> items) {
+        this.supplier = s;
+        this.items = items;
         sent = false;
         this.sendDate = new Date(0);
     }
