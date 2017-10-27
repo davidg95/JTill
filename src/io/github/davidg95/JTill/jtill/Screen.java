@@ -21,18 +21,22 @@ public class Screen implements Serializable, Cloneable {
     private int width;
     private int height;
     private int inherits;
+    private int vGap;
+    private int hGap;
 
     private transient GridPane pane;
 
-    public Screen(String name, int width, int height, int inherits) {
+    public Screen(String name, int width, int height, int inherits, int vgap, int hgap) {
         this.name = name;
         this.width = width;
         this.height = height;
         this.inherits = inherits;
+        this.vGap = vgap;
+        this.hGap = hgap;
     }
 
-    public Screen(String name, int id, int width, int height, int inherits) {
-        this(name, width, height, inherits);
+    public Screen(String name, int id, int width, int height, int inherits, int vgap, int hgap) {
+        this(name, width, height, inherits, vgap, hgap);
         this.id = id;
     }
 
@@ -83,6 +87,22 @@ public class Screen implements Serializable, Cloneable {
                 + "," + this.getInherits();
     }
 
+    public int getvGap() {
+        return vGap;
+    }
+
+    public void setvGap(int vGap) {
+        this.vGap = vGap;
+    }
+
+    public int gethGap() {
+        return hGap;
+    }
+
+    public void sethGap(int hGap) {
+        this.hGap = hGap;
+    }
+
     public GridPane getPane() {
         return pane;
     }
@@ -97,6 +117,8 @@ public class Screen implements Serializable, Cloneable {
                 + "', WIDTH=" + this.getWidth()
                 + ", HEIGHT=" + this.getHeight()
                 + ", INHERITS=" + this.getInherits()
+                + ", VGAP=" + this.getvGap()
+                + ", HGAP=" + this.gethGap()
                 + " WHERE SCREENS.ID=" + this.getId();
     }
 
