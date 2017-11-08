@@ -70,6 +70,10 @@ public class ServerConnection implements DataConnect, JConnListener {
         }
     }
 
+    public boolean isConnected() {
+        return conn.isUp();
+    }
+
     /**
      * Method to connect to the server.
      *
