@@ -33,9 +33,6 @@ public class ServerConnection implements DataConnect, JConnListener {
 
     private GUIInterface g;
 
-    private final List<Runnable> waitingToSend;
-    private final StampedLock lock;
-
     private UUID uuid;
     private String name;
 
@@ -43,8 +40,6 @@ public class ServerConnection implements DataConnect, JConnListener {
      * Blank constructor.
      */
     public ServerConnection() {
-        waitingToSend = new LinkedList<>();
-        lock = new StampedLock();
         conn = new JConn();
         init();
     }
@@ -59,15 +54,6 @@ public class ServerConnection implements DataConnect, JConnListener {
 
     private void init() {
         conn.registerListener(this);
-    }
-
-    public void addToWaiting(Runnable run) {
-        final long stamp = lock.writeLock();
-        try {
-            waitingToSend.add(run);
-        } finally {
-            lock.unlockWrite(stamp);
-        }
     }
 
     public boolean isConnected() {
@@ -2119,18 +2105,6 @@ public class ServerConnection implements DataConnect, JConnListener {
             conn.sendData(JConnData.create("RECONNECT").addParam("UUID", uuid).addParam("SITE", name).addParam("STAFF", s));
         } catch (Throwable ex) {
             Logger.getLogger(ServerConnection.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        final long stamp = lock.readLock();
-        try {
-            waitingToSend.forEach((run) -> {
-                try {
-                    run.run();
-                } catch (Throwable ex) {
-
-                }
-            });
-        } finally {
-            lock.unlockRead(stamp);
         }
     }
 
