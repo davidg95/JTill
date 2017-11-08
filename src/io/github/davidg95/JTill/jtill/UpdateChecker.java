@@ -7,6 +7,8 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -20,8 +22,8 @@ public class UpdateChecker {
     public static final String UPDATE_CHECK_URL = "https://jggcomputers.ddns.net/jtill/";
 
     public static final String SERVER_UPDATE_DOWNLOAD = "https://jggcomputers.ddns.net/repo/public/jtillserverinstaller.exe";
-    
-    public static final String TERMINAL_UPDATE_DONWLOAD = "https://jggcomputers.ddns.net/repo/public/jtillfxterminalinstaller.exe";
+
+    public static final String TERMINAL_UPDATE_DONWLOAD = "https://jggcomputers.ddns.net/repo/public/jtillfxterminalinstallersilent.exe";
 
     public static byte[] getHTML(String urlToRead) throws Exception {
         StringBuilder result = new StringBuilder();
@@ -50,13 +52,13 @@ public class UpdateChecker {
             System.exit(0);
         }
     }
-    
-    public static File downloadTerminalUpdate() throws Exception {
+
+    public static byte[] downloadTerminalUpdate() throws Exception {
         URL website = new URL(TERMINAL_UPDATE_DONWLOAD);
         try (InputStream in = website.openStream()) {
             Path targetPath = new File(System.getProperty("java.io.tmpdir") + File.separator + "terminalinstaller.exe").toPath();
             Files.copy(in, targetPath, StandardCopyOption.REPLACE_EXISTING);
-            return targetPath.toFile();
+            return Files.readAllBytes(targetPath);
         }
     }
 }

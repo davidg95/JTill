@@ -14,11 +14,9 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.util.concurrent.locks.StampedLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -2236,9 +2234,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public List<byte[]> downloadTerminalUpdate() throws Exception {
+    public byte[] downloadTerminalUpdate() throws Exception {
         try {
-            return (List<byte[]>) conn.sendData(JConnData.create("DOWNLOADTER"));
+            return (byte[]) conn.sendData(JConnData.create("DOWNLOADTER"));
         } catch (Throwable ex) {
             throw new Exception(ex.getMessage());
         }

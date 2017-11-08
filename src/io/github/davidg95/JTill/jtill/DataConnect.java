@@ -1582,7 +1582,7 @@ public interface DataConnect {
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public List<byte[]> downloadTerminalUpdate() throws Exception;
+    public byte[] downloadTerminalUpdate() throws Exception;
 
     /**
      * Log a staff member our of the till.
