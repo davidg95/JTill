@@ -5,6 +5,8 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.util.UUID;
+
 /**
  *
  * @author David
@@ -41,7 +43,7 @@ public interface GUIInterface {
     
     public void renameTill(String name);
     
-    public Till showTillSetupWindow(String name) throws JTillException;
+    public Till showTillSetupWindow(String name, UUID uuid) throws JTillException;
     
     public void logout();
     

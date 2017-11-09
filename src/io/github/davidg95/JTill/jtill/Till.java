@@ -24,16 +24,16 @@ public class Till implements Serializable, Cloneable, JTillObject {
     private Date lastContact;
     private int defaultScreen;
     
-    public Till(String name, int defaultScreen) {
+    public Till(String name, UUID uuid, int defaultScreen) {
         this.name = name;
         this.uncashedTakings = new BigDecimal("0");
         uncashedTakings = uncashedTakings.setScale(2);
-        this.uuid = UUID.randomUUID();
+        this.uuid = uuid;
         this.defaultScreen = defaultScreen;
     }
 
     public Till(String name, BigDecimal uncashedTakings, int id, UUID uuid, int defaultScreen) {
-        this(name, defaultScreen);
+        this(name, uuid, defaultScreen);
         this.uncashedTakings = uncashedTakings;
         this.id = id;
         this.uuid = uuid;
