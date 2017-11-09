@@ -24,6 +24,8 @@ public class Till implements Serializable, Cloneable, JTillObject {
     private Date lastContact;
     private int defaultScreen;
     
+    private boolean sendData;
+    
     public Till(String name, UUID uuid, int defaultScreen) {
         this.name = name;
         this.uncashedTakings = new BigDecimal("0");
@@ -95,6 +97,14 @@ public class Till implements Serializable, Cloneable, JTillObject {
 
     public void setDefaultScreen(int defaultScreen) {
         this.defaultScreen = defaultScreen;
+    }
+
+    public boolean isSendData() {
+        return sendData;
+    }
+
+    public void setSendData(boolean sendData) {
+        this.sendData = sendData;
     }
 
     public String getSQLInsertString() {
