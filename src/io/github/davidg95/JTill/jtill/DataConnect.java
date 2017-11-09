@@ -56,6 +56,12 @@ public interface DataConnect {
 
     public Object[] databaseInfo() throws IOException, SQLException;
 
+    public Object[] terminalInit() throws IOException;
+
+    public void initComplete() throws IOException;
+
+    public int getInits() throws IOException;
+
     /**
      * Send and assistance message to the server.
      *
@@ -1502,16 +1508,16 @@ public interface DataConnect {
      *
      * @return the JavaFX image.
      * @throws IOException if there was an error.
-     * @throws JTillException if no image is set.
      */
-    public File getLoginBackground() throws IOException, JTillException;
+    public File getLoginBackground() throws IOException;
 
     /**
      * Method to reinitialise all tills.
      *
      * @throws IOException if there was an error.
+     * @throws JTillException if there are active inits.
      */
-    public void reinitialiseAllTills() throws IOException;
+    public void reinitialiseAllTills() throws IOException, JTillException;
 
     /**
      * Clear all sales data to date.

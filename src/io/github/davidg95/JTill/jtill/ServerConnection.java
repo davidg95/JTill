@@ -2138,7 +2138,7 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public File getLoginBackground() throws IOException, JTillException {
+    public File getLoginBackground() throws IOException {
         try {
             return (File) conn.sendData(JConnData.create("GETBGIMAGE"));
         } catch (Throwable ex) {
@@ -2147,11 +2147,17 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void reinitialiseAllTills() throws IOException {
+    public void reinitialiseAllTills() throws IOException, JTillException {
         try {
             conn.sendData(JConnData.create("REINITTILLS"));
         } catch (Throwable ex) {
-            throw new IOException(ex.getMessage());
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof JTillException) {
+                throw (JTillException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
         }
     }
 
@@ -2576,6 +2582,45 @@ public class ServerConnection implements DataConnect, JConnListener {
                 throw new IOException(ex.getMessage());
             } else {
                 throw new SQLException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public Object[] terminalInit() throws IOException {
+        try {
+            return (Object[]) conn.sendData(JConnData.create("TERMINALINIT"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void initComplete() throws IOException {
+        try {
+            conn.sendData(JConnData.create("INITCOMPLETE"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public int getInits() throws IOException {
+        try {
+            return (int) conn.sendData(JConnData.create("GETINITS"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
             }
         }
     }
