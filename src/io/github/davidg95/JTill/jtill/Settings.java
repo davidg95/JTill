@@ -24,7 +24,6 @@ public class Settings implements Serializable {
 
     private static Settings settings;
     private final Properties properties;
-    private final Properties meta;
 
     /**
      * The default port number of 52341.
@@ -38,6 +37,8 @@ public class Settings implements Serializable {
      * The default maximum queued connections of 10.
      */
     public static final int DEFAULT_MAX_QUEUE = 10;
+    
+    
     /**
      * The default database address.
      */
@@ -50,11 +51,11 @@ public class Settings implements Serializable {
      * The default database password.
      */
     public static final String DEFAULT_PASSWORD = "App";
+    
+    
 
     public Settings() {
         properties = new Properties();
-        meta = new Properties();
-//        loadProperties();
     }
 
     /**
@@ -78,16 +79,6 @@ public class Settings implements Serializable {
      */
     public String getSetting(String key) {
         return properties.getProperty(key);
-    }
-
-    /**
-     * Method to get the help message for a setting.
-     *
-     * @param key the settings to get the message for.
-     * @return the help message.
-     */
-    public String getSettingMeta(String key) {
-        return meta.getProperty(key);
     }
 
     /**
@@ -141,6 +132,8 @@ public class Settings implements Serializable {
 
     /**
      * Method to load the settings from the server.properties file.
+     *
+     * @return true if the settings file exists, false if it does not.
      */
     public boolean loadProperties() {
         InputStream in;
@@ -152,16 +145,6 @@ public class Settings implements Serializable {
         } catch (FileNotFoundException | UnknownHostException ex) {
             initProperties();
             return false;
-        } catch (IOException ex) {
-        }
-
-        try {
-            in = new FileInputStream("server-meta.properties");
-            meta.load(in);
-
-            in.close();
-        } catch (FileNotFoundException ex) {
-            initMeta();
         } catch (IOException ex) {
         }
         return true;
@@ -178,14 +161,6 @@ public class Settings implements Serializable {
             properties.store(out, null);
             out.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
-        } catch (IOException ex) {
-        }
-
-        try {
-            out = new FileOutputStream("server-meta.properties");
-            meta.store(out, null);
-            out.close();
-        } catch (FileNotFoundException ex) {
         } catch (IOException ex) {
         }
     }
@@ -213,7 +188,7 @@ public class Settings implements Serializable {
             setSetting("SITE_NAME", "SITE");
             setSetting("ASK_EMAIL_RECEIPT", "FALSE");
             setSetting("MAX_CACHE_SALES", "20");
-            setSetting("SEND_PRODUCTS_START", "FALSE");
+            setSetting("SEND_PRODUCTS_START", "TRUE");
             setSetting("UPC_PREFIX", "");
             setSetting("BARCODE_LENGTH", "15");
             setSetting("NEXT_PLU", "0");
@@ -229,30 +204,6 @@ public class Settings implements Serializable {
             setSetting("PROMPT_EMAIL_RECEIPT", "false");
             setSetting("UNLOCK_CODE", "OFF");
             setSetting("TERMINAL_BG", "000000");
-
-            properties.store(out, null);
-            out.close();
-        } catch (FileNotFoundException | UnknownHostException ex) {
-        } catch (IOException ex) {
-        }
-    }
-
-    private void initMeta() {
-        OutputStream out;
-
-        try {
-            out = new FileOutputStream("server-meta.properties");
-
-            setSetting("db_address", "The address for the database.");
-            setSetting("db_username", "The username for logging onto the database.");
-            setSetting("db_password", "The password for logging onto the database.");
-            setSetting("max_conn", "The maximum allowed number of connections to the server at any one time.");
-            setSetting("max_queue", "The maximum number of connections to queue before blocking new connections if the maximum has been reached.");
-            setSetting("port", "The port number for the server.");
-            setSetting("AUTO_LOGOUT", "Whether staff should be automatically logged out after a sale or not.\nTRUE or FALSE.");
-            setSetting("LOGOUT_TIMEOUT", "Not supported yet.");
-            setSetting("MINIMUM_SERVER_LOGIN", "The lowest position allowed for a member of staff to log into the server manager.");
-            setSetting("SETTINGS_EDIT", "The lowest position allowed for a member of staff to edit these settings.");
 
             properties.store(out, null);
             out.close();

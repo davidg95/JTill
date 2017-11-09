@@ -84,7 +84,9 @@ public class Screen implements Serializable, Cloneable {
         return "'" + this.name
                 + "'," + this.getWidth()
                 + "," + this.getHeight()
-                + "," + this.getInherits();
+                + "," + this.getInherits()
+                + "," + this.getvGap()
+                + "," + this.gethGap();
     }
 
     public int getvGap() {
