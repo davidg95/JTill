@@ -188,7 +188,6 @@ public class Settings implements Serializable {
             setSetting("SITE_NAME", "SITE");
             setSetting("ASK_EMAIL_RECEIPT", "FALSE");
             setSetting("MAX_CACHE_SALES", "20");
-            setSetting("SEND_PRODUCTS_START", "TRUE");
             setSetting("UPC_PREFIX", "");
             setSetting("BARCODE_LENGTH", "15");
             setSetting("NEXT_PLU", "0");
