@@ -22,7 +22,7 @@ import java.util.Properties;
  */
 public class Settings implements Serializable {
 
-    private static Settings settings;
+    private static volatile Settings settings;
     private final Properties properties;
 
     /**
@@ -37,8 +37,7 @@ public class Settings implements Serializable {
      * The default maximum queued connections of 10.
      */
     public static final int DEFAULT_MAX_QUEUE = 10;
-    
-    
+
     /**
      * The default database address.
      */
@@ -51,8 +50,6 @@ public class Settings implements Serializable {
      * The default database password.
      */
     public static final String DEFAULT_PASSWORD = "App";
-    
-    
 
     public Settings() {
         properties = new Properties();
