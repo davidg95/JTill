@@ -56,7 +56,7 @@ public interface DataConnect {
 
     public Object[] databaseInfo() throws IOException, SQLException;
 
-    public Object[] terminalInit() throws IOException;
+    public HashMap<String, Object> terminalInit(String[] data) throws IOException;
 
     public void initComplete() throws IOException;
 
@@ -1568,10 +1568,11 @@ public interface DataConnect {
      * Send data to a till.
      *
      * @param id the id of the till.
+     * @param data the data to request.
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public void sendData(int id) throws IOException, SQLException;
+    public void sendData(int id, String[] data) throws IOException, SQLException;
 
     /**
      * Send build updates to tills.

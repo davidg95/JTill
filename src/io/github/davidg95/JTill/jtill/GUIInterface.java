@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -49,5 +50,5 @@ public interface GUIInterface {
     
     public void requestUpdate();
     
-    public void markNewData();
+    public void markNewData(String[] data);
 }

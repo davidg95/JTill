@@ -2068,7 +2068,7 @@ public class ServerConnection implements DataConnect, JConnListener {
             new Thread() {
                 @Override
                 public void run() {
-                    g.markNewData();
+                    g.markNewData((String[]) data.getParam("DATA"));
                 }
             }.start(); //Search the queue for the reqeust source.
         } else if (data.getFlag().equals("RENAME")) {
@@ -2214,9 +2214,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void sendData(int id) throws IOException, SQLException {
+    public void sendData(int id, String[] data) throws IOException, SQLException {
         try {
-            conn.sendData(JConnData.create("SENDDATA").addParam("ID", id));
+            conn.sendData(JConnData.create("SENDDATA").addParam("ID", id).addParam("DATA", data));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
@@ -2587,9 +2587,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public Object[] terminalInit() throws IOException {
+    public HashMap<String, Object> terminalInit(String[] data) throws IOException {
         try {
-            return (Object[]) conn.sendData(JConnData.create("TERMINALINIT"));
+            return (HashMap<String, Object>) conn.sendData(JConnData.create("TERMINALINIT").addParam("DATA", data));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw (IOException) ex;
