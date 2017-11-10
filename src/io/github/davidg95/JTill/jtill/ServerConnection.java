@@ -2587,9 +2587,9 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public HashMap<String, Object> terminalInit(String[] data) throws IOException {
+    public HashMap<String, Object> terminalInit(int id, String[] data) throws IOException {
         try {
-            return (HashMap<String, Object>) conn.sendData(JConnData.create("TERMINALINIT").addParam("DATA", data));
+            return (HashMap<String, Object>) conn.sendData(JConnData.create("TERMINALINIT").addParam("ID", id).addParam("DATA", data));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw (IOException) ex;

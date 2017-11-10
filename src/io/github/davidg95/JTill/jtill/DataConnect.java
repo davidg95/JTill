@@ -56,7 +56,7 @@ public interface DataConnect {
 
     public Object[] databaseInfo() throws IOException, SQLException;
 
-    public HashMap<String, Object> terminalInit(String[] data) throws IOException;
+    public HashMap<String, Object> terminalInit(int id, String[] data) throws IOException;
 
     public void initComplete() throws IOException;
 
