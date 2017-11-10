@@ -191,7 +191,6 @@ public class Settings implements Serializable {
             setSetting("UPC_PREFIX", "");
             setSetting("BARCODE_LENGTH", "15");
             setSetting("NEXT_PLU", "0");
-            setSetting("APPROVE_NEW_CONNECTIONS", "TRUE");
             setSetting("TERMINAL_BACKGROUND", "#000000");
             setSetting("SHOW_ADDRESS_RECEIPT", "TRUE");
             setSetting("SHOW_STAFF_RECEIPT", "TRUE");
@@ -203,6 +202,8 @@ public class Settings implements Serializable {
             setSetting("PROMPT_EMAIL_RECEIPT", "false");
             setSetting("UNLOCK_CODE", "OFF");
             setSetting("TERMINAL_BG", "000000");
+            setSetting("BORDER_SCREEN_BUTTON", "false");
+            setSetting("BORDER_COLOR", "#ff0000");
 
             properties.store(out, null);
             out.close();
