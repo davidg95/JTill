@@ -5,10 +5,13 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,9 +26,9 @@ public class Till implements Serializable, Cloneable, JTillObject {
     private boolean connected;
     private Date lastContact;
     private int defaultScreen;
-    
+
     private boolean sendData;
-    
+
     public Till(String name, UUID uuid, int defaultScreen) {
         this.name = name;
         this.uncashedTakings = new BigDecimal("0");
@@ -67,8 +70,31 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.uncashedTakings = uncashedTakings.add(val);
     }
 
+    /**
+     * Checks if the terminal is currently connected. If there is no connection
+     * to the server, the last known state will be returned.
+     *
+     * @return the connection state of the terminal as a boolean.
+     */
     public boolean isConnected() {
-        return connected;
+        try {
+            return DataConnect.dataconnect.isTillConnected(id);
+        } catch (IOException ex) {
+            Logger.getGlobal().log(Level.WARNING, "Unable to get connection to server, returning last know connection state for terminal " + name, ex);
+            return connected;
+        }
+    }
+
+    /**
+     * Request that the terminal download data from server. The terminal will
+     * download the data marked in the data[] array.
+     *
+     * @param data the String array containing the flags for the data to
+     * download.
+     * @throws IOException if there is a network error.
+     */
+    public void sendData(String data[]) throws IOException {
+        DataConnect.dataconnect.sendData(id, data);
     }
 
     public void setConnected(boolean connected) {

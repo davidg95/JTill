@@ -25,14 +25,18 @@ import java.util.logging.Logger;
  *
  * @author David
  */
-public class ServerConnection implements DataConnect, JConnListener {
+public class ServerConnection extends DataConnect implements JConnListener {
+
+    private static final ServerConnection CONNECTION;
 
     private final JConn conn;
 
-    private GUIInterface g;
-
     private UUID uuid;
     private String name;
+
+    static {
+        CONNECTION = new ServerConnection();
+    }
 
     /**
      * Blank constructor.
@@ -40,6 +44,10 @@ public class ServerConnection implements DataConnect, JConnListener {
     public ServerConnection() {
         conn = new JConn();
         init();
+    }
+
+    public static ServerConnection getInstance() {
+        return CONNECTION;
     }
 
     public Properties getSettings() throws IOException {
@@ -1122,7 +1130,6 @@ public class ServerConnection implements DataConnect, JConnListener {
      *
      * @throws IOException if there is a network error.
      */
-    @Override
     public void close() throws IOException {
         conn.endConnection();
     }
@@ -1290,11 +1297,6 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void setGUI(GUIInterface g) {
-        this.g = g;
-    }
-
-    @Override
     public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException {
         try {
             return (boolean) conn.sendData(JConnData.create("ISTILLLOGGEDON").addParam("STAFF", s));
@@ -1329,11 +1331,6 @@ public class ServerConnection implements DataConnect, JConnListener {
         } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
-    }
-
-    @Override
-    public GUIInterface getGUI() {
-        return this.g;
     }
 
     @Override
@@ -2214,15 +2211,11 @@ public class ServerConnection implements DataConnect, JConnListener {
     }
 
     @Override
-    public void sendData(int id, String[] data) throws IOException, SQLException {
+    public void sendData(int id, String[] data) throws IOException {
         try {
             conn.sendData(JConnData.create("SENDDATA").addParam("ID", id).addParam("DATA", data));
         } catch (Throwable ex) {
-            if (ex instanceof IOException) {
-                throw new IOException(ex.getMessage());
-            } else {
-                throw new SQLException(ex.getMessage());
-            }
+            throw new IOException(ex.getMessage());
         }
     }
 
@@ -2616,6 +2609,19 @@ public class ServerConnection implements DataConnect, JConnListener {
     public int getInits() throws IOException {
         try {
             return (int) conn.sendData(JConnData.create("GETINITS"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public boolean isTillConnected(int id) throws IOException {
+        try {
+            return (boolean) conn.sendData(JConnData.create("ISTILLCONNECTED").addParam("ID", id));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw (IOException) ex;
