@@ -22,28 +22,29 @@ import javax.mail.internet.AddressException;
  *
  * @author David
  */
-public interface DataConnect {
+public abstract class DataConnect {
 
-    /**
-     * Close the connection.
-     *
-     * @throws IOException if there was an error closing the connection.
-     */
-    public void close() throws IOException;
+    public static DataConnect dataconnect;
+    
+    public GUIInterface g;
 
     /**
      * Set a reference to the GUI.
      *
      * @param g the GUI.
      */
-    public void setGUI(GUIInterface g);
+    public void setGUI(GUIInterface g){
+        this.g = g;
+    }
 
     /**
      * Get the GUI.
      *
      * @return the GUI.
      */
-    public GUIInterface getGUI();
+    public GUIInterface getGUI(){
+        return g;
+    }
 
     /**
      * Perform a database integrity check.
@@ -52,15 +53,15 @@ public interface DataConnect {
      * @throws java.io.IOException if there was a network error.
      * @throws java.sql.SQLException if there was a database error.
      */
-    public HashMap integrityCheck() throws IOException, SQLException;
+    public abstract HashMap integrityCheck() throws IOException, SQLException;
 
-    public Object[] databaseInfo() throws IOException, SQLException;
+    public abstract Object[] databaseInfo() throws IOException, SQLException;
 
-    public HashMap<String, Object> terminalInit(int id, String[] data) throws IOException;
+    public abstract HashMap<String, Object> terminalInit(int id, String[] data) throws IOException;
 
-    public void initComplete() throws IOException;
+    public abstract void initComplete() throws IOException;
 
-    public int getInits() throws IOException;
+    public abstract int getInits() throws IOException;
 
     /**
      * Send and assistance message to the server.
@@ -68,7 +69,7 @@ public interface DataConnect {
      * @param message the message to send.
      * @throws IOException if there was an error sending the message.
      */
-    public void assisstance(String message) throws IOException;
+    public abstract void assisstance(String message) throws IOException;
 
     /**
      * Send an email to the report email set in the server.
@@ -76,7 +77,7 @@ public interface DataConnect {
      * @param message the message to send.
      * @throws IOException if there was a network error.
      */
-    public void sendEmail(String message) throws IOException;
+    public abstract void sendEmail(String message) throws IOException;
 
     /**
      * Email a receipt to a customer.
@@ -88,7 +89,7 @@ public interface DataConnect {
      * @throws javax.mail.internet.AddressException if there was any errors
      * sending the email.
      */
-    public boolean emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException;
+    public abstract boolean emailReceipt(String email, Sale sale) throws IOException, AddressException, MessagingException;
 
     /**
      * Set a setting.
@@ -97,7 +98,7 @@ public interface DataConnect {
      * @param value the value for the setting.
      * @throws IOException if there was an error.
      */
-    public void setSetting(String key, String value) throws IOException;
+    public abstract void setSetting(String key, String value) throws IOException;
 
     /**
      * Get a setting.
@@ -106,7 +107,7 @@ public interface DataConnect {
      * @return the value of the setting.
      * @throws IOException if there was an error.
      */
-    public String getSetting(String key) throws IOException;
+    public abstract String getSetting(String key) throws IOException;
 
     /**
      * Get a setting. Set it if it does not exist.
@@ -116,7 +117,7 @@ public interface DataConnect {
      * @return the setting value if it does exist.
      * @throws IOException if there was an error.
      */
-    public String getSetting(String key, String value) throws IOException;
+    public abstract String getSetting(String key, String value) throws IOException;
 
     //Product
     /**
@@ -127,7 +128,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Product addProduct(Product p) throws IOException, SQLException;
+    public abstract Product addProduct(Product p) throws IOException, SQLException;
 
     /**
      * Remove a product from the system
@@ -137,7 +138,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public void removeProduct(int code) throws ProductNotFoundException, IOException, SQLException;
+    public abstract void removeProduct(int code) throws ProductNotFoundException, IOException, SQLException;
 
     /**
      * Remove a product from the system
@@ -147,7 +148,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public void removeProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
+    public abstract void removeProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
 
     /**
      * Method to purchase a product and reduce its stock level by 1.
@@ -160,7 +161,7 @@ public interface DataConnect {
      * @throws OutOfStockException if the product is out of stock.
      * @throws ProductNotFoundException if the product was not found.
      */
-    public int purchaseProduct(int id, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
+    public abstract int purchaseProduct(int id, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
 
     /**
      * Method to get a product by its code.
@@ -171,7 +172,7 @@ public interface DataConnect {
      * @throws SQLException if there was an error getting the product.
      * @throws ProductNotFoundException if the product could not be found.
      */
-    public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException;
+    public abstract Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException;
 
     /**
      * Method to get all the products on the system.
@@ -180,7 +181,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Product> getAllProducts() throws IOException, SQLException;
+    public abstract List<Product> getAllProducts() throws IOException, SQLException;
 
     /**
      * Method to update a product.
@@ -191,7 +192,7 @@ public interface DataConnect {
      * @throws ProductNotFoundException if the product could not be found.
      * @throws SQLException if there was a database error.
      */
-    public Product updateProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
+    public abstract Product updateProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
 
     /**
      * Method to check if a barcode is already in use.
@@ -201,7 +202,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public boolean checkBarcode(String barcode) throws IOException, SQLException;
+    public abstract boolean checkBarcode(String barcode) throws IOException, SQLException;
 
     /**
      * Method to get a product by its barcode.
@@ -212,7 +213,7 @@ public interface DataConnect {
      * @throws SQLException if there was an error getting the product.
      * @throws ProductNotFoundException if the product could not be found.
      */
-    public Product getProductByBarcode(String barcode) throws IOException, ProductNotFoundException, SQLException;
+    public abstract Product getProductByBarcode(String barcode) throws IOException, ProductNotFoundException, SQLException;
 
     /**
      * Method to search for a product.
@@ -222,7 +223,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was an error getting the product.
      */
-    public List<Product> productLookup(String terms) throws IOException, SQLException;
+    public abstract List<Product> productLookup(String terms) throws IOException, SQLException;
 
     //Customer
     /**
@@ -233,7 +234,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Customer addCustomer(Customer customer) throws IOException, SQLException;
+    public abstract Customer addCustomer(Customer customer) throws IOException, SQLException;
 
     /**
      * Method to remove a customer from the system.
@@ -243,7 +244,7 @@ public interface DataConnect {
      * @throws CustomerNotFoundException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
 
     /**
      * Method to remove a customer from the system.
@@ -253,7 +254,7 @@ public interface DataConnect {
      * @throws CustomerNotFoundException if the customer could not be found.
      * @throws SQLException if there was a database error.
      */
-    public void removeCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract void removeCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
 
     /**
      * Method to get a customer from the system.
@@ -264,7 +265,7 @@ public interface DataConnect {
      * @throws CustomerNotFoundException if the customer could not be found.
      * @throws SQLException if there was a database error.
      */
-    public Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
 
     /**
      * Method to search for customers with the given name.
@@ -275,7 +276,7 @@ public interface DataConnect {
      * @throws CustomerNotFoundException if no customer could be found.
      * @throws SQLException if there was a database error.
      */
-    public List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException;
 
     /**
      * Method to get a list of all the customers in the system.
@@ -284,7 +285,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Customer> getAllCustomers() throws IOException, SQLException;
+    public abstract List<Customer> getAllCustomers() throws IOException, SQLException;
 
     /**
      * Method to update a customer in the system.
@@ -295,7 +296,7 @@ public interface DataConnect {
      * @throws CustomerNotFoundException if the customer could not be found.
      * @throws SQLException if there was a database error.
      */
-    public Customer updateCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract Customer updateCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
 
     /**
      * Method to search for customers that have details matching the given
@@ -306,7 +307,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Customer> customerLookup(String terms) throws IOException, SQLException;
+    public abstract List<Customer> customerLookup(String terms) throws IOException, SQLException;
 
     //Sale
     /**
@@ -317,7 +318,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Sale addSale(Sale s) throws IOException, SQLException;
+    public abstract Sale addSale(Sale s) throws IOException, SQLException;
 
     /**
      * Method to get all the sales in the system.
@@ -326,7 +327,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Sale> getAllSales() throws IOException, SQLException;
+    public abstract List<Sale> getAllSales() throws IOException, SQLException;
 
     /**
      * Method to get a sale in the system.
@@ -337,7 +338,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the sale could not be found.
      */
-    public Sale getSale(int id) throws IOException, SQLException, JTillException;
+    public abstract Sale getSale(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all sales within the specified date range.
@@ -348,7 +349,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException;
+    public abstract List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException;
 
     /**
      * Method to update a sale in the database.
@@ -359,7 +360,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the sale could not be found.
      */
-    public Sale updateSale(Sale s) throws IOException, SQLException, JTillException;
+    public abstract Sale updateSale(Sale s) throws IOException, SQLException, JTillException;
 
     /**
      * Method to suspend a sale. This will add the sale to a list of suspended
@@ -369,7 +370,7 @@ public interface DataConnect {
      * @param staff the staff member the sales belongs to.
      * @throws IOException if there was a network error.
      */
-    public void suspendSale(Sale sale, Staff staff) throws IOException;
+    public abstract void suspendSale(Sale sale, Staff staff) throws IOException;
 
     /**
      * Method to resume a sale. This method will remove the sale from the list
@@ -379,7 +380,7 @@ public interface DataConnect {
      * @return the sale that was suspended.
      * @throws IOException if there was a network error.
      */
-    public Sale resumeSale(Staff s) throws IOException;
+    public abstract Sale resumeSale(Staff s) throws IOException;
 
     /**
      * Method to get all uncashed sales from a given terminal with name t.
@@ -389,7 +390,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Sale> getUncashedSales(String t) throws IOException, SQLException;
+    public abstract List<Sale> getUncashedSales(String t) throws IOException, SQLException;
 
     //Sale Items
     /**
@@ -401,7 +402,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public SaleItem addSaleItem(Sale s, SaleItem i) throws IOException, SQLException;
+    public abstract SaleItem addSaleItem(Sale s, SaleItem i) throws IOException, SQLException;
 
     /**
      * Remove a sale item.
@@ -411,7 +412,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the item was not found.
      */
-    public void removeSaleItem(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeSaleItem(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Get a sale item.
@@ -422,7 +423,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the item was not found.
      */
-    public SaleItem getSaleItem(int id) throws IOException, SQLException, JTillException;
+    public abstract SaleItem getSaleItem(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Get all sale items.
@@ -431,7 +432,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<SaleItem> getAllSaleItems() throws IOException, SQLException;
+    public abstract List<SaleItem> getAllSaleItems() throws IOException, SQLException;
 
     /**
      * Method to get all ale items using the given search terms, nulls are
@@ -445,7 +446,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<SaleItem> getSaleItemsSearchTerms(int depId, int catId, Date start, Date end) throws IOException, SQLException;
+    public abstract List<SaleItem> getSaleItemsSearchTerms(int depId, int catId, Date start, Date end) throws IOException, SQLException;
 
     /**
      * Method which gets the total units sold of a particular item.
@@ -455,7 +456,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public int getTotalSoldOfItem(int id) throws IOException, SQLException;
+    public abstract int getTotalSoldOfItem(int id) throws IOException, SQLException;
 
     /**
      * Method which gets the total value sold of a particular item.
@@ -465,7 +466,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException;
+    public abstract BigDecimal getTotalValueSold(int id) throws IOException, SQLException;
 
     /**
      * Method to submit a query to the sale items table.
@@ -475,7 +476,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<SaleItem> submitSaleItemQuery(String query) throws IOException, SQLException;
+    public abstract List<SaleItem> submitSaleItemQuery(String query) throws IOException, SQLException;
 
     /**
      * Update a sale item.
@@ -486,7 +487,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the item was not found.
      */
-    public SaleItem updateSaleItem(SaleItem i) throws IOException, SQLException, JTillException;
+    public abstract SaleItem updateSaleItem(SaleItem i) throws IOException, SQLException, JTillException;
 
     //Staff
     /**
@@ -497,7 +498,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Staff addStaff(Staff s) throws IOException, SQLException;
+    public abstract Staff addStaff(Staff s) throws IOException, SQLException;
 
     /**
      * Method to remove a member of staff from the system.
@@ -507,7 +508,7 @@ public interface DataConnect {
      * @throws StaffNotFoundException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException;
+    public abstract void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException;
 
     /**
      * Method to remove a member of staff from the system.
@@ -517,7 +518,7 @@ public interface DataConnect {
      * @throws StaffNotFoundException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public void removeStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    public abstract void removeStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
     /**
      * Method to get a member of staff from the system.
@@ -528,7 +529,7 @@ public interface DataConnect {
      * @throws StaffNotFoundException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException;
+    public abstract Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException;
 
     /**
      * Method to get all staff in the system.
@@ -537,7 +538,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Staff> getAllStaff() throws IOException, SQLException;
+    public abstract List<Staff> getAllStaff() throws IOException, SQLException;
 
     /**
      * Method to get the amount of staff in the system
@@ -546,7 +547,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public int getStaffCount() throws IOException, SQLException;
+    public abstract int getStaffCount() throws IOException, SQLException;
 
     /**
      * Method to update a member of staff.
@@ -557,7 +558,7 @@ public interface DataConnect {
      * @throws StaffNotFoundException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public Staff updateStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    public abstract Staff updateStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
     /**
      * Method to check if a username is already in use. Case is ignored.
@@ -567,7 +568,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public boolean checkUsername(String username) throws IOException, SQLException;
+    public abstract boolean checkUsername(String username) throws IOException, SQLException;
 
     /**
      * Method to lo a member of staff into the system using the username and
@@ -581,7 +582,7 @@ public interface DataConnect {
      * because of incorrect username or password.
      * @throws SQLException if there was a database error.
      */
-    public Staff login(String username, String password) throws IOException, LoginException, SQLException;
+    public abstract Staff login(String username, String password) throws IOException, LoginException, SQLException;
 
     /**
      * Method to log a member of staff into a till. This method only allows a
@@ -594,7 +595,7 @@ public interface DataConnect {
      * because of an incorrect id or they might already be logged in else where.
      * @throws SQLException if there was a database error.
      */
-    public Staff tillLogin(int id) throws IOException, LoginException, SQLException;
+    public abstract Staff tillLogin(int id) throws IOException, LoginException, SQLException;
 
     /**
      * Method to check if a member of staff is logged into a till.
@@ -605,7 +606,7 @@ public interface DataConnect {
      * @throws StaffNotFoundException if the staff member could not be found.
      * @throws SQLException if there was a database error.
      */
-    public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    public abstract boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException;
 
     /**
      * Method to log a member of staff out of the system. this should not be
@@ -615,7 +616,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
-    public void logout(Staff s) throws IOException, StaffNotFoundException;
+    public abstract void logout(Staff s) throws IOException, StaffNotFoundException;
 
     /**
      * Method to log a member of staff out of the tills.
@@ -624,7 +625,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
-    public void tillLogout(Staff s) throws IOException, StaffNotFoundException;
+    public abstract void tillLogout(Staff s) throws IOException, StaffNotFoundException;
 
     /**
      * Method to get the sales for a member of staff.
@@ -635,7 +636,7 @@ public interface DataConnect {
      * @throws java.sql.SQLException if there is a database error.
      * @throws StaffNotFoundException if the member of staff could not be found.
      */
-    public List<Sale> getStaffSales(Staff s) throws IOException, SQLException, StaffNotFoundException;
+    public abstract List<Sale> getStaffSales(Staff s) throws IOException, SQLException, StaffNotFoundException;
 
     //Category
     /**
@@ -646,7 +647,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Category addCategory(Category c) throws IOException, SQLException;
+    public abstract Category addCategory(Category c) throws IOException, SQLException;
 
     /**
      * Method to update a category in the system.
@@ -657,7 +658,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the category could not be found.
      */
-    public Category updateCategory(Category c) throws IOException, SQLException, JTillException;
+    public abstract Category updateCategory(Category c) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a category from the system.
@@ -667,7 +668,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the category could not be found.
      */
-    public void removeCategory(Category c) throws IOException, SQLException, JTillException;
+    public abstract void removeCategory(Category c) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a category from the system.
@@ -677,7 +678,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the category could not be found.
      */
-    public void removeCategory(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeCategory(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a category from the system.
@@ -688,7 +689,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the category could not be found.
      */
-    public Category getCategory(int id) throws IOException, SQLException, JTillException;
+    public abstract Category getCategory(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all the categories in the system.
@@ -697,7 +698,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Category> getAllCategorys() throws IOException, SQLException;
+    public abstract List<Category> getAllCategorys() throws IOException, SQLException;
 
     /**
      * Method to get all the products in a specific category.
@@ -708,7 +709,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the category could not be found.
      */
-    public List<Product> getProductsInCategory(int id) throws IOException, SQLException, JTillException;
+    public abstract List<Product> getProductsInCategory(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all the products in a department.
@@ -718,7 +719,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Product> getProductsInDepartment(int id) throws IOException, SQLException;
+    public abstract List<Product> getProductsInDepartment(int id) throws IOException, SQLException;
 
     //Department
     /**
@@ -729,7 +730,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error
      * @throws SQLException if there was a database error.
      */
-    public Department addDepartment(Department d) throws IOException, SQLException;
+    public abstract Department addDepartment(Department d) throws IOException, SQLException;
 
     /**
      * Remove a department from the system.
@@ -739,7 +740,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the department was not found.
      */
-    public void removeDepartment(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeDepartment(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Get a department from the system.
@@ -750,7 +751,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the department was not found.
      */
-    public Department getDepartment(int id) throws IOException, SQLException, JTillException;
+    public abstract Department getDepartment(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Gets all the department on the system.
@@ -759,7 +760,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error
      * @throws SQLException if there was a database error.
      */
-    public List<Department> getAllDepartments() throws IOException, SQLException;
+    public abstract List<Department> getAllDepartments() throws IOException, SQLException;
 
     /**
      * Update a department on the system.
@@ -770,7 +771,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the department was not found.
      */
-    public Department updateDepartment(Department d) throws IOException, SQLException, JTillException;
+    public abstract Department updateDepartment(Department d) throws IOException, SQLException, JTillException;
 
     //Discount
     /**
@@ -781,7 +782,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Discount addDiscount(Discount d) throws IOException, SQLException;
+    public abstract Discount addDiscount(Discount d) throws IOException, SQLException;
 
     /**
      * Method to update a discount in the system.
@@ -792,7 +793,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws DiscountNotFoundException if the discount was not found.
      */
-    public Discount updateDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException;
+    public abstract Discount updateDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException;
 
     /**
      * Method to remove a discount from the system.
@@ -802,7 +803,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws DiscountNotFoundException if the discount was not found.
      */
-    public void removeDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException;
+    public abstract void removeDiscount(Discount d) throws IOException, SQLException, DiscountNotFoundException;
 
     /**
      * Method to remove a discount from the system.
@@ -812,7 +813,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws DiscountNotFoundException if the discount was not found.
      */
-    public void removeDiscount(int id) throws IOException, SQLException, DiscountNotFoundException;
+    public abstract void removeDiscount(int id) throws IOException, SQLException, DiscountNotFoundException;
 
     /**
      * Method to get a discount from the system.
@@ -823,7 +824,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws DiscountNotFoundException if the discount was not found.
      */
-    public Discount getDiscount(int id) throws IOException, SQLException, DiscountNotFoundException;
+    public abstract Discount getDiscount(int id) throws IOException, SQLException, DiscountNotFoundException;
 
     /**
      * Method to get all the discounts from the system.
@@ -832,7 +833,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Discount> getAllDiscounts() throws IOException, SQLException;
+    public abstract List<Discount> getAllDiscounts() throws IOException, SQLException;
 
     /**
      * Method to get all current valid discounts.
@@ -841,7 +842,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Discount> getValidDiscounts() throws IOException, SQLException;
+    public abstract List<Discount> getValidDiscounts() throws IOException, SQLException;
 
     //Tax
     /**
@@ -852,7 +853,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Tax addTax(Tax t) throws IOException, SQLException;
+    public abstract Tax addTax(Tax t) throws IOException, SQLException;
 
     /**
      * Method to remove a tax from the system.
@@ -862,7 +863,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the tax was not found.
      */
-    public void removeTax(Tax t) throws IOException, SQLException, JTillException;
+    public abstract void removeTax(Tax t) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a tax from the system given its ID.
@@ -872,7 +873,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the tax was not found.
      */
-    public void removeTax(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeTax(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a tax from the system.
@@ -883,7 +884,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the tax was not found.
      */
-    public Tax getTax(int id) throws IOException, SQLException, JTillException;
+    public abstract Tax getTax(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to update a tax on the system
@@ -894,7 +895,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the tax was not found.
      */
-    public Tax updateTax(Tax t) throws IOException, SQLException, JTillException;
+    public abstract Tax updateTax(Tax t) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a list of all the tax on the system.
@@ -903,7 +904,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Tax> getAllTax() throws IOException, SQLException;
+    public abstract List<Tax> getAllTax() throws IOException, SQLException;
 
     /**
      * Method to get all the products that belong to a specific tax.
@@ -914,7 +915,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the Tax was not found.
      */
-    public List<Product> getProductsInTax(int id) throws IOException, SQLException, JTillException;
+    public abstract List<Product> getProductsInTax(int id) throws IOException, SQLException, JTillException;
 
     //Screens
     /**
@@ -925,7 +926,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Screen addScreen(Screen s) throws IOException, SQLException;
+    public abstract Screen addScreen(Screen s) throws IOException, SQLException;
 
     /**
      * Method to add a new screen button.
@@ -935,7 +936,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public TillButton addButton(TillButton b) throws IOException, SQLException;
+    public abstract TillButton addButton(TillButton b) throws IOException, SQLException;
 
     /**
      * Method to remove a screen from the database. This will also remove any
@@ -946,7 +947,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws ScreenNotFoundException if the screen was not found.
      */
-    public void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
+    public abstract void removeScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
     /**
      * Method to remove a button from the database.
@@ -956,7 +957,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the button was not found.
      */
-    public void removeButton(TillButton b) throws IOException, SQLException, JTillException;
+    public abstract void removeButton(TillButton b) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a screen from the server.
@@ -967,7 +968,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws ScreenNotFoundException if the screen was not found.
      */
-    public Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException;
+    public abstract Screen getScreen(int s) throws IOException, SQLException, ScreenNotFoundException;
 
     /**
      * Method to get a button from the server.
@@ -978,7 +979,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the button was not found.
      */
-    public TillButton getButton(int b) throws IOException, SQLException, JTillException;
+    public abstract TillButton getButton(int b) throws IOException, SQLException, JTillException;
 
     /**
      * Method to update a screen on the server.
@@ -989,7 +990,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws ScreenNotFoundException if the screen was not found.
      */
-    public Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
+    public abstract Screen updateScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
     /**
      * Method to update a button on the server.
@@ -1000,7 +1001,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the button was not found.
      */
-    public TillButton updateButton(TillButton b) throws IOException, SQLException, JTillException;
+    public abstract TillButton updateButton(TillButton b) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all screens on the database.
@@ -1009,7 +1010,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Screen> getAllScreens() throws IOException, SQLException;
+    public abstract List<Screen> getAllScreens() throws IOException, SQLException;
 
     /**
      * Method to get all the buttons on the database.
@@ -1018,7 +1019,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<TillButton> getAllButtons() throws IOException, SQLException;
+    public abstract List<TillButton> getAllButtons() throws IOException, SQLException;
 
     /**
      * Method to get all buttons for a certain screen.
@@ -1029,7 +1030,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws ScreenNotFoundException if the screen could not be found.
      */
-    public List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
+    public abstract List<TillButton> getButtonsOnScreen(Screen s) throws IOException, SQLException, ScreenNotFoundException;
 
     /**
      * gets screens which inherit this screen.
@@ -1040,7 +1041,7 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      * @throws JTillException if there is an error.
      */
-    public List<Screen> checkInheritance(Screen s) throws IOException, SQLException, JTillException;
+    public abstract List<Screen> checkInheritance(Screen s) throws IOException, SQLException, JTillException;
 
     //Tills
     /**
@@ -1051,7 +1052,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public Till addTill(Till t) throws IOException, SQLException;
+    public abstract Till addTill(Till t) throws IOException, SQLException;
 
     /**
      * Method to remove a till from the server.
@@ -1061,7 +1062,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the till was not found.
      */
-    public void removeTill(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeTill(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a till from the server.
@@ -1072,7 +1073,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the till was not found.
      */
-    public Till getTill(int id) throws IOException, SQLException, JTillException;
+    public abstract Till getTill(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to update a till.
@@ -1083,7 +1084,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error updating the till.
      */
-    public Till updateTill(Till t) throws IOException, SQLException, JTillException;
+    public abstract Till updateTill(Till t) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all tills on the server.
@@ -1092,7 +1093,16 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<Till> getAllTills() throws IOException, SQLException;
+    public abstract List<Till> getAllTills() throws IOException, SQLException;
+
+    /**
+     * Check if a till is connected.
+     *
+     * @param id the till id.
+     * @return true or false indicating if it is connected.
+     * @throws IOException if there is a network error.
+     */
+    public abstract boolean isTillConnected(int id) throws IOException;
 
     /**
      * Method to connect a till.
@@ -1104,7 +1114,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws JTillException if the till is already connected.
      */
-    public Till connectTill(String name, UUID uuid, Staff staff) throws IOException, JTillException;
+    public abstract Till connectTill(String name, UUID uuid, Staff staff) throws IOException, JTillException;
 
     /**
      * Method to get all current connected tills.
@@ -1112,7 +1122,7 @@ public interface DataConnect {
      * @return a List of type Till.
      * @throws IOException if there was a network error.
      */
-    public List<Till> getConnectedTills() throws IOException;
+    public abstract List<Till> getConnectedTills() throws IOException;
 
     /**
      * Method to get uncashed till sales.
@@ -1122,7 +1132,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws JTillException if there was another error.
      */
-    public List<Sale> getUncachedTillSales(int id) throws IOException, JTillException;
+    public abstract List<Sale> getUncachedTillSales(int id) throws IOException, JTillException;
 
     /**
      * Method to check if a till name is being used.
@@ -1132,7 +1142,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public boolean isTillNameUsed(String name) throws IOException, SQLException;
+    public abstract boolean isTillNameUsed(String name) throws IOException, SQLException;
 
     //Waste Report
     /**
@@ -1143,7 +1153,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error with the report.
      */
-    public void addWasteReport(List<WasteItem> items) throws IOException, SQLException, JTillException;
+    public abstract void addWasteReport(List<WasteItem> items) throws IOException, SQLException, JTillException;
 
     //Waste Item
     /**
@@ -1155,7 +1165,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error with the waste item.
      */
-    public WasteItem addWasteItem(WasteItem wi) throws IOException, SQLException, JTillException;
+    public abstract WasteItem addWasteItem(WasteItem wi) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a waste item from the system.
@@ -1165,7 +1175,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the waste item could not be found.
      */
-    public void removeWasteItem(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeWasteItem(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a waste item from the system.
@@ -1176,7 +1186,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the waste item could not be found.
      */
-    public WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException;
+    public abstract WasteItem getWasteItem(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all waste items.
@@ -1185,7 +1195,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public List<WasteItem> getAllWasteItems() throws IOException, SQLException;
+    public abstract List<WasteItem> getAllWasteItems() throws IOException, SQLException;
 
     /**
      * Method to get the total units wasted of a certain product.
@@ -1195,7 +1205,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public int getTotalWastedOfItem(int id) throws IOException, SQLException;
+    public abstract int getTotalWastedOfItem(int id) throws IOException, SQLException;
 
     /**
      * Method to get the total value wasted of a certain product.
@@ -1205,7 +1215,7 @@ public interface DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException;
+    public abstract BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException;
 
     /**
      * Method to add a waste reason.
@@ -1217,7 +1227,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the waste reason was not found.
      */
-    public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
+    public abstract WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a waste reason.
@@ -1227,7 +1237,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the waste reason was not found.
      */
-    public void removeWasteReason(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeWasteReason(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a waste reason.
@@ -1238,7 +1248,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the waste reason was not found.
      */
-    public WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException;
+    public abstract WasteReason getWasteReason(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all WasteReasons.
@@ -1247,7 +1257,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public List<WasteReason> getAllWasteReasons() throws IOException, SQLException;
+    public abstract List<WasteReason> getAllWasteReasons() throws IOException, SQLException;
 
     /**
      * Method to update a WasteReason.
@@ -1258,7 +1268,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the waste reason was not found.
      */
-    public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
+    public abstract WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
 
     /**
      * Method to add a Supplier.
@@ -1269,7 +1279,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the Supplier was not found.
      */
-    public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException;
+    public abstract Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove a Supplier.
@@ -1279,7 +1289,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the Supplier was not found.
      */
-    public void removeSupplier(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeSupplier(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a Supplier.
@@ -1290,7 +1300,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the Supplier was not found.
      */
-    public Supplier getSupplier(int id) throws IOException, SQLException, JTillException;
+    public abstract Supplier getSupplier(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all suppliers.
@@ -1299,7 +1309,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public List<Supplier> getAllSuppliers() throws IOException, SQLException;
+    public abstract List<Supplier> getAllSuppliers() throws IOException, SQLException;
 
     /**
      * Method to update a Supplier.
@@ -1310,7 +1320,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the Supplier was not found.
      */
-    public Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException;
+    public abstract Supplier updateSupplier(Supplier s) throws IOException, SQLException, JTillException;
 
     /**
      * Method to add a received item to the database.
@@ -1320,7 +1330,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public void addReceivedItem(ReceivedItem i, int report) throws IOException, SQLException;
+    public abstract void addReceivedItem(ReceivedItem i, int report) throws IOException, SQLException;
 
     /**
      * Gets the total spend on an item.
@@ -1330,7 +1340,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException;
+    public abstract BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException;
 
     /**
      * Get the total amount received of this item.
@@ -1340,7 +1350,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public int getTotalReceivedOfItem(int id) throws IOException, SQLException;
+    public abstract int getTotalReceivedOfItem(int id) throws IOException, SQLException;
 
     /**
      * Clocks on a member of staff.
@@ -1350,7 +1360,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws StaffNotFoundException if the member of staff was not found.
      */
-    public void clockOn(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract void clockOn(int id) throws IOException, SQLException, StaffNotFoundException;
 
     /**
      * Clocks off a member of staff.
@@ -1360,7 +1370,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws StaffNotFoundException if the member of staff was not found.
      */
-    public void clockOff(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract void clockOff(int id) throws IOException, SQLException, StaffNotFoundException;
 
     /**
      * Method to get all clock items for a staff member.
@@ -1371,7 +1381,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws StaffNotFoundException if the member of staff was not found.
      */
-    public List<ClockItem> getAllClocks(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract List<ClockItem> getAllClocks(int id) throws IOException, SQLException, StaffNotFoundException;
 
     /**
      * Method to clear the clock entries for a member of staff.
@@ -1381,7 +1391,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws StaffNotFoundException if the member of staff was not found.
      */
-    public void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException;
 
     /**
      * Method to add a new trigger.
@@ -1391,7 +1401,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public Trigger addTrigger(Trigger t) throws IOException, SQLException;
+    public abstract Trigger addTrigger(Trigger t) throws IOException, SQLException;
 
     /**
      * Method to get a list of all a discounts buckets.
@@ -1402,7 +1412,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws DiscountNotFoundException if the discount was not found.
      */
-    public List<DiscountBucket> getDiscountBuckets(int id) throws IOException, SQLException, DiscountNotFoundException;
+    public abstract List<DiscountBucket> getDiscountBuckets(int id) throws IOException, SQLException, DiscountNotFoundException;
 
     /**
      * Method to remove a trigger.
@@ -1412,7 +1422,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the trigger was not found.
      */
-    public void removeTrigger(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeTrigger(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to update a trigger.
@@ -1423,7 +1433,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the trigger was not found.
      */
-    public Trigger updateTrigger(Trigger t) throws IOException, SQLException, JTillException;
+    public abstract Trigger updateTrigger(Trigger t) throws IOException, SQLException, JTillException;
 
     /**
      * Method to add a new DiscountBucket.
@@ -1433,7 +1443,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException;
+    public abstract DiscountBucket addBucket(DiscountBucket b) throws IOException, SQLException;
 
     /**
      * Method to remove a discount bucket.
@@ -1443,7 +1453,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the bucket was not found.
      */
-    public void removeBucket(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeBucket(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to update a discount bucket.
@@ -1454,7 +1464,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the bucket was not found.
      */
-    public DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException;
+    public abstract DiscountBucket updateBucket(DiscountBucket b) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all the triggers for a bucket.
@@ -1465,7 +1475,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if the bucket was not found.
      */
-    public List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException;
+    public abstract List<Trigger> getBucketTriggers(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to search SaleItems.
@@ -1479,7 +1489,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error in the search.
      */
-    public List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException;
+    public abstract List<SaleItem> searchSaleItems(int department, int category, Date start, Date end) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a terminals sales.
@@ -1491,7 +1501,7 @@ public interface DataConnect {
      * @throws SQLException if there was a database error.
      * @throws JTillException if there was an error in the search.
      */
-    public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException;
+    public abstract List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException;
 
     /**
      * Method to search the Products table with a customer WHERE clause.
@@ -1501,7 +1511,7 @@ public interface DataConnect {
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException;
+    public abstract List<Product> getProductsAdvanced(String WHERE) throws IOException, SQLException;
 
     /**
      * Get the login screen background image.
@@ -1509,7 +1519,7 @@ public interface DataConnect {
      * @return the JavaFX image.
      * @throws IOException if there was an error.
      */
-    public File getLoginBackground() throws IOException;
+    public abstract File getLoginBackground() throws IOException;
 
     /**
      * Method to reinitialise all tills.
@@ -1517,7 +1527,7 @@ public interface DataConnect {
      * @throws IOException if there was an error.
      * @throws JTillException if there are active inits.
      */
-    public void reinitialiseAllTills() throws IOException, JTillException;
+    public abstract void reinitialiseAllTills() throws IOException, JTillException;
 
     /**
      * Clear all sales data to date.
@@ -1526,7 +1536,7 @@ public interface DataConnect {
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public int clearSalesData() throws IOException, SQLException;
+    public abstract int clearSalesData() throws IOException, SQLException;
 
     /**
      * Purges the database, removing all sales, received and wastage data.
@@ -1534,7 +1544,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public void purgeDatabase() throws IOException, SQLException;
+    public abstract void purgeDatabase() throws IOException, SQLException;
 
     /**
      * Add a ReceivedReport to the system.
@@ -1543,7 +1553,7 @@ public interface DataConnect {
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public void addReceivedReport(ReceivedReport rep) throws IOException, SQLException;
+    public abstract void addReceivedReport(ReceivedReport rep) throws IOException, SQLException;
 
     /**
      * Get all received reports.
@@ -1552,7 +1562,7 @@ public interface DataConnect {
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public List<ReceivedReport> getAllReceivedReports() throws IOException, SQLException;
+    public abstract List<ReceivedReport> getAllReceivedReports() throws IOException, SQLException;
 
     /**
      * Updates a ReceivedReport.
@@ -1562,7 +1572,7 @@ public interface DataConnect {
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public ReceivedReport updateReceivedReport(ReceivedReport rr) throws IOException, SQLException;
+    public abstract ReceivedReport updateReceivedReport(ReceivedReport rr) throws IOException, SQLException;
 
     /**
      * Send data to a till.
@@ -1570,9 +1580,8 @@ public interface DataConnect {
      * @param id the id of the till.
      * @param data the data to request.
      * @throws IOException if there is an error.
-     * @throws java.sql.SQLException if there is a database error.
      */
-    public void sendData(int id, String[] data) throws IOException, SQLException;
+    public abstract void sendData(int id, String[] data) throws IOException;
 
     /**
      * Send build updates to tills.
@@ -1580,7 +1589,7 @@ public interface DataConnect {
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public void sendBuildUpdates() throws IOException, SQLException;
+    public abstract void sendBuildUpdates() throws IOException, SQLException;
 
     /**
      * Download terminal update.
@@ -1589,7 +1598,7 @@ public interface DataConnect {
      * @throws IOException if there is an error.
      * @throws java.sql.SQLException if there is a database error.
      */
-    public byte[] downloadTerminalUpdate() throws Exception;
+    public abstract byte[] downloadTerminalUpdate() throws Exception;
 
     /**
      * Log a staff member our of the till.
@@ -1598,7 +1607,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws JTillException if there is an error.
      */
-    public void logoutTill(int id) throws IOException, JTillException;
+    public abstract void logoutTill(int id) throws IOException, JTillException;
 
     /**
      * Gets the member of staff if any logged on to the till.
@@ -1608,7 +1617,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws JTillException if there is an error.
      */
-    public Staff getTillStaff(int id) throws IOException, JTillException;
+    public abstract Staff getTillStaff(int id) throws IOException, JTillException;
 
     /**
      * Get all sales for the current session. This will reset the readings.
@@ -1621,7 +1630,7 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      * @throws JTillException if there is an error.
      */
-    public TillReport zReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException;
+    public abstract TillReport zReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException;
 
     /**
      * Get all sales for the current session.
@@ -1634,7 +1643,7 @@ public interface DataConnect {
      * @throws SQLException if there is a database error.
      * @throws JTillException if there is an error.
      */
-    public TillReport xReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException;
+    public abstract TillReport xReport(Till terminal, BigDecimal declared, Staff staff) throws IOException, SQLException, JTillException;
 
     /**
      * Method to remove cashed sales from the database.
@@ -1643,7 +1652,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public int removeCashedSales() throws IOException, SQLException;
+    public abstract int removeCashedSales() throws IOException, SQLException;
 
     /**
      * Method to get till declaration reports.
@@ -1653,7 +1662,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<TillReport> getDeclarationReports(int terminal) throws IOException, SQLException;
+    public abstract List<TillReport> getDeclarationReports(int terminal) throws IOException, SQLException;
 
     /**
      * Method to remove a declaration report.
@@ -1662,7 +1671,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public void removeDeclarationReport(int id) throws IOException, SQLException;
+    public abstract void removeDeclarationReport(int id) throws IOException, SQLException;
 
     /**
      * Consolidated report.
@@ -1674,7 +1683,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<Sale> consolidated(Date start, Date end, int t) throws IOException, SQLException;
+    public abstract List<Sale> consolidated(Date start, Date end, int t) throws IOException, SQLException;
 
     /**
      * Get total refunds for a terminal within a date range.
@@ -1686,7 +1695,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public BigDecimal getRefunds(Date start, Date end, int t) throws IOException, SQLException;
+    public abstract BigDecimal getRefunds(Date start, Date end, int t) throws IOException, SQLException;
 
     /**
      * Get the total wastage value.
@@ -1697,7 +1706,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public BigDecimal getWastage(Date start, Date end) throws IOException, SQLException;
+    public abstract BigDecimal getWastage(Date start, Date end) throws IOException, SQLException;
 
     /**
      * Submit a stock take report.
@@ -1708,7 +1717,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public void submitStockTake(List<Product> products, boolean zeroRest) throws IOException, SQLException;
+    public abstract void submitStockTake(List<Product> products, boolean zeroRest) throws IOException, SQLException;
 
     /**
      * Get all categories in a department.
@@ -1718,7 +1727,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<Category> getCategoriesInDepartment(int department) throws IOException, SQLException;
+    public abstract List<Category> getCategoriesInDepartment(int department) throws IOException, SQLException;
 
     /**
      * Adds a new condiments.
@@ -1728,7 +1737,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public Condiment addCondiment(Condiment c) throws IOException, SQLException;
+    public abstract Condiment addCondiment(Condiment c) throws IOException, SQLException;
 
     /**
      * Get a products condiments.
@@ -1738,7 +1747,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<Condiment> getProductsCondiments(int id) throws IOException, SQLException;
+    public abstract List<Condiment> getProductsCondiments(int id) throws IOException, SQLException;
 
     /**
      * Updates a condiment.
@@ -1748,7 +1757,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public Condiment updateCondiment(Condiment c) throws IOException, SQLException;
+    public abstract Condiment updateCondiment(Condiment c) throws IOException, SQLException;
 
     /**
      * Removes a condiment.
@@ -1757,7 +1766,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public void removeCondiment(int id) throws IOException, SQLException;
+    public abstract void removeCondiment(int id) throws IOException, SQLException;
 
     /**
      * Get sales by department.
@@ -1767,7 +1776,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<SaleItem> getSalesByDepartment(int id) throws IOException, SQLException;
+    public abstract List<SaleItem> getSalesByDepartment(int id) throws IOException, SQLException;
 
     /**
      * Add an order to the database. This does NOT send the order.
@@ -1777,7 +1786,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public Order addOrder(Order o) throws IOException, SQLException;
+    public abstract Order addOrder(Order o) throws IOException, SQLException;
 
     /**
      * Update an order.
@@ -1786,7 +1795,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public void updateOrder(Order o) throws IOException, SQLException;
+    public abstract void updateOrder(Order o) throws IOException, SQLException;
 
     /**
      * Get all orders.
@@ -1795,7 +1804,7 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<Order> getAllOrders() throws IOException, SQLException;
+    public abstract List<Order> getAllOrders() throws IOException, SQLException;
 
     /**
      * Remove an order.
@@ -1804,5 +1813,5 @@ public interface DataConnect {
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public void deleteOrder(int id) throws IOException, SQLException;
+    public abstract void deleteOrder(int id) throws IOException, SQLException;
 }
