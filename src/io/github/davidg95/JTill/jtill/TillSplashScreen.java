@@ -16,10 +16,10 @@ import javax.swing.JWindow;
  */
 public class TillSplashScreen extends JWindow {
 
-    private static final JWindow window;
-    private static JProgressBar bar;
-    private static JLabel prgLabel;
-    
+    private static final TillSplashScreen window;
+    private JProgressBar bar;
+    private JLabel prgLabel;
+
     public TillSplashScreen() {
         JLabel label = new JLabel();
         bar = new JProgressBar();
@@ -35,26 +35,34 @@ public class TillSplashScreen extends JWindow {
         setBounds(500, 150, 500, 320);
         setLocationRelativeTo(null);
     }
-    
-    static{
+
+    static {
         window = new TillSplashScreen();
     }
 
     public static void showSplashScreen() {
         window.setVisible(true);
     }
-    
-    public static void hideSplashScreen(){
+
+    public static void hideSplashScreen() {
         window.setVisible(false);
     }
-    
-    public static void setLabel(String text){
+
+    private void setPrgLabel(String text) {
         prgLabel.setText(text);
     }
-    
-    public static void addBar(int val){
+
+    public static void setLabel(String text) {
+        window.setPrgLabel(text);
+    }
+
+    private void addToBar(int val) {
         bar.setValue(bar.getValue() + val);
         bar.repaint();
+    }
+
+    public static void addBar(int val) {
+        window.addToBar(val);
     }
 
 }
