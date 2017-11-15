@@ -25,13 +25,33 @@ public class Utilities {
         }
         return false;
     }
-    
+
     /**
      * Method to check if a string value is an email or not.
+     *
      * @param email
-     * @return 
+     * @return
      */
-    public static boolean isEmail(String email){
+    public static boolean isEmail(String email) {
         return email.contains("@") && email.contains(".") && email.length() > 4;
+    }
+
+    public static int CalculateCheckDigit(String barcode) {
+        int factor = 3;
+        int cumulative = 0;
+        for (char c : barcode.toCharArray()) {
+            int v = Integer.parseInt(Character.toString(c));
+            cumulative = (v * factor);
+            if (factor == 3) {
+                factor = 1;
+            } else {
+                factor = 3;
+            }
+        }
+        if (cumulative % 10 == 0) {
+            return 0;
+        }
+        int offset = cumulative % 10;
+        return 10 - offset;
     }
 }
