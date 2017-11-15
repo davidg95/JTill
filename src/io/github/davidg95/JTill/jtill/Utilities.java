@@ -77,4 +77,16 @@ public class Utilities {
         int checkDigit = Utilities.calculateCheckDigit(minusCheck);
         return barcode.equals(minusCheck + checkDigit);
     }
+
+    /**
+     * Check if the abrcode is 8, 12, 13 or 14 digits long.
+     *
+     * See https://www.gs1.org/how-calculate-check-digit-manually
+     *
+     * @param barcode the abrcode to check.
+     * @return true if it is a valid length, flase if it is not.
+     */
+    public static boolean validateBarcodeLenth(String barcode) {
+        return barcode.length() == 8 || barcode.length() == 12 || barcode.length() == 13 || barcode.length() == 14;
+    }
 }
