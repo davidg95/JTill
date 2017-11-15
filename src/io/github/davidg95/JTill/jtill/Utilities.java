@@ -36,7 +36,15 @@ public class Utilities {
         return email.contains("@") && email.contains(".") && email.length() > 4;
     }
 
-    public static int CalculateCheckDigit(String barcode) {
+    /**
+     * Method to calculate the check digit.
+     *
+     * @see https://www.gs1.org/how-calculate-check-digit-manually
+     * @param barcode the barcode. Barcodes should be 8, 12, 13 or 14 digits in
+     * length.
+     * @return the single numerical digit.
+     */
+    public static int calculateCheckDigit(String barcode) {
         int factor = 3;
         int cumulative = 0;
         for (char c : barcode.toCharArray()) {
@@ -53,5 +61,18 @@ public class Utilities {
         }
         int offset = cumulative % 10;
         return 10 - offset;
+    }
+
+    /**
+     * Method to check if a barcode is valid based on its check digit.
+     *
+     * @see https://www.gs1.org/how-calculate-check-digit-manually
+     * @param barcode the barcode to check
+     * @return true if it is valid, false if it is not.
+     */
+    public static boolean validateBarcode(String barcode) {
+        String minusCheck = barcode.substring(0, barcode.length() - 1);
+        int checkDigit = Utilities.calculateCheckDigit(minusCheck);
+        return barcode.equals(minusCheck + checkDigit);
     }
 }
