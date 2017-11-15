@@ -2002,13 +2002,11 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException {
+    public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETTERMINALSALES").addParam("TERMINAL", terminal).addParam("UNCASHEDFLAG", uncashedOnly));
         } catch (Throwable ex) {
-            if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else if (ex instanceof SQLException) {
+            if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
                 throw new IOException(ex.getMessage());

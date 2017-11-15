@@ -8,7 +8,9 @@ package io.github.davidg95.JTill.jtill;
 import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -131,6 +133,19 @@ public class Till implements Serializable, Cloneable, JTillObject {
 
     public void setSendData(boolean sendData) {
         this.sendData = sendData;
+    }
+
+    /**
+     * Get Sales for this terminal.
+     *
+     * @param uncashedOnly pass in true if only uncashed sales should be
+     * returned.
+     * @return a List of sales.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<Sale> getTerminalSales(boolean uncashedOnly) throws IOException, SQLException {
+        return DataConnect.dataconnect.getTerminalSales(id, uncashedOnly);
     }
 
     public String getSQLInsertString() {

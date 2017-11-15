@@ -1499,9 +1499,8 @@ public abstract class DataConnect {
      * @return a List of the terminals sales.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws JTillException if there was an error in the search.
      */
-    public abstract List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException, JTillException;
+    public abstract List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException;
 
     /**
      * Method to search the Products table with a customer WHERE clause.
