@@ -50,7 +50,7 @@ public class Utilities {
         int cumulative = 0;
         for (char c : barcode.toCharArray()) {
             int v = Integer.parseInt(Character.toString(c));
-            cumulative = (v * factor);
+            cumulative += (v * factor);
             if (factor == 3) {
                 factor = 1;
             } else {
