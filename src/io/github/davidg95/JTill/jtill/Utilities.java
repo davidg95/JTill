@@ -39,7 +39,8 @@ public class Utilities {
     /**
      * Method to calculate the check digit.
      *
-     * @see https://www.gs1.org/how-calculate-check-digit-manually
+     * See https://www.gs1.org/how-calculate-check-digit-manually
+     *
      * @param barcode the barcode. Barcodes should be 8, 12, 13 or 14 digits in
      * length.
      * @return the single numerical digit.
@@ -66,7 +67,8 @@ public class Utilities {
     /**
      * Method to check if a barcode is valid based on its check digit.
      *
-     * @see https://www.gs1.org/how-calculate-check-digit-manually
+     * See https://www.gs1.org/how-calculate-check-digit-manually
+     *
      * @param barcode the barcode to check
      * @return true if it is valid, false if it is not.
      */
