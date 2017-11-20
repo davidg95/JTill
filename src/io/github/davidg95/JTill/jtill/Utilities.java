@@ -48,7 +48,9 @@ public class Utilities {
     public static int calculateCheckDigit(String barcode) {
         int factor = 3;
         int cumulative = 0;
-        for (char c : barcode.toCharArray()) {
+        char ca[] = barcode.toCharArray();
+        for (int i = ca.length - 1; i >= 0; i--) {
+            char c = ca[i];
             int v = Integer.parseInt(Character.toString(c));
             cumulative += (v * factor);
             if (factor == 3) {
