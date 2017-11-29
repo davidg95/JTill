@@ -2628,4 +2628,17 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public void performBackup() throws IOException {
+        try {
+            conn.sendData(JConnData.create("BACKUP"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }

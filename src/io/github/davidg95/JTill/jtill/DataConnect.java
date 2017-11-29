@@ -25,7 +25,7 @@ import javax.mail.internet.AddressException;
 public abstract class DataConnect {
 
     public static DataConnect dataconnect;
-    
+
     public GUIInterface g;
 
     /**
@@ -33,7 +33,7 @@ public abstract class DataConnect {
      *
      * @param g the GUI.
      */
-    public void setGUI(GUIInterface g){
+    public void setGUI(GUIInterface g) {
         this.g = g;
     }
 
@@ -42,7 +42,7 @@ public abstract class DataConnect {
      *
      * @return the GUI.
      */
-    public GUIInterface getGUI(){
+    public GUIInterface getGUI() {
         return g;
     }
 
@@ -1813,4 +1813,11 @@ public abstract class DataConnect {
      * @throws SQLException if there is a database error.
      */
     public abstract void deleteOrder(int id) throws IOException, SQLException;
+
+    /**
+     * Perform a backup of the database on the server.
+     *
+     * @throws IOException if there was a file error.
+     */
+    public abstract void performBackup() throws IOException;
 }
