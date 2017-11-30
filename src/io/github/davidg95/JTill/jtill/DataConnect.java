@@ -1821,4 +1821,19 @@ public abstract class DataConnect {
      * @throws IOException if there was a file error.
      */
     public abstract String performBackup() throws IOException;
+
+    /**
+     * Get a list of backups that have been taken.
+     *
+     * @return the list of backups.
+     * @throws IOException if there is a file error.
+     */
+    public abstract List<String> getBackupList() throws IOException;
+    
+    /**
+     * Method to delete a backup.
+     * @param name the backup to delete, pass in null to delete all.
+     * @throws IOException if there is a file error.
+     */
+    public abstract void clearBackup(String name) throws IOException;
 }

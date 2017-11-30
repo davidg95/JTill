@@ -2641,4 +2641,30 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public List<String> getBackupList() throws IOException {
+        try {
+            return (List) conn.sendData(JConnData.create("LISTBACKUPS"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void clearBackup(String name) throws IOException {
+        try {
+            conn.sendData(JConnData.create("DELETEBACKUP").addParam("NAME", name));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }
