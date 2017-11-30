@@ -1817,7 +1817,8 @@ public abstract class DataConnect {
     /**
      * Perform a backup of the database on the server.
      *
+     * @return the filepath of the backup.
      * @throws IOException if there was a file error.
      */
-    public abstract void performBackup() throws IOException;
+    public abstract String performBackup() throws IOException;
 }

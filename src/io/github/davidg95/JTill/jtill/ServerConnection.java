@@ -2630,9 +2630,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void performBackup() throws IOException {
+    public String performBackup() throws IOException {
         try {
-            conn.sendData(JConnData.create("BACKUP"));
+            return (String) conn.sendData(JConnData.create("BACKUP"));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw (IOException) ex;
