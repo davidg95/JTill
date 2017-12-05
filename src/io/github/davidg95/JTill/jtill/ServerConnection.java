@@ -6,6 +6,7 @@
 package io.github.davidg95.JTill.jtill;
 
 import io.github.davidg95.jconn.*;
+import io.github.davidg95.jconn.events.*;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -2056,7 +2057,8 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void onReceive(JConnData data) {
+    public void onReceive(JConnReceiveEvent event) {
+        final JConnData data = event.getData();
         if (data.getFlag().equals("LOG")) {
             g.log(data.getParam("MESSAGE"));
         } else if (data.getFlag().equals("SENDDATA")) {
