@@ -1837,4 +1837,12 @@ public abstract class DataConnect {
      * @throws IOException if there is a file error.
      */
     public abstract void clearBackup(String name) throws IOException;
+
+    /**
+     * Get license info.
+     *
+     * @return the license info.
+     * @throws IOException if there is a network error.
+     */
+    public abstract Object[] getLicenseInfo() throws IOException;
 }

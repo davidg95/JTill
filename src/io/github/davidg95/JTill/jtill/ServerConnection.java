@@ -2667,4 +2667,17 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public Object[] getLicenseInfo() throws IOException {
+        try {
+            return (Object[]) conn.sendData(JConnData.create("LICENSEINFO"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }
