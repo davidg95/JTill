@@ -12,7 +12,7 @@ import java.io.Serializable;
  *
  * @author David
  */
-public class Staff implements Serializable, JTillObject {
+public class Staff implements Serializable {
 
     private String name;
     private int id;
@@ -138,8 +138,7 @@ public class Staff implements Serializable, JTillObject {
     public void tillLogout() {
         tillLogin = false;
     }
-
-    @Override
+    
     public String getName() {
         return name;
     }
@@ -147,8 +146,7 @@ public class Staff implements Serializable, JTillObject {
     public void setName(String name) {
         this.name = name;
     }
-
-    @Override
+    
     public int getId() {
         return id;
     }

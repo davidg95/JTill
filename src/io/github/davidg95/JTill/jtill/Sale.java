@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author David
  */
-public class Sale implements Serializable, JTillObject, Cloneable {
+public class Sale implements Serializable, Cloneable {
 
     private int id;
     private List<SaleItem> saleItems;
@@ -286,13 +286,11 @@ public class Sale implements Serializable, JTillObject, Cloneable {
             total = total.add(item.getPrice());
         });
     }
-
-    @Override
+    
     public String getName() {
         return this.date.toString();
     }
-
-    @Override
+    
     public int getId() {
         return id;
     }

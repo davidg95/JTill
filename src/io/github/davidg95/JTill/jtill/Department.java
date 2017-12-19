@@ -12,7 +12,7 @@ import java.math.BigDecimal;
  *
  * @author David
  */
-public class Department implements Serializable, JTillObject {
+public class Department implements Serializable {
 
     private int id;
     private String name;
@@ -27,8 +27,7 @@ public class Department implements Serializable, JTillObject {
     public Department(String name) {
         this.name = name;
     }
-
-    @Override
+    
     public int getId() {
         return id;
     }
@@ -36,8 +35,7 @@ public class Department implements Serializable, JTillObject {
     public void setId(int id) {
         this.id = id;
     }
-
-    @Override
+    
     public String getName() {
         return name;
     }

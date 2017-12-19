@@ -11,7 +11,7 @@ import java.io.Serializable;
  *
  * @author David
  */
-public class WasteReason implements Serializable, JTillObject {
+public class WasteReason implements Serializable {
 
     private int id;
     private String reason;
@@ -25,12 +25,10 @@ public class WasteReason implements Serializable, JTillObject {
         this.id = id;
     }
     
-    @Override
     public String getName(){
         return this.reason;
     }
-
-    @Override
+    
     public int getId() {
         return id;
     }

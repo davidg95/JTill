@@ -19,7 +19,7 @@ import java.util.logging.Logger;
  *
  * @author David
  */
-public class Till implements Serializable, Cloneable, JTillObject {
+public class Till implements Serializable, Cloneable {
 
     private int id;
     private UUID uuid;
@@ -45,8 +45,7 @@ public class Till implements Serializable, Cloneable, JTillObject {
         this.id = id;
         this.uuid = uuid;
     }
-
-    @Override
+    
     public String getName() {
         return name;
     }
@@ -54,8 +53,7 @@ public class Till implements Serializable, Cloneable, JTillObject {
     public void setName(String name) {
         this.name = name;
     }
-
-    @Override
+    
     public int getId() {
         return id;
     }

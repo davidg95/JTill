@@ -13,7 +13,7 @@ import java.util.Date;
  *
  * @author David
  */
-public class WasteItem implements Serializable, JTillObject {
+public class WasteItem implements Serializable {
 
     private int id;
     private Product product;
@@ -35,13 +35,11 @@ public class WasteItem implements Serializable, JTillObject {
         this.totalValue = product.getIndividualCost().multiply(new BigDecimal(quantity));
         this.timestamp = timestamp;
     }
-
-    @Override
+    
     public String getName() {
         return this.product.getName();
     }
-
-    @Override
+    
     public int getId() {
         return id;
     }

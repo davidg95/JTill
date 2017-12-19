@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author 1301480
  */
-public class Product implements Serializable, Cloneable, Item, JTillObject {
+public class Product implements Serializable, Cloneable, Item {
 
     private int productCode;
     private int order_code;
@@ -44,6 +44,7 @@ public class Product implements Serializable, Cloneable, Item, JTillObject {
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
+    private boolean trackStock;
     private String comments;
 
     /**

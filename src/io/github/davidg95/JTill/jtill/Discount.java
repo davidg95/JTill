@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author David
  */
-public class Discount implements Serializable, Cloneable, Item, JTillObject {
+public class Discount implements Serializable, Cloneable, Item {
 
     private int id;
     private String name;

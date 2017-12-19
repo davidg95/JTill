@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat;
  *
  * @author David
  */
-public class Category implements Serializable, JTillObject {
+public class Category implements Serializable {
 
     private int ID;
     private Department department;
@@ -81,8 +81,7 @@ public class Category implements Serializable, JTillObject {
     public boolean isSellTime(Time t) {
         return t.after(startSell) && t.before(endSell);
     }
-
-    @Override
+    
     public int getId() {
         return ID;
     }
@@ -90,8 +89,7 @@ public class Category implements Serializable, JTillObject {
     public void setID(int ID) {
         this.ID = ID;
     }
-
-    @Override
+    
     public String getName() {
         return name;
     }
