@@ -71,6 +71,7 @@ public class Product implements Serializable, Cloneable, Item {
         this.comments = comments;
         this.tax = tax;
         this.open = true;
+        this.trackStock = false;
         this.barcode = barcode;
         this.scale = scale;
         this.scaleName = scaleName;
@@ -120,8 +121,9 @@ public class Product implements Serializable, Cloneable, Item {
      * @param maxStock the maximum stock level.
      * @param maxCon the maximum condiments.
      * @param minCon the minimum condiments.
+     * @param trackStock if the stock should be tracked or not.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon) {
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock) {
         this.name = name;
         this.shortName = shortName;
         this.order_code = order_code;
@@ -141,6 +143,7 @@ public class Product implements Serializable, Cloneable, Item {
         this.priceIncVat = priceIncVat;
         this.maxCon = maxCon;
         this.minCon = minCon;
+        this.trackStock = trackStock;
     }
 
     /**
@@ -163,9 +166,10 @@ public class Product implements Serializable, Cloneable, Item {
      * @param productCode the product code.
      * @param maxCon the maximum condiments.
      * @param minCon the minimum condiments.
+     * @param trackStock if the stock should be tracked or not.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int productCode, int maxCon, int minCon) {
-        this(name, shortName, barcode, order_code, category, comments, tax, price, costPrice, priceIncVat, packSize, stock, minStock, maxStock, maxCon, minCon);
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int productCode, int maxCon, int minCon, boolean trackStock) {
+        this(name, shortName, barcode, order_code, category, comments, tax, price, costPrice, priceIncVat, packSize, stock, minStock, maxStock, maxCon, minCon, trackStock);
         this.productCode = productCode;
     }
 
@@ -330,6 +334,7 @@ public class Product implements Serializable, Cloneable, Item {
     @Override
     public void setOpen(boolean open) {
         this.open = open;
+        this.trackStock = false;
     }
 
     public Category getCategory() {
@@ -453,6 +458,21 @@ public class Product implements Serializable, Cloneable, Item {
         this.priceLimit = priceLimit;
     }
 
+    public boolean isTrackStock() {
+        if (open) {
+            return false;
+        }
+        return trackStock;
+    }
+
+    public void setTrackStock(boolean trackStock) {
+        if (open) {
+            this.trackStock = false;
+        } else {
+            this.trackStock = trackStock;
+        }
+    }
+
     public String getSQLInsertString() {
         return this.order_code
                 + ",'" + this.name
@@ -471,7 +491,8 @@ public class Product implements Serializable, Cloneable, Item {
                 + "'," + this.scale
                 + ",'" + this.scaleName
                 + "'," + this.priceIncVat
-                + "," + this.priceLimit;
+                + "," + this.priceLimit
+                +"," + this.trackStock;
     }
 
     public String getSQlUpdateString() {
@@ -495,6 +516,7 @@ public class Product implements Serializable, Cloneable, Item {
                 + ", PRODUCTS.MAXCON=" + this.getMaxCon()
                 + ", PRODUCTS.MINCON=" + this.getMinCon()
                 + ", PRODUCTS.LIMIT=" + this.getPriceLimit()
+                + ", PRODUCTS.TRACK_STOCK=" + this.isTrackStock()
                 + " WHERE PRODUCTS.ID=" + this.getId();
     }
 
