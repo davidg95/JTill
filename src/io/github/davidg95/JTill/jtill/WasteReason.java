@@ -15,20 +15,22 @@ public class WasteReason implements Serializable {
 
     private int id;
     private String reason;
+    private int priviledgeLevel;
 
-    public WasteReason(String reason) {
+    public WasteReason(String reason, int priviledgeLevel) {
         this.reason = reason;
+        this.priviledgeLevel = priviledgeLevel;
     }
 
-    public WasteReason(int id, String reason) {
-        this(reason);
+    public WasteReason(int id, String reason, int priviledgeLevel) {
+        this(reason, priviledgeLevel);
         this.id = id;
     }
-    
-    public String getName(){
+
+    public String getName() {
         return this.reason;
     }
-    
+
     public int getId() {
         return id;
     }
@@ -43,6 +45,14 @@ public class WasteReason implements Serializable {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public int getPriviledgeLevel() {
+        return priviledgeLevel;
+    }
+
+    public void setPriviledgeLevel(int priviledgeLevel) {
+        this.priviledgeLevel = priviledgeLevel;
     }
 
     @Override
