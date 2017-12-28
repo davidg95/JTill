@@ -2697,4 +2697,34 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public void deleteWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
+        try {
+            conn.sendData(JConnData.create("DELETEWASTEREASON").addParam("WR", wr));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new JTillException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<WasteReason> getUsedWasteReasons() throws IOException, SQLException {
+        try {
+            return (List<WasteReason>) conn.sendData(JConnData.create("GETUSEDWASTEREASONS"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }

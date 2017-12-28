@@ -1854,4 +1854,26 @@ public abstract class DataConnect {
      * @throws SQLException if there is an SQL error.
      */
     public abstract void submitSQL(String SQL) throws IOException, SQLException;
+
+    /**
+     * Marks a waste reason as deleted. this waste reason will still exist in
+     * the database and in report, but cannot be used.
+     *
+     * @param wr the waste reason.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws io.github.davidg95.JTill.jtill.JTillException if the waste reason
+     * was not found.
+     */
+    public abstract void deleteWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
+
+    /**
+     * Get all used waste reasons, this return waste reasons that have not been
+     * marked as deleted.
+     *
+     * @return a List of type WasteReason.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public abstract List<WasteReason> getUsedWasteReasons() throws IOException, SQLException;
 }
