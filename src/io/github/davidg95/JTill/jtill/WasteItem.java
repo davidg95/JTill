@@ -62,6 +62,7 @@ public class WasteItem implements Serializable {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+        this.totalValue = this.product.getCostPrice().multiply(new BigDecimal(quantity));
     }
 
     public BigDecimal getTotalValue() {
