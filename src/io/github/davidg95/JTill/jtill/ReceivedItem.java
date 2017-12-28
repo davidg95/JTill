@@ -55,7 +55,7 @@ public class ReceivedItem implements Serializable{
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-        this.price = this.product.getCostPrice().multiply(new BigDecimal(quantity));
+        this.price = this.product.getCostPrice().divide(new BigDecimal(product.getPackSize())).multiply(new BigDecimal(quantity));
     }
 
     public BigDecimal getPrice() {
