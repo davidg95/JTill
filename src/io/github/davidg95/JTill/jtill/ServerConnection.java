@@ -2682,4 +2682,19 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public void submitSQL(String SQL) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("SUBMITSQL").addParam("SQL", SQL));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }

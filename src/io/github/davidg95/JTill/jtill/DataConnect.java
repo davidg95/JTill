@@ -1845,4 +1845,13 @@ public abstract class DataConnect {
      * @throws IOException if there is a network error.
      */
     public abstract Object[] getLicenseInfo() throws IOException;
+
+    /**
+     * Submit an SQL statement to the database.
+     *
+     * @param SQL the SQl statement to submit.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is an SQL error.
+     */
+    public abstract void submitSQL(String SQL) throws IOException, SQLException;
 }
