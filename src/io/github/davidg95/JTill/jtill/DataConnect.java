@@ -1876,4 +1876,56 @@ public abstract class DataConnect {
      * @throws SQLException if there is a database error.
      */
     public abstract List<WasteReason> getUsedWasteReasons() throws IOException, SQLException;
+
+    /**
+     * Add a new refund reason.
+     *
+     * @param r the refund reason to add.
+     * @return the added refund reason.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public abstract RefundReason addRefundReason(RefundReason r) throws IOException, SQLException;
+
+    /**
+     * Remove a refund reason. This method marks the reason as deleted, it will
+     * still remain in the database.
+     *
+     * @param r the refund reason to remove.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws JTillException if the reason was not found.
+     */
+    public abstract void removeRefundReason(RefundReason r) throws IOException, SQLException, JTillException;
+
+    /**
+     * Update a refund reason.
+     *
+     * @param r the refund reason to update.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws JTillException if the reason was not found.
+     */
+    public abstract void updateRefundReason(RefundReason r) throws IOException, SQLException, JTillException;
+
+    /**
+     * Get a refund reason.
+     *
+     * @param id the id of the refund reason.
+     * @return the refund reason to get.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws JTillException if the reason was not found.
+     */
+    public abstract RefundReason getRefundReason(int id) throws IOException, SQLException, JTillException;
+
+    /**
+     * Get all used refund reasons, this will return a list of reasons not
+     * marked as deleted.
+     *
+     * @return a List of refund reasons.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public abstract List<RefundReason> getUsedRefundReasons() throws IOException, SQLException;
 }

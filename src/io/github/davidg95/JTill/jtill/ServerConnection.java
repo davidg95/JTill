@@ -2727,4 +2727,79 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public RefundReason addRefundReason(RefundReason r) throws IOException, SQLException {
+        try {
+            return (RefundReason) conn.sendData(JConnData.create("ADDREFUNDREASON").addParam("REASON", r));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void removeRefundReason(RefundReason r) throws IOException, SQLException, JTillException {
+        try {
+            conn.sendData(JConnData.create("REMOVEREFUNDREASON").addParam("REASON", r));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void updateRefundReason(RefundReason r) throws IOException, SQLException, JTillException {
+        try {
+            conn.sendData(JConnData.create("UPDATEREFUNDREASON").addParam("REASON", r));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public RefundReason getRefundReason(int id) throws IOException, SQLException, JTillException {
+        try {
+            return (RefundReason) conn.sendData(JConnData.create("GETREFUNDREASON").addParam("REASON", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<RefundReason> getUsedRefundReasons() throws IOException, SQLException {
+        try {
+            return (List<RefundReason>) conn.sendData(JConnData.create("GETUSEDREFUNDREASONS"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }
