@@ -5,6 +5,16 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JRootPane;
+import javax.swing.KeyStroke;
+
 /**
  *
  * @author David
@@ -90,5 +100,32 @@ public class Utilities {
      */
     public static boolean validateBarcodeLenth(String barcode) {
         return barcode.length() == 8 || barcode.length() == 12 || barcode.length() == 13 || barcode.length() == 14;
+    }
+
+    private static final KeyStroke escapeStroke
+            = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+    public static final String dispatchWindowClosingActionMapKey
+            = "com.spodding.tackline.dispatch:WINDOW_CLOSING";
+
+    /**
+     * Method to add an escape close listener.
+     *
+     * @param dialog the dialog to add the operation to.
+     */
+    public static void installEscapeCloseOperation(final JDialog dialog) {
+        Action dispatchClosing = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                dialog.dispatchEvent(new WindowEvent(
+                        dialog, WindowEvent.WINDOW_CLOSING
+                ));
+            }
+        };
+        JRootPane root = dialog.getRootPane();
+        root.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(
+                escapeStroke, dispatchWindowClosingActionMapKey
+        );
+        root.getActionMap().put(dispatchWindowClosingActionMapKey, dispatchClosing
+        );
     }
 }
