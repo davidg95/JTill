@@ -85,13 +85,16 @@ public class Utilities {
      * @return true if it is valid, false if it is not.
      */
     public static boolean validateBarcode(String barcode) {
+        if(barcode.length() < 8){
+            return true;
+        }
         String minusCheck = barcode.substring(0, barcode.length() - 1);
         int checkDigit = Utilities.calculateCheckDigit(minusCheck);
         return barcode.equals(minusCheck + checkDigit);
     }
 
     /**
-     * Check if the abrcode is 8, 12, 13 or 14 digits long.
+     * Check if the barcode is 8 or less or is 12, 13 or 14 digits long.
      *
      * See https://www.gs1.org/how-calculate-check-digit-manually
      *
@@ -99,7 +102,7 @@ public class Utilities {
      * @return true if it is a valid length, flase if it is not.
      */
     public static boolean validateBarcodeLenth(String barcode) {
-        return barcode.length() == 8 || barcode.length() == 12 || barcode.length() == 13 || barcode.length() == 14;
+        return barcode.length() <= 8 || barcode.length() == 12 || barcode.length() == 13 || barcode.length() == 14;
     }
 
     private static final KeyStroke escapeStroke
