@@ -1941,4 +1941,14 @@ public abstract class DataConnect {
      * @throws JTillException if the staff member was not found.
      */
     public abstract BigDecimal getStaffMemberSales(Date start, Date end, Staff s) throws IOException, SQLException, JTillException;
+
+    /**
+     * Method to get all screens with this product on them.
+     *
+     * @param p the product.
+     * @return a List of Screens.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public abstract List<Screen> getScreensWithProduct(Product p) throws IOException, SQLException;
 }

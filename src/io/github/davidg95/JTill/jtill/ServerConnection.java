@@ -2817,4 +2817,19 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public List<Screen> getScreensWithProduct(Product p) throws IOException, SQLException {
+        try {
+            return (List<Screen>) conn.sendData(JConnData.create("GETSCREENSWITHPRODUCT").addParam("PRODUCT", p));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }
