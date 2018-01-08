@@ -1928,4 +1928,17 @@ public abstract class DataConnect {
      * @throws SQLException if there is a database error.
      */
     public abstract List<RefundReason> getUsedRefundReasons() throws IOException, SQLException;
+
+    /**
+     * Get all the sales for a staff member.
+     *
+     * @param start the start date.
+     * @param end the end date.
+     * @param s the staff member.
+     * @return the staff members sales.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws JTillException if the staff member was not found.
+     */
+    public abstract BigDecimal getStaffMemberSales(Date start, Date end, Staff s) throws IOException, SQLException, JTillException;
 }

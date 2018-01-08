@@ -2802,4 +2802,19 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public BigDecimal getStaffMemberSales(Date start, Date end, Staff s) throws IOException, SQLException, JTillException {
+        try {
+            return (BigDecimal) conn.sendData(JConnData.create("GETSTAFFMEMBERSALES"));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }
