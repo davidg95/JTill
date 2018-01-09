@@ -27,7 +27,7 @@ public class Department implements Serializable {
     public Department(String name) {
         this.name = name;
     }
-    
+
     public int getId() {
         return id;
     }
@@ -35,7 +35,7 @@ public class Department implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }

@@ -83,6 +83,7 @@ public class Order {
     public void setReceived(boolean received) {
         this.received = received;
     }
+
     public List<OrderItem> getItems() {
         return items;
     }

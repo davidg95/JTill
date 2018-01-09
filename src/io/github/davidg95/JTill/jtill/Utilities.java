@@ -85,7 +85,7 @@ public class Utilities {
      * @return true if it is valid, false if it is not.
      */
     public static boolean validateBarcode(String barcode) {
-        if(barcode.length() < 8){
+        if (barcode.length() < 8) {
             return true;
         }
         String minusCheck = barcode.substring(0, barcode.length() - 1);

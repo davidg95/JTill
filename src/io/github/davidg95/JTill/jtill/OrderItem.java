@@ -65,12 +65,12 @@ public class OrderItem implements Serializable {
     public BigDecimal getPrice() {
         return price;
     }
-    
-    public int getOrderCode(){
+
+    public int getOrderCode() {
         return product.getOrder_code();
     }
-    
-    public String getName(){
+
+    public String getName() {
         return product.getLongName();
     }
 

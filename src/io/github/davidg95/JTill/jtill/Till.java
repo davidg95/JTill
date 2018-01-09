@@ -45,7 +45,7 @@ public class Till implements Serializable, Cloneable {
         this.id = id;
         this.uuid = uuid;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -53,7 +53,7 @@ public class Till implements Serializable, Cloneable {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public int getId() {
         return id;
     }

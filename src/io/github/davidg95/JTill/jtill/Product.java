@@ -307,7 +307,7 @@ public class Product implements Serializable, Cloneable, Item {
      * @return the cost price as a BigDecimal.
      */
     public BigDecimal getOpenCost() {
-        if(price == null){
+        if (price == null) {
             return BigDecimal.ZERO;
         }
         return this.price.divide(new BigDecimal(100), 2, 6).multiply(this.getCostPercentage());
@@ -495,7 +495,7 @@ public class Product implements Serializable, Cloneable, Item {
                 + ",'" + this.scaleName
                 + "'," + this.priceIncVat
                 + "," + this.priceLimit
-                +"," + this.trackStock;
+                + "," + this.trackStock;
     }
 
     public String getSQlUpdateString() {

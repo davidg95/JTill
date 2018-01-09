@@ -120,7 +120,7 @@ public class Customer implements Serializable {
     public void resetMoneyDue() {
         this.moneyDue = BigDecimal.ZERO;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -128,7 +128,7 @@ public class Customer implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public int getId() {
         return id;
     }
@@ -168,14 +168,14 @@ public class Customer implements Serializable {
     public void setLoyaltyPoints(int loyaltyPoints) {
         this.loyaltyPoints = loyaltyPoints;
     }
-    
-    public int addLoyaltyPoints(int toAdd){
+
+    public int addLoyaltyPoints(int toAdd) {
         loyaltyPoints += toAdd;
         return loyaltyPoints;
     }
-    
-    public int removeLoyaltyPoints(int toRemove){
-        if(toRemove > loyaltyPoints){
+
+    public int removeLoyaltyPoints(int toRemove) {
+        if (toRemove > loyaltyPoints) {
             return -1;
         }
         loyaltyPoints -= toRemove;

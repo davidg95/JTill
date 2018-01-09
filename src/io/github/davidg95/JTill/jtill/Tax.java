@@ -30,7 +30,7 @@ public class Tax implements Serializable {
         this.name = name;
         this.value = value;
     }
-    
+
     public int getId() {
         return id;
     }
@@ -38,7 +38,7 @@ public class Tax implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -62,7 +62,7 @@ public class Tax implements Serializable {
     public BigDecimal getSales() {
         return sales;
     }
-    
+
     public void addToPayable(BigDecimal toAdd) {
         payable = payable.add(toAdd);
     }

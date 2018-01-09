@@ -81,7 +81,7 @@ public class Category implements Serializable {
     public boolean isSellTime(Time t) {
         return t.after(startSell) && t.before(endSell);
     }
-    
+
     public int getId() {
         return ID;
     }
@@ -89,7 +89,7 @@ public class Category implements Serializable {
     public void setID(int ID) {
         this.ID = ID;
     }
-    
+
     public String getName() {
         return name;
     }

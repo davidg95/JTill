@@ -12,12 +12,12 @@ import java.math.BigDecimal;
  *
  * @author David
  */
-public class ReceivedItem implements Serializable{
+public class ReceivedItem implements Serializable {
 
     private int id;
     private int quantity;
     private BigDecimal price;
-    
+
     private Product product;
 
     public ReceivedItem(int id, Product product, int quantity, BigDecimal price) {

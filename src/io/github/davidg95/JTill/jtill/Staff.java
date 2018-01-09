@@ -138,7 +138,7 @@ public class Staff implements Serializable {
     public void tillLogout() {
         tillLogin = false;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -146,7 +146,7 @@ public class Staff implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
-    
+
     public int getId() {
         return id;
     }

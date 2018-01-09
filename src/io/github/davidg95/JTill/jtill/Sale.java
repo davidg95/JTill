@@ -286,11 +286,11 @@ public class Sale implements Serializable, Cloneable {
             total = total.add(item.getPrice());
         });
     }
-    
+
     public String getName() {
         return this.date.toString();
     }
-    
+
     public int getId() {
         return id;
     }

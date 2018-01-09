@@ -35,11 +35,11 @@ public class WasteItem implements Serializable {
         this.totalValue = product.getIndividualCost().multiply(new BigDecimal(quantity));
         this.timestamp = timestamp;
     }
-    
+
     public String getName() {
         return this.product.getName();
     }
-    
+
     public int getId() {
         return id;
     }

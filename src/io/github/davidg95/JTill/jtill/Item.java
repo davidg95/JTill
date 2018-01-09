@@ -28,9 +28,9 @@ public interface Item {
     public boolean isOpen();
 
     public void setOpen(boolean open);
-    
+
     @Override
     public boolean equals(Object i);
-    
+
     public Item clone();
 }

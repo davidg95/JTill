@@ -20,7 +20,7 @@ public class Trigger implements Serializable {
     private int currentQuantity;
 
     public Trigger(int id, int bucket, int product, int quantityRequired) {
-        this(bucket, product,quantityRequired);
+        this(bucket, product, quantityRequired);
         this.id = id;
     }
 
@@ -61,12 +61,12 @@ public class Trigger implements Serializable {
     public void setQuantityRequired(int quantityRequired) {
         this.quantityRequired = quantityRequired;
     }
-    
-    public void addHit(){
+
+    public void addHit() {
         currentQuantity++;
     }
-    
-    public void resetQuantity(){
+
+    public void resetQuantity() {
         currentQuantity = 0;
     }
 
