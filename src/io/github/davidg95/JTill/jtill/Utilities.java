@@ -39,8 +39,8 @@ public class Utilities {
     /**
      * Method to check if a string value is an email or not.
      *
-     * @param email
-     * @return
+     * @param email the email to check.
+     * @return true if it is valid, false if it is not.
      */
     public static boolean isEmail(String email) {
         return email.contains("@") && email.contains(".") && email.length() > 4;

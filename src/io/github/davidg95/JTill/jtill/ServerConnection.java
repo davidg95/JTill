@@ -77,6 +77,8 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * @return this connection till object.
      * @throws IOException if there was an error connecting.
      * @throws java.net.ConnectException if there was an error connecting.
+     * @throws io.github.davidg95.JTill.jtill.JTillException if there is an
+     * error connecting the till.
      */
     public Till connect(String IP, int PORT, String name, UUID uuid) throws IOException, ConnectException, JTillException {
         try {

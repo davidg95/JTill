@@ -38,6 +38,7 @@ public class Category implements Serializable {
      * to be sold.
      * @param timeRestrict if the time restrictions should apply.
      * @param minAge the minimum age for items in the category.
+     * @param dep the department the category belongs to.
      */
     public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, Department dep) {
         this(name, startSell, endSell, timeRestrict, minAge, dep);
@@ -53,6 +54,7 @@ public class Category implements Serializable {
      * to be sold.
      * @param timeRestrict if the time restrictions should apply.
      * @param minAge the minimum age for items in the category.
+     * @param dep the department the category belongs to.
      */
     public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, Department dep) {
         this.name = name;
