@@ -5,7 +5,12 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class which models a member of staff.
@@ -217,6 +222,32 @@ public class Staff implements Serializable {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    /**
+     * Save a member of staff to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateStaff(this);
+        } catch (StaffNotFoundException ex) {
+            DataConnect.dataconnect.addStaff(this);
+        }
+    }
+
+    /**
+     * Get a list of all the staff members sales.
+     *
+     * @return a List of the staff members sales.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws StaffNotFoundException if the staff member was not found.
+     */
+    public List<Sale> getSales() throws IOException, SQLException, StaffNotFoundException {
+        return DataConnect.dataconnect.getStaffSales(this);
     }
 
     public String getSQLInsertString() {
