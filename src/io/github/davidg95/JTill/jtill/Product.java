@@ -475,6 +475,10 @@ public class Product implements Serializable, Cloneable, Item {
             this.trackStock = trackStock;
         }
     }
+    
+    public Department getDepartment(){
+        return this.category.getDepartment();
+    }
 
     public String getSQLInsertString() {
         return this.order_code
