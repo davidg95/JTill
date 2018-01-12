@@ -5,8 +5,10 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 
 /**
  * Class which models a customer.
@@ -68,7 +70,7 @@ public class Customer implements Serializable {
     /**
      * Constructor which takes in all values.
      *
-     * @param id the custoemrs ID.
+     * @param id the customers ID.
      * @param name the customers name.
      * @param phone the customers phone number.
      * @param mobile the customers mobile number.
@@ -244,6 +246,20 @@ public class Customer implements Serializable {
 
     public void setMoneyDue(BigDecimal moneyDue) {
         this.moneyDue = moneyDue;
+    }
+
+    /**
+     * Save a customer to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateCustomer(this);
+        } catch (CustomerNotFoundException ex) {
+            DataConnect.dataconnect.addCustomer(this);
+        }
     }
 
     public String getSQLInsertString() {
