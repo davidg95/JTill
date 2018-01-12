@@ -5,7 +5,9 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -68,6 +70,16 @@ public class ReceivedReport implements Serializable {
 
     public void setPaid(boolean paid) {
         this.paid = paid;
+    }
+
+    /**
+     * Save a ReceivedReport to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        DataConnect.dataconnect.updateReceivedReport(this);
     }
 
     @Override
