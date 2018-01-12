@@ -5,11 +5,14 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 /**
  * Class which models a category.
@@ -146,6 +149,18 @@ public class Category implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    /**
+     * Gets all products in the category.
+     *
+     * @return a List of all products in the category.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     * @throws JTillException if the category was not found.
+     */
+    public List<Product> getProductsInCategory() throws IOException, SQLException, JTillException {
+        return DataConnect.dataconnect.getProductsInCategory(ID);
     }
 
     public String getSQLInsertString() {

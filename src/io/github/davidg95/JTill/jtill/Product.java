@@ -5,10 +5,14 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class of type product which implements Serializable. This class models a
@@ -475,8 +479,8 @@ public class Product implements Serializable, Cloneable, Item {
             this.trackStock = trackStock;
         }
     }
-    
-    public Department getDepartment(){
+
+    public Department getDepartment() {
         return this.category.getDepartment();
     }
 
@@ -525,6 +529,20 @@ public class Product implements Serializable, Cloneable, Item {
                 + ", PRODUCTS.LIMIT=" + this.getPriceLimit()
                 + ", PRODUCTS.TRACK_STOCK=" + this.isTrackStock()
                 + " WHERE PRODUCTS.ID=" + this.getId();
+    }
+
+    /**
+     * Saves the product to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateProduct(this);
+        } catch (ProductNotFoundException ex) {
+            DataConnect.dataconnect.addProduct(this);
+        }
     }
 
     @Override

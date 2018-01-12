@@ -5,8 +5,11 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  *
@@ -57,6 +60,17 @@ public class Department implements Serializable {
 
     public BigDecimal getSales() {
         return sales;
+    }
+
+    /**
+     * Gets all products in the department.
+     *
+     * @return a List of all products in the department.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<Product> getProductsInDepartment() throws IOException, SQLException {
+        return DataConnect.dataconnect.getProductsInDepartment(id);
     }
 
     @Override
