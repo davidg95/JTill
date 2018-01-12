@@ -1130,9 +1130,10 @@ public abstract class DataConnect {
      * @param id the id of the till to get takings for.
      * @return a List of uncashed sales.
      * @throws IOException if there was a network error.
+     * @throws java.sql.SQLException of there is a database error.
      * @throws JTillException if there was another error.
      */
-    public abstract List<Sale> getUncachedTillSales(int id) throws IOException, JTillException;
+    public abstract List<Sale> getUncachedTillSales(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to check if a till name is being used.
