@@ -5,7 +5,9 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
@@ -98,6 +100,16 @@ public class Order {
             val = val.add(i.getPrice());
         }
         return val;
+    }
+
+    /**
+     * Method to save an order to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        DataConnect.dataconnect.updateOrder(this);
     }
 
     @Override

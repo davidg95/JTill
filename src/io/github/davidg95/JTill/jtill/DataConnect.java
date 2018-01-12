@@ -1278,9 +1278,8 @@ public abstract class DataConnect {
      * @return the Supplier after being added.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws JTillException if the Supplier was not found.
      */
-    public abstract Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException;
+    public abstract Supplier addSupplier(Supplier s) throws IOException, SQLException;
 
     /**
      * Method to remove a Supplier.

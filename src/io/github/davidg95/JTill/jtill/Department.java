@@ -10,6 +10,8 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -71,6 +73,20 @@ public class Department implements Serializable {
      */
     public List<Product> getProductsInDepartment() throws IOException, SQLException {
         return DataConnect.dataconnect.getProductsInDepartment(id);
+    }
+
+    /**
+     * Save the department to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateDepartment(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addDepartment(this);
+        }
     }
 
     @Override

@@ -1483,13 +1483,11 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Supplier addSupplier(Supplier s) throws IOException, SQLException, JTillException {
+    public Supplier addSupplier(Supplier s) throws IOException, SQLException {
         try {
             return (Supplier) conn.sendData(JConnData.create("ADDSUPPLIER").addParam("SUPPLIER", s));
         } catch (Throwable ex) {
-            if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else if (ex instanceof SQLException) {
+            if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
                 throw new IOException(ex.getMessage());

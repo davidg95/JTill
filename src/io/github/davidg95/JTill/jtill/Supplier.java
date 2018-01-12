@@ -5,7 +5,11 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class which models a supplier.
@@ -60,6 +64,20 @@ public class Supplier implements Serializable {
 
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
+    }
+
+    /**
+     * Save the supplier to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateSupplier(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addSupplier(this);
+        }
     }
 
     @Override

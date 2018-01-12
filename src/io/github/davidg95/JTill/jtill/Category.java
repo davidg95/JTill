@@ -13,6 +13,8 @@ import java.sql.Time;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class which models a category.
@@ -161,6 +163,20 @@ public class Category implements Serializable {
      */
     public List<Product> getProductsInCategory() throws IOException, SQLException, JTillException {
         return DataConnect.dataconnect.getProductsInCategory(ID);
+    }
+
+    /**
+     * Save the category to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateCategory(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addCategory(this);
+        }
     }
 
     public String getSQLInsertString() {
