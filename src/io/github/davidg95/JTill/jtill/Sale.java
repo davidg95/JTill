@@ -5,8 +5,10 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -396,6 +398,16 @@ public class Sale implements Serializable, Cloneable {
                 pl.killListener();
             });
         }
+    }
+
+    /**
+     * Add the sale to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void addToDatabase() throws IOException, SQLException {
+        DataConnect.dataconnect.addSale(this);
     }
 
     public String getSQLInsertStatement() {
