@@ -1410,14 +1410,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
+    public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException {
         try {
             return (WasteReason) conn.sendData(JConnData.create("ADDWASTEREASON").addParam("WASTE", wr));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
-            } else if (ex instanceof JTillException) {
-                throw (JTillException) ex;
             } else {
                 throw new IOException(ex.getMessage());
             }

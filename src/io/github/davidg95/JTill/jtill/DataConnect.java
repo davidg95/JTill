@@ -1226,9 +1226,8 @@ public abstract class DataConnect {
      * database.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws JTillException if the waste reason was not found.
      */
-    public abstract WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException, JTillException;
+    public abstract WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException;
 
     /**
      * Method to remove a waste reason.

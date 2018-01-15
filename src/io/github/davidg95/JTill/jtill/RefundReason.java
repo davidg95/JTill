@@ -5,7 +5,11 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -49,6 +53,20 @@ public class RefundReason implements Serializable {
 
     public void setPriviledgeLevel(int priviledgeLevel) {
         this.priviledgeLevel = priviledgeLevel;
+    }
+
+    /**
+     * Saves the REfundReason to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateRefundReason(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addRefundReason(this);
+        }
     }
 
     @Override

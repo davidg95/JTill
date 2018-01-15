@@ -5,7 +5,11 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -53,6 +57,20 @@ public class WasteReason implements Serializable {
 
     public void setPriviledgeLevel(int priviledgeLevel) {
         this.priviledgeLevel = priviledgeLevel;
+    }
+
+    /**
+     * Save the WasteReason to the database.
+     *
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateWasteReason(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addWasteReason(this);
+        }
     }
 
     @Override
