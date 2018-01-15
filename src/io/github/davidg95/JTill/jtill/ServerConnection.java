@@ -2539,12 +2539,14 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void updateOrder(Order o) throws IOException, SQLException {
+    public void updateOrder(Order o) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("UPDATEORDER").addParam("ORDER", o));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
+            } else if (ex instanceof JTillException) {
+                throw new JTillException(ex.getMessage());
             } else {
                 throw new SQLException(ex.getMessage());
             }

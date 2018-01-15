@@ -1792,8 +1792,10 @@ public abstract class DataConnect {
      * @param o the order to update.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
+     * @throws io.github.davidg95.JTill.jtill.JTillException if the order was
+     * not found.
      */
-    public abstract void updateOrder(Order o) throws IOException, SQLException;
+    public abstract void updateOrder(Order o) throws IOException, SQLException, JTillException;
 
     /**
      * Get all orders.

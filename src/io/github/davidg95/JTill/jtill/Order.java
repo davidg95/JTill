@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -109,7 +111,11 @@ public class Order {
      * @throws SQLException if there is a database error.
      */
     public void save() throws IOException, SQLException {
-        DataConnect.dataconnect.updateOrder(this);
+        try {
+            DataConnect.dataconnect.updateOrder(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addOrder(this);
+        }
     }
 
     @Override
