@@ -50,15 +50,16 @@ public class LogFileHandler extends Handler {
         try {
             String eol = System.getProperty("line.separator");
             SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss");
+            String start = "[" + df.format(new Date(record.getMillis())) + "] [" + record.getLevel().toString() + "]- ";
             if (record.getThrown() == null) {
                 if (record.getMessage() != null) {
-                    out.write(("[" + df.format(new Date(record.getMillis())) + "] [" + record.getLevel().toString() + "] " + record.getMessage() + eol).getBytes());
+                    out.write((start + record.getMessage() + eol).getBytes());
                 }
             } else {
                 if (record.getMessage() != null) {
-                    out.write(("[" + df.format(new Date(record.getMillis())) + "] [" + record.getLevel().toString() + "] " + record.getMessage() + eol + record.getThrown() + eol).getBytes());
+                    out.write((start + record.getMessage() + eol + record.getThrown() + eol).getBytes());
                 } else {
-                    out.write(("[" + df.format(new Date(record.getMillis())) + "] [" + record.getLevel().toString() + "] " + record.getThrown() + eol).getBytes());
+                    out.write((start + record.getThrown() + eol).getBytes());
                 }
             }
         } catch (IOException ex) {
