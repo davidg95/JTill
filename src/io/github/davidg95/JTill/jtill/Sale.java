@@ -151,7 +151,7 @@ public class Sale implements Serializable, Cloneable {
                         final Product product = (Product) i;
                         if (!product.getSaleCondiments().isEmpty()) {
                             for (Condiment c : product.getSaleCondiments()) {
-                                item.setPrice(item.getPrice().add(c.getProduct_con().getSellingPrice()));
+                                item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
                             }
                         }
                         item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
@@ -181,7 +181,7 @@ public class Sale implements Serializable, Cloneable {
             item = new SaleItem(this.id, i, quantity, sellingPrice, type, vat, cost); //Set this item to the last added.
             if (!product.getSaleCondiments().isEmpty()) {
                 for (Condiment c : product.getSaleCondiments()) {
-                    item.setPrice(item.getPrice().add(c.getProduct_con().getSellingPrice()));
+                    item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
                 }
             }
             item.setTotalPrice(item.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
