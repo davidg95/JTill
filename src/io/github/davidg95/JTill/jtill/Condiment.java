@@ -5,7 +5,9 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 
 /**
@@ -51,6 +53,14 @@ public class Condiment implements Serializable {
 
     public void setProduct_con(Product product_con) {
         this.product_con = product_con;
+    }
+
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateCondiment(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addCondiment(this);
+        }
     }
 
     @Override

@@ -146,6 +146,20 @@ public class Till implements Serializable, Cloneable {
         return DataConnect.dataconnect.getTerminalSales(id, uncashedOnly);
     }
 
+    /**
+     * Save the till to the database.
+     *
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public void save() throws IOException, SQLException {
+        try {
+            DataConnect.dataconnect.updateTill(this);
+        } catch (JTillException ex) {
+            DataConnect.dataconnect.addTill(this);
+        }
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.uuid.toString()

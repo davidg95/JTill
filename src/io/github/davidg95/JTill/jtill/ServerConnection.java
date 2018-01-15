@@ -2487,12 +2487,14 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Condiment updateCondiment(Condiment c) throws IOException, SQLException {
+    public Condiment updateCondiment(Condiment c) throws IOException, SQLException, JTillException {
         try {
             return (Condiment) conn.sendData(JConnData.create("UPDATECONDIMENT").addParam("C", c));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
+            } else if (ex instanceof JTillException) {
+                throw new JTillException(ex.getMessage());
             } else {
                 throw new SQLException(ex.getMessage());
             }

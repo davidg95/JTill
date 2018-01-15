@@ -7,7 +7,6 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 /**

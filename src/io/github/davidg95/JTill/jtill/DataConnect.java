@@ -1754,8 +1754,10 @@ public abstract class DataConnect {
      * @return the updated condiment.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
+     * @throws io.github.davidg95.JTill.jtill.JTillException if the condiment
+     * was not found.
      */
-    public abstract Condiment updateCondiment(Condiment c) throws IOException, SQLException;
+    public abstract Condiment updateCondiment(Condiment c) throws IOException, SQLException, JTillException;
 
     /**
      * Removes a condiment.
