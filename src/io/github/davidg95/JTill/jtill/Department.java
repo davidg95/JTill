@@ -87,6 +87,17 @@ public class Department implements Serializable {
         }
     }
 
+    /**
+     * Method to get all the departments from the database.
+     *
+     * @return a List of all the departments.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public static List<Department> getAll() throws IOException, SQLException {
+        return DataConnect.dataconnect.getAllDepartments();
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

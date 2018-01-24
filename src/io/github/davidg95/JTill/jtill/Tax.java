@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  *
@@ -74,7 +75,7 @@ public class Tax implements Serializable {
     }
 
     /**
-     * SAve the tax to the database.
+     * Save the tax to the database.
      *
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
@@ -85,6 +86,17 @@ public class Tax implements Serializable {
         } catch (JTillException ex) {
             DataConnect.dataconnect.addTax(this);
         }
+    }
+
+    /**
+     * Get all the taxes from the database.
+     *
+     * @return a List of all the tax classes.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public static List<Tax> getAll() throws IOException, SQLException {
+        return DataConnect.dataconnect.getAllTax();
     }
 
     public String getSQLInsertString() {

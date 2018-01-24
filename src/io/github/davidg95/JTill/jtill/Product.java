@@ -543,6 +543,17 @@ public class Product implements Serializable, Cloneable, Item {
         }
     }
 
+    /**
+     * Get a list of all the products.
+     *
+     * @return a List of all the products.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public static List<Product> getAll() throws IOException, SQLException {
+        return DataConnect.dataconnect.getAllProducts();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof Product) {
