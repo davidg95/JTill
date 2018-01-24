@@ -160,6 +160,27 @@ public class Till implements Serializable, Cloneable {
         }
     }
 
+    /**
+     * Get all the tills.
+     *
+     * @return a List of all the tills.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public static List<Till> getAll() throws IOException, SQLException {
+        return DataConnect.dataconnect.getAllTills();
+    }
+
+    /**
+     * Reinitialise all connected tills.
+     *
+     * @throws IOException if there is a network error.
+     * @throws JTillException if there are terminals already receiving data.
+     */
+    public static void reinitAll() throws IOException, JTillException {
+        DataConnect.dataconnect.reinitialiseAllTills();
+    }
+
     public String getSQLInsertString() {
         return "'" + this.name
                 + "','" + this.uuid.toString()
