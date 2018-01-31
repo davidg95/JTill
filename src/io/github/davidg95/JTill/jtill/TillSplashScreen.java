@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.awt.GraphicsEnvironment;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -16,9 +17,11 @@ import javax.swing.JWindow;
  */
 public class TillSplashScreen extends JWindow {
 
-    private static final TillSplashScreen window;
-    private JProgressBar bar;
-    private JLabel prgLabel;
+    private static final TillSplashScreen WINDOW;
+    private final JProgressBar bar;
+    private final JLabel prgLabel;
+
+    private static final boolean HEADLESS;
 
     public TillSplashScreen() {
         JLabel label = new JLabel();
@@ -37,32 +40,49 @@ public class TillSplashScreen extends JWindow {
     }
 
     static {
-        window = new TillSplashScreen();
+        HEADLESS = GraphicsEnvironment.isHeadless();
+        if (!HEADLESS) {
+            WINDOW = new TillSplashScreen();
+        } else {
+            WINDOW = null;
+        }
     }
 
     public static void showSplashScreen() {
-        window.setVisible(true);
+        if (!HEADLESS) {
+            WINDOW.setVisible(true);
+        }
     }
 
     public static void hideSplashScreen() {
-        window.setVisible(false);
+        if (!HEADLESS) {
+            WINDOW.setVisible(false);
+        }
     }
 
     private void setPrgLabel(String text) {
-        prgLabel.setText(text);
+        if (!HEADLESS) {
+            prgLabel.setText(text);
+        }
     }
 
     public static void setLabel(String text) {
-        window.setPrgLabel(text);
+        if (!HEADLESS) {
+            WINDOW.setPrgLabel(text);
+        }
     }
 
     private void addToBar(int val) {
-        bar.setValue(bar.getValue() + val);
-        bar.repaint();
+        if (!HEADLESS) {
+            bar.setValue(bar.getValue() + val);
+            bar.repaint();
+        }
     }
 
     public static void addBar(int val) {
-        window.addToBar(val);
+        if (!HEADLESS) {
+            WINDOW.addToBar(val);
+        }
     }
 
 }
