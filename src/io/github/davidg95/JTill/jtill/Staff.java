@@ -230,9 +230,9 @@ public class Staff implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateStaff(this);
+            DataConnect.get().updateStaff(this);
         } catch (StaffNotFoundException ex) {
-            DataConnect.dataconnect.addStaff(this);
+            DataConnect.get().addStaff(this);
         }
     }
 
@@ -245,7 +245,7 @@ public class Staff implements Serializable {
      * @throws StaffNotFoundException if the staff member was not found.
      */
     public List<Sale> getSales() throws IOException, SQLException, StaffNotFoundException {
-        return DataConnect.dataconnect.getStaffSales(this);
+        return DataConnect.get().getStaffSales(this);
     }
 
     public String getSQLInsertString() {

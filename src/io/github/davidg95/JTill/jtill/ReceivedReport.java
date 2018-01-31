@@ -79,7 +79,7 @@ public class ReceivedReport implements Serializable {
      * @throws SQLException if there is a database error.
      */
     public void save() throws IOException, SQLException {
-        DataConnect.dataconnect.updateReceivedReport(this);
+        DataConnect.get().updateReceivedReport(this);
     }
 
     @Override

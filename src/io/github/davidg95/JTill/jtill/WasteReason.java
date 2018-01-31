@@ -67,9 +67,9 @@ public class WasteReason implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateWasteReason(this);
+            DataConnect.get().updateWasteReason(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addWasteReason(this);
+            DataConnect.get().addWasteReason(this);
         }
     }
 

@@ -92,19 +92,20 @@ public class Screen implements Serializable, Cloneable {
      * @throws ScreenNotFoundException if the screen was not found.
      */
     public List<TillButton> getButtons() throws IOException, SQLException, ScreenNotFoundException {
-        return DataConnect.dataconnect.getButtonsOnScreen(this);
+        return DataConnect.get().getButtonsOnScreen(this);
     }
 
     /**
      * Save the screen to the database.
+     *
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateScreen(this);
+            DataConnect.get().updateScreen(this);
         } catch (ScreenNotFoundException ex) {
-            DataConnect.dataconnect.addScreen(this);
+            DataConnect.get().addScreen(this);
         }
     }
 

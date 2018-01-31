@@ -72,9 +72,9 @@ public class Supplier implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateSupplier(this);
+            DataConnect.get().updateSupplier(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addSupplier(this);
+            DataConnect.get().addSupplier(this);
         }
     }
 

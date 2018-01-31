@@ -206,9 +206,9 @@ public class TillButton implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateButton(this);
+            DataConnect.get().updateButton(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addButton(this);
+            DataConnect.get().addButton(this);
         }
     }
 

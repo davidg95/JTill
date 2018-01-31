@@ -61,9 +61,9 @@ public class RefundReason implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateRefundReason(this);
+            DataConnect.get().updateRefundReason(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addRefundReason(this);
+            DataConnect.get().addRefundReason(this);
         }
     }
 

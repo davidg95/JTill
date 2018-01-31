@@ -112,9 +112,9 @@ public class Order {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateOrder(this);
+            DataConnect.get().updateOrder(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addOrder(this);
+            DataConnect.get().addOrder(this);
         }
     }
 

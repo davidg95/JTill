@@ -70,7 +70,7 @@ public class Department implements Serializable {
      * @throws SQLException if there is a database error.
      */
     public List<Product> getProductsInDepartment() throws IOException, SQLException {
-        return DataConnect.dataconnect.getProductsInDepartment(id);
+        return DataConnect.get().getProductsInDepartment(id);
     }
 
     /**
@@ -81,9 +81,9 @@ public class Department implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateDepartment(this);
+            DataConnect.get().updateDepartment(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addDepartment(this);
+            DataConnect.get().addDepartment(this);
         }
     }
 
@@ -95,7 +95,7 @@ public class Department implements Serializable {
      * @throws SQLException if there is a database error.
      */
     public static List<Department> getAll() throws IOException, SQLException {
-        return DataConnect.dataconnect.getAllDepartments();
+        return DataConnect.get().getAllDepartments();
     }
 
     @Override

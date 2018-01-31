@@ -82,9 +82,9 @@ public class Tax implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateTax(this);
+            DataConnect.get().updateTax(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addTax(this);
+            DataConnect.get().addTax(this);
         }
     }
 
@@ -96,7 +96,7 @@ public class Tax implements Serializable {
      * @throws SQLException if there is a database error.
      */
     public static List<Tax> getAll() throws IOException, SQLException {
-        return DataConnect.dataconnect.getAllTax();
+        return DataConnect.get().getAllTax();
     }
 
     public String getSQLInsertString() {

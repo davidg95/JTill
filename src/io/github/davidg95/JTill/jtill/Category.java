@@ -160,7 +160,7 @@ public class Category implements Serializable {
      * @throws JTillException if the category was not found.
      */
     public List<Product> getProductsInCategory() throws IOException, SQLException, JTillException {
-        return DataConnect.dataconnect.getProductsInCategory(ID);
+        return DataConnect.get().getProductsInCategory(ID);
     }
 
     /**
@@ -171,9 +171,9 @@ public class Category implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateCategory(this);
+            DataConnect.get().updateCategory(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addCategory(this);
+            DataConnect.get().addCategory(this);
         }
     }
 
@@ -185,7 +185,7 @@ public class Category implements Serializable {
      * @throws SQLException if there is a database error.
      */
     public static List<Category> getAll() throws IOException, SQLException {
-        return DataConnect.dataconnect.getAllCategorys();
+        return DataConnect.get().getAllCategorys();
     }
 
     public String getSQLInsertString() {

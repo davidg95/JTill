@@ -78,7 +78,7 @@ public class Till implements Serializable, Cloneable {
      */
     public boolean isConnected() {
         try {
-            return DataConnect.dataconnect.isTillConnected(id);
+            return DataConnect.get().isTillConnected(id);
         } catch (IOException ex) {
             Logger.getGlobal().log(Level.WARNING, "Unable to get connection to server, returning last know connection state for terminal " + name, ex);
             return connected;
@@ -94,7 +94,7 @@ public class Till implements Serializable, Cloneable {
      * @throws IOException if there is a network error.
      */
     public void sendData(String data[]) throws IOException {
-        DataConnect.dataconnect.sendData(id, data);
+        DataConnect.get().sendData(id, data);
     }
 
     public void setConnected(boolean connected) {
@@ -145,7 +145,7 @@ public class Till implements Serializable, Cloneable {
      * @throws SQLException if there is a database error.
      */
     public List<Sale> getTerminalSales(Date start, Date end, boolean uncashedOnly) throws IOException, SQLException {
-        return DataConnect.dataconnect.getTerminalSales(start, end, id, uncashedOnly);
+        return DataConnect.get().getTerminalSales(start, end, id, uncashedOnly);
     }
 
     /**
@@ -158,7 +158,7 @@ public class Till implements Serializable, Cloneable {
      * @throws SQLException if there is a database error.
      */
     public List<Sale> getAllTerminalSales(boolean uncashedOnly) throws IOException, SQLException {
-        return DataConnect.dataconnect.getAllTerminalSales(id, uncashedOnly);
+        return DataConnect.get().getAllTerminalSales(id, uncashedOnly);
     }
 
     /**
@@ -169,9 +169,9 @@ public class Till implements Serializable, Cloneable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateTill(this);
+            DataConnect.get().updateTill(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addTill(this);
+            DataConnect.get().addTill(this);
         }
     }
 
@@ -183,7 +183,7 @@ public class Till implements Serializable, Cloneable {
      * @throws SQLException if there is a database error.
      */
     public static List<Till> getAll() throws IOException, SQLException {
-        return DataConnect.dataconnect.getAllTills();
+        return DataConnect.get().getAllTills();
     }
 
     /**
@@ -193,7 +193,7 @@ public class Till implements Serializable, Cloneable {
      * @throws JTillException if there are terminals already receiving data.
      */
     public static void reinitAll() throws IOException, JTillException {
-        DataConnect.dataconnect.reinitialiseAllTills();
+        DataConnect.get().reinitialiseAllTills();
     }
 
     public String getSQLInsertString() {

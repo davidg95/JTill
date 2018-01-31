@@ -537,9 +537,9 @@ public class Product implements Serializable, Cloneable, Item {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateProduct(this);
+            DataConnect.get().updateProduct(this);
         } catch (ProductNotFoundException ex) {
-            DataConnect.dataconnect.addProduct(this);
+            DataConnect.get().addProduct(this);
         }
     }
 
@@ -551,7 +551,7 @@ public class Product implements Serializable, Cloneable, Item {
      * @throws SQLException if there is a database error.
      */
     public static List<Product> getAll() throws IOException, SQLException {
-        return DataConnect.dataconnect.getAllProducts();
+        return DataConnect.get().getAllProducts();
     }
 
     @Override

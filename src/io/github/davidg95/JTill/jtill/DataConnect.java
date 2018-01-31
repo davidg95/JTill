@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,10 +23,18 @@ import javax.mail.internet.AddressException;
  */
 public abstract class DataConnect {
 
-    public static DataConnect dataconnect;
+    private static DataConnect dataconnect;
 
     public GUIInterface g;
     
+    public static DataConnect get(){
+        return dataconnect;
+    }
+    
+    public static void set(DataConnect dc){
+        dataconnect = dc;
+    }
+
     /**
      * Set a reference to the GUI.
      *

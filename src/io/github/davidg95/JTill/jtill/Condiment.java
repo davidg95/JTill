@@ -57,9 +57,9 @@ public class Condiment implements Serializable {
 
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateCondiment(this);
+            DataConnect.get().updateCondiment(this);
         } catch (JTillException ex) {
-            DataConnect.dataconnect.addCondiment(this);
+            DataConnect.get().addCondiment(this);
         }
     }
 

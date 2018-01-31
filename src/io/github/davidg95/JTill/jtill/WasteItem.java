@@ -62,7 +62,7 @@ public class WasteItem implements Serializable {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-        if(this.product.isOpen()){
+        if (this.product.isOpen()) {
             return;
         }
         this.totalValue = this.product.getCostPrice().divide(new BigDecimal(product.getPackSize())).multiply(new BigDecimal(quantity)).setScale(2, 6);

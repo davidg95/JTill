@@ -256,9 +256,9 @@ public class Customer implements Serializable {
      */
     public void save() throws IOException, SQLException {
         try {
-            DataConnect.dataconnect.updateCustomer(this);
+            DataConnect.get().updateCustomer(this);
         } catch (CustomerNotFoundException ex) {
-            DataConnect.dataconnect.addCustomer(this);
+            DataConnect.get().addCustomer(this);
         }
     }
 

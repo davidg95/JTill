@@ -407,7 +407,7 @@ public class Sale implements Serializable, Cloneable {
      * @throws SQLException if there is a database error.
      */
     public void addToDatabase() throws IOException, SQLException {
-        DataConnect.dataconnect.addSale(this);
+        DataConnect.get().addSale(this);
     }
 
     public String getSQLInsertStatement() {
