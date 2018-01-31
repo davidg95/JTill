@@ -654,7 +654,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException {
+    public List<Sale> getSalesInRange(Date start, Date end) throws IOException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETSALEDATERANGE").addParam("START", start).addParam("END", end));
         } catch (Throwable ex) {
@@ -2001,9 +2001,22 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException {
+    public List<Sale> getTerminalSales(Date start, Date end, int terminal, boolean uncashedOnly) throws IOException, SQLException {
         try {
-            return (List) conn.sendData(JConnData.create("GETTERMINALSALES").addParam("TERMINAL", terminal).addParam("UNCASHEDFLAG", uncashedOnly));
+            return (List) conn.sendData(JConnData.create("GETTERMINALSALES").addParam("START", start).addParam("END", end).addParam("TERMINAL", terminal).addParam("UNCASHEDFLAG", uncashedOnly));
+        } catch (Throwable ex) {
+            if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public List<Sale> getAllTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException {
+        try {
+            return (List) conn.sendData(JConnData.create("GETALLTERMINALSALES").addParam("TERMINAL", terminal).addParam("UNCASHEDFLAG", uncashedOnly));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;

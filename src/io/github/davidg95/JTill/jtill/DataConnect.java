@@ -27,7 +27,7 @@ public abstract class DataConnect {
     public static DataConnect dataconnect;
 
     public GUIInterface g;
-
+    
     /**
      * Set a reference to the GUI.
      *
@@ -349,7 +349,7 @@ public abstract class DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract List<Sale> getSalesInRange(Time start, Time end) throws IOException, SQLException;
+    public abstract List<Sale> getSalesInRange(Date start, Date end) throws IOException, SQLException;
 
     /**
      * Method to update a sale in the database.
@@ -1493,13 +1493,26 @@ public abstract class DataConnect {
     /**
      * Method to get a terminals sales.
      *
+     * @param start the start date.
+     * @param end the end date.
+     * @param terminal the terminal to get sales for. 0 for all.
+     * @param uncashedOnly true if you only want uncashed sales, false for all.
+     * @return a List of the terminals sales.
+     * @throws IOException if there was a networking error.
+     * @throws SQLException if there was a database error.
+     */
+    public abstract List<Sale> getTerminalSales(Date start, Date end, int terminal, boolean uncashedOnly) throws IOException, SQLException;
+
+    /**
+     * Method to get all of a terminals sales.
+     *
      * @param terminal the terminal to get sales for.
      * @param uncashedOnly true if you only want uncashed sales, false for all.
      * @return a List of the terminals sales.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public abstract List<Sale> getTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException;
+    public abstract List<Sale> getAllTerminalSales(int terminal, boolean uncashedOnly) throws IOException, SQLException;
 
     /**
      * Method to search the Products table with a customer WHERE clause.

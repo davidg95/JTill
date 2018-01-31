@@ -136,14 +136,29 @@ public class Till implements Serializable, Cloneable {
     /**
      * Get Sales for this terminal.
      *
+     * @param start the start date.
+     * @param end the end date.
      * @param uncashedOnly pass in true if only uncashed sales should be
      * returned.
      * @return a List of sales.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public List<Sale> getTerminalSales(boolean uncashedOnly) throws IOException, SQLException {
-        return DataConnect.dataconnect.getTerminalSales(id, uncashedOnly);
+    public List<Sale> getTerminalSales(Date start, Date end, boolean uncashedOnly) throws IOException, SQLException {
+        return DataConnect.dataconnect.getTerminalSales(start, end, id, uncashedOnly);
+    }
+
+    /**
+     * Get Sales for this terminal.
+     *
+     * @param uncashedOnly pass in true if only uncashed sales should be
+     * returned.
+     * @return a List of sales.
+     * @throws IOException if there is a network error.
+     * @throws SQLException if there is a database error.
+     */
+    public List<Sale> getAllTerminalSales(boolean uncashedOnly) throws IOException, SQLException {
+        return DataConnect.dataconnect.getAllTerminalSales(id, uncashedOnly);
     }
 
     /**
