@@ -5,6 +5,7 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -14,6 +15,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class which holds all server configurations.
@@ -38,20 +41,14 @@ public class Settings implements Serializable {
      */
     public static final int DEFAULT_MAX_QUEUE = 10;
 
-    /**
-     * The default database address.
-     */
-    public static final String DEFAULT_ADDRESS = "jdbc:derby:TillEmbedded;";
-    /**
-     * The default database username.
-     */
-    public static final String DEFAULT_USERNAME = "APP";
-    /**
-     * The default database password.
-     */
-    public static final String DEFAULT_PASSWORD = "App";
+    public static final String propertiesFile = System.getenv("APPDATA") + "\\JTill Server\\server.properties";
 
     public Settings() {
+        File file = new File(System.getenv("APPDATA") + "\\JTill Server\\");
+        if (!file.exists()) {
+            Logger.getGlobal().warning("creating JTill Server folder in AppData");
+            file.mkdir();
+        }
         properties = new Properties();
     }
 
@@ -135,7 +132,7 @@ public class Settings implements Serializable {
     public boolean loadProperties() {
         InputStream in;
         try {
-            in = new FileInputStream("server.properties");
+            in = new FileInputStream(propertiesFile);
             properties.load(in);
 
             in.close();
@@ -154,7 +151,7 @@ public class Settings implements Serializable {
         OutputStream out;
 
         try {
-            out = new FileOutputStream("server.properties");
+            out = new FileOutputStream(propertiesFile);
             properties.store(out, null);
             out.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
@@ -169,11 +166,11 @@ public class Settings implements Serializable {
         OutputStream out;
 
         try {
-            out = new FileOutputStream("server.properties");
+            out = new FileOutputStream(propertiesFile);
 
-            setSetting("db_address", DEFAULT_ADDRESS);
-            setSetting("db_username", DEFAULT_USERNAME);
-            setSetting("db_password", DEFAULT_PASSWORD);
+            setSetting("db_address", "");
+            setSetting("db_username", "");
+            setSetting("db_password", "");
             setSetting("max_conn", Integer.toString(DEFAULT_MAX_CONNECTIONS));
             setSetting("max_queue", Integer.toString(DEFAULT_MAX_QUEUE));
             setSetting("port", Integer.toString(DEFAULT_PORT));
@@ -201,8 +198,8 @@ public class Settings implements Serializable {
             setSetting("TERMINAL_BG", "000000");
             setSetting("BORDER_SCREEN_BUTTON", "false");
             setSetting("BORDER_COLOR", "#ff0000");
-
             properties.store(out, null);
+
             out.close();
         } catch (FileNotFoundException | UnknownHostException ex) {
         } catch (IOException ex) {
