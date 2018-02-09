@@ -33,6 +33,7 @@ public class Customer implements Serializable {
     private String postcode;
 
     private BigDecimal moneyDue;
+    private BigDecimal maxDebt;
 
     /**
      * Constructor which takes in all values except for the id.
@@ -50,8 +51,9 @@ public class Customer implements Serializable {
      * @param notes any notes.
      * @param loyaltyPoints how much loyalty points they have.
      * @param moneyDue how much money they are due.
+     * @param maxDebt what the maximum debt is for the customer.
      */
-    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue) {
+    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, BigDecimal maxDebt) {
         this.name = name;
         this.phone = phone;
         this.mobile = mobile;
@@ -65,6 +67,7 @@ public class Customer implements Serializable {
         this.notes = notes;
         this.loyaltyPoints = loyaltyPoints;
         this.moneyDue = moneyDue;
+        this.maxDebt = maxDebt;
     }
 
     /**
@@ -84,9 +87,10 @@ public class Customer implements Serializable {
      * @param notes any notes.
      * @param loyaltyPoints how much loyalty points they have.
      * @param moneyDue how much money they are due.
+     * @param maxDebt what the maximum debt is for the customer.
      */
-    public Customer(int id, String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue) {
-        this(name, phone, mobile, email, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints, moneyDue);
+    public Customer(int id, String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, BigDecimal maxDebt) {
+        this(name, phone, mobile, email, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, maxDebt);
         this.id = id;
     }
 
@@ -95,8 +99,12 @@ public class Customer implements Serializable {
      *
      * @param moneyDue the money to add.
      * @return the money they are now due.
+     * @throws JTillException if the customers maximum debt has been exceeded.
      */
-    public BigDecimal addMoneyDue(BigDecimal moneyDue) {
+    public BigDecimal addMoneyDue(BigDecimal moneyDue) throws JTillException {
+        if (this.moneyDue.add(moneyDue).compareTo(this.maxDebt) > 0 && this.maxDebt.compareTo(BigDecimal.ZERO) != 0) {
+            throw new JTillException("Maximum debt for customer exceeded");
+        }
         this.moneyDue = this.moneyDue.add(moneyDue);
         return this.moneyDue;
     }
@@ -248,6 +256,14 @@ public class Customer implements Serializable {
         this.moneyDue = moneyDue;
     }
 
+    public BigDecimal getMaxDebt() {
+        return maxDebt;
+    }
+
+    public void setMaxDebt(BigDecimal maxDebt) {
+        this.maxDebt = maxDebt;
+    }
+
     /**
      * Save a customer to the database.
      *
@@ -275,7 +291,8 @@ public class Customer implements Serializable {
                 + "','" + this.postcode
                 + "','" + this.notes
                 + "'," + this.loyaltyPoints
-                + "," + this.moneyDue.doubleValue();
+                + "," + this.moneyDue.doubleValue()
+                + "," + this.maxDebt.doubleValue();
     }
 
     public String getSQLUpdateString() {
@@ -293,6 +310,7 @@ public class Customer implements Serializable {
                 + "', NOTES='" + this.getNotes()
                 + "', LOYALTY_POINTS=" + this.getLoyaltyPoints()
                 + ", MONEY_DUE=" + this.getMoneyDue().doubleValue()
+                + ", MAX_DEBT=" + this.getMaxDebt().doubleValue()
                 + " WHERE CUSTOMERS.ID=" + this.getId();
     }
 
