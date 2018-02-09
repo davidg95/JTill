@@ -23,26 +23,14 @@ import java.util.logging.Logger;
  */
 public class LogFileHandler extends Handler {
 
-    private static LogFileHandler handler;
-
     private File file;
     private FileOutputStream out;
 
-    public LogFileHandler() {
-        openFile();
-    }
+    private final String directory;
 
-    /**
-     * Returns an instance of the log file handler. If one does not exist
-     * already, then it will create one.
-     *
-     * @return LogFileHandler.
-     */
-    public static LogFileHandler getInstance() {
-        if (handler == null) {
-            handler = new LogFileHandler();
-        }
-        return handler;
+    public LogFileHandler(String directory) {
+        this.directory = directory;
+        openFile();
     }
 
     @Override
@@ -86,7 +74,7 @@ public class LogFileHandler extends Handler {
     }
 
     private void openFile() {
-        file = new File("log.txt");
+        file = new File(directory + "log.txt");
         try {
             out = new FileOutputStream(file);
             try {

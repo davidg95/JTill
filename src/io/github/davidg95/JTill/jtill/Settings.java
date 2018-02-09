@@ -15,7 +15,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -44,11 +43,6 @@ public class Settings implements Serializable {
     public static final String propertiesFile = System.getenv("APPDATA") + "\\JTill Server\\server.properties";
 
     public Settings() {
-        File file = new File(System.getenv("APPDATA") + "\\JTill Server\\");
-        if (!file.exists()) {
-            Logger.getGlobal().warning("creating JTill Server folder in AppData");
-            file.mkdir();
-        }
         properties = new Properties();
     }
 
