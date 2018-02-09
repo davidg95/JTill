@@ -20,16 +20,20 @@ public class Supplier implements Serializable {
     private String name;
     private String address;
     private String contactNumber;
+    private String accountNumber;
+    private String email;
 
-    public Supplier(int id, String name, String address, String contactNumber) {
-        this(name, address, contactNumber);
+    public Supplier(int id, String name, String address, String contactNumber, String accountNumber, String email) {
+        this(name, address, contactNumber, accountNumber, email);
         this.id = id;
     }
 
-    public Supplier(String name, String address, String contactNumber) {
+    public Supplier(String name, String address, String contactNumber, String accountNumber, String email) {
         this.name = name;
         this.address = address;
         this.contactNumber = contactNumber;
+        this.accountNumber = accountNumber;
+        this.email = email;
     }
 
     public int getId() {
@@ -62,6 +66,22 @@ public class Supplier implements Serializable {
 
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public void setAccountNumber(String accountNumber) {
+        this.accountNumber = accountNumber;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     /**
