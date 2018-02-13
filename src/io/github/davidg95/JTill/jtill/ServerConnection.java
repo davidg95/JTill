@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.ConnectException;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -2055,9 +2054,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public HashMap integrityCheck() throws IOException, SQLException {
+    public void integrityCheck() throws IOException, SQLException {
         try {
-            return (HashMap) conn.sendData(JConnData.create("INTEGRITYCHECK"));
+            conn.sendData(JConnData.create("INTEGRITYCHECK"));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;

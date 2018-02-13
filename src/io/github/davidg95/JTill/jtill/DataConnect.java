@@ -60,7 +60,7 @@ public abstract class DataConnect {
      * @throws java.io.IOException if there was a network error.
      * @throws java.sql.SQLException if there was a database error.
      */
-    public abstract HashMap integrityCheck() throws IOException, SQLException;
+    public abstract void integrityCheck() throws IOException, SQLException;
 
     public abstract Object[] databaseInfo() throws IOException, SQLException;
 
