@@ -9,9 +9,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -24,10 +21,6 @@ public class Category implements Serializable {
     private int ID;
     private Department department;
     private String name;
-    private Time startSell;
-    private Time endSell;
-    private boolean timeRestrict;
-    private int minAge;
 
     private BigDecimal sales = BigDecimal.ZERO;
 
@@ -36,15 +29,10 @@ public class Category implements Serializable {
      *
      * @param ID the id.
      * @param name the name.
-     * @param startSell the time which items in this category may be sold.
-     * @param endSell the time which items in this category will not be allowed
-     * to be sold.
-     * @param timeRestrict if the time restrictions should apply.
-     * @param minAge the minimum age for items in the category.
      * @param dep the department the category belongs to.
      */
-    public Category(int ID, String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, Department dep) {
-        this(name, startSell, endSell, timeRestrict, minAge, dep);
+    public Category(int ID, String name, Department dep) {
+        this(name, dep);
         this.ID = ID;
     }
 
@@ -52,39 +40,11 @@ public class Category implements Serializable {
      * Constructor which takes in all values except id.
      *
      * @param name the name.
-     * @param startSell the time which items in this category may be sold.
-     * @param endSell the time which items in this category will not be allowed
-     * to be sold.
-     * @param timeRestrict if the time restrictions should apply.
-     * @param minAge the minimum age for items in the category.
      * @param dep the department the category belongs to.
      */
-    public Category(String name, Time startSell, Time endSell, boolean timeRestrict, int minAge, Department dep) {
+    public Category(String name, Department dep) {
         this.name = name;
-        this.timeRestrict = timeRestrict;
-        this.startSell = startSell;
-        this.endSell = endSell;
-        if (!timeRestrict) {
-            try {
-                SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss");
-                this.startSell = new Time(sdf.parse("00:00:00").getTime());
-                this.endSell = new Time(sdf.parse("00:00:00").getTime());
-            } catch (ParseException ex) {
-            }
-        }
-        this.minAge = minAge;
         this.department = dep;
-    }
-
-    /**
-     * Returns true or false indicating whether the time passed in is within the
-     * selling time of the category.
-     *
-     * @param t the time to compare.
-     * @return true or false.
-     */
-    public boolean isSellTime(Time t) {
-        return t.after(startSell) && t.before(endSell);
     }
 
     public int getId() {
@@ -101,38 +61,6 @@ public class Category implements Serializable {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Time getStartSell() {
-        return startSell;
-    }
-
-    public void setStartSell(Time startSell) {
-        this.startSell = startSell;
-    }
-
-    public Time getEndSell() {
-        return endSell;
-    }
-
-    public void setEndSell(Time endSell) {
-        this.endSell = endSell;
-    }
-
-    public boolean isTimeRestrict() {
-        return timeRestrict;
-    }
-
-    public void setTimeRestrict(boolean timeRestrict) {
-        this.timeRestrict = timeRestrict;
-    }
-
-    public int getMinAge() {
-        return minAge;
-    }
-
-    public void setMinAge(int minAge) {
-        this.minAge = minAge;
     }
 
     public void addToSales(BigDecimal toAdd) {
@@ -190,31 +118,14 @@ public class Category implements Serializable {
 
     public String getSQLInsertString() {
         return "'" + this.name
-                + "','" + this.startSell.toString()
-                + "','" + this.endSell.toString()
-                + "','" + this.timeRestrict
-                + "'," + this.minAge
-                + "," + this.department.getId();
+                + "'," + this.department.getId();
     }
 
     public String getSQLUpdateString() {
-        if (this.isTimeRestrict()) {
-            return "UPDATE CATEGORYS"
-                    + " SET NAME='" + this.getName()
-                    + "', SELL_START='" + this.getStartSell().toString()
-                    + "', SELL_END='" + this.getEndSell().toString()
-                    + "', TIME_RESTRICT=" + this.isTimeRestrict()
-                    + ", MINIMUM_AGE=" + this.getMinAge()
-                    + ", DEPARTMENT=" + this.getDepartment().getId()
-                    + " WHERE CATEGORYS.ID=" + this.getId();
-        } else {
-            return "UPDATE CATEGORYS"
-                    + " SET NAME='" + this.getName()
-                    + "', TIME_RESTRICT=" + this.isTimeRestrict()
-                    + ", MINIMUM_AGE=" + this.getMinAge()
-                    + ", DEPARTMENT=" + this.getDepartment().getId()
-                    + " WHERE CATEGORYS.ID=" + this.getId();
-        }
+        return "UPDATE CATEGORYS"
+                + " SET NAME='" + this.getName()
+                + "', DEPARTMENT=" + this.getDepartment().getId()
+                + " WHERE CATEGORYS.ID=" + this.getId();
     }
 
     @Override
