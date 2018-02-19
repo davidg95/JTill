@@ -17,16 +17,16 @@ import java.text.DecimalFormat;
 public class Condiment implements Serializable {
 
     private int id;
-    private int product;
+    private String product;
     private Product product_con;
 
-    public Condiment(int id, int product, Product product_con) {
+    public Condiment(int id, String product, Product product_con) {
         this.id = id;
         this.product = product;
         this.product_con = product_con;
     }
 
-    public Condiment(int product, Product product_con) {
+    public Condiment(String product, Product product_con) {
         this.product_con = product_con;
         this.product = product;
     }
@@ -39,11 +39,11 @@ public class Condiment implements Serializable {
         this.id = id;
     }
 
-    public int getProduct() {
+    public String getProduct() {
         return product;
     }
 
-    public void setProduct(int product) {
+    public void setProduct(String product) {
         this.product = product;
     }
 

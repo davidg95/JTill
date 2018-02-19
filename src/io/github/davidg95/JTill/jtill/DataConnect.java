@@ -26,12 +26,12 @@ public abstract class DataConnect {
     private static DataConnect dataconnect;
 
     public GUIInterface g;
-    
-    public static DataConnect get(){
+
+    public static DataConnect get() {
         return dataconnect;
     }
-    
-    public static void set(DataConnect dc){
+
+    public static void set(DataConnect dc) {
         dataconnect = dc;
     }
 
@@ -139,12 +139,12 @@ public abstract class DataConnect {
     /**
      * Remove a product from the system
      *
-     * @param code the code of the product to remove.
+     * @param barcode the barcode of the product to remove.
      * @throws ProductNotFoundException if the product was not found.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract void removeProduct(int code) throws ProductNotFoundException, IOException, SQLException;
+    public abstract void removeProduct(String barcode) throws ProductNotFoundException, IOException, SQLException;
 
     /**
      * Remove a product from the system
@@ -159,7 +159,7 @@ public abstract class DataConnect {
     /**
      * Method to purchase a product and reduce its stock level by 1.
      *
-     * @param id the product to purchase.
+     * @param barcode the product to purchase.
      * @param amount the amount of the product to purchase.
      * @return the new stock level.
      * @throws IOException if there was a network error.
@@ -167,18 +167,18 @@ public abstract class DataConnect {
      * @throws OutOfStockException if the product is out of stock.
      * @throws ProductNotFoundException if the product was not found.
      */
-    public abstract int purchaseProduct(int id, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
+    public abstract int purchaseProduct(String barcode, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
 
     /**
      * Method to get a product by its code.
      *
-     * @param code the product to get.
+     * @param barcode the barcode of the product to search.
      * @return the Product that matches the code.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was an error getting the product.
      * @throws ProductNotFoundException if the product could not be found.
      */
-    public abstract Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException;
+    public abstract Product getProduct(String barcode) throws IOException, ProductNotFoundException, SQLException;
 
     /**
      * Method to get all the products on the system.
@@ -457,22 +457,22 @@ public abstract class DataConnect {
     /**
      * Method which gets the total units sold of a particular item.
      *
-     * @param id the id of the product to search.
+     * @param barcode the barcode of the product to search.
      * @return the total number of units of that item sold.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract int getTotalSoldOfItem(int id) throws IOException, SQLException;
+    public abstract int getTotalSoldOfItem(String barcode) throws IOException, SQLException;
 
     /**
      * Method which gets the total value sold of a particular item.
      *
-     * @param id the id of the product to search.
+     * @param barcode the barcode of the product to search.
      * @return the amount of money taken selling this item.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract BigDecimal getTotalValueSold(int id) throws IOException, SQLException;
+    public abstract BigDecimal getTotalValueSold(String barcode) throws IOException, SQLException;
 
     /**
      * Method to submit a query to the sale items table.
@@ -1207,22 +1207,22 @@ public abstract class DataConnect {
     /**
      * Method to get the total units wasted of a certain product.
      *
-     * @param id the id to search.
+     * @param barcode the barcode to search.
      * @return the total units wasted.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract int getTotalWastedOfItem(int id) throws IOException, SQLException;
+    public abstract int getTotalWastedOfItem(String barcode) throws IOException, SQLException;
 
     /**
      * Method to get the total value wasted of a certain product.
      *
-     * @param id the id to search.
+     * @param barcode the barcode to search.
      * @return the value wasted.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException;
+    public abstract BigDecimal getValueWastedOfItem(String barcode) throws IOException, SQLException;
 
     /**
      * Method to add a waste reason.
@@ -1340,22 +1340,22 @@ public abstract class DataConnect {
     /**
      * Gets the total spend on an item.
      *
-     * @param id the item to get.
+     * @param barcode the item to get.
      * @return the total spent on the item.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public abstract BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException;
+    public abstract BigDecimal getValueSpentOnItem(String barcode) throws IOException, SQLException;
 
     /**
      * Get the total amount received of this item.
      *
-     * @param id the item ID.
+     * @param barcode the item ID.
      * @return the total amount received.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public abstract int getTotalReceivedOfItem(int id) throws IOException, SQLException;
+    public abstract int getTotalReceivedOfItem(String barcode) throws IOException, SQLException;
 
     /**
      * Clocks on a member of staff.
@@ -1759,12 +1759,12 @@ public abstract class DataConnect {
     /**
      * Get a products condiments.
      *
-     * @param id the product id.
+     * @param barcode the barcode.
      * @return a list of condiments.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public abstract List<Condiment> getProductsCondiments(int id) throws IOException, SQLException;
+    public abstract List<Condiment> getProductsCondiments(String barcode) throws IOException, SQLException;
 
     /**
      * Updates a condiment.
