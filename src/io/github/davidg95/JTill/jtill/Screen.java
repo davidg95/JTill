@@ -144,13 +144,13 @@ public class Screen implements Serializable, Cloneable {
 
     public String getSQLUpdateString() {
         return "UPDATE SCREENS"
-                + " SET NAME='" + this.getName()
-                + "', WIDTH=" + this.getWidth()
-                + ", HEIGHT=" + this.getHeight()
-                + ", INHERITS=" + this.getInherits()
-                + ", VGAP=" + this.getvGap()
-                + ", HGAP=" + this.gethGap()
-                + " WHERE SCREENS.ID=" + this.getId();
+                + " SET scNAME='" + this.getName()
+                + "', scWIDTH=" + this.getWidth()
+                + ", scHEIGHT=" + this.getHeight()
+                + ", scINHERITS=" + this.getInherits()
+                + ", scVGAP=" + this.getvGap()
+                + ", scHGAP=" + this.gethGap()
+                + " WHERE scID=" + this.getId();
     }
 
     @Override

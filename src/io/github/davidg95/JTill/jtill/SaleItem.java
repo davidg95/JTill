@@ -24,9 +24,8 @@ public class SaleItem implements Serializable {
     private BigDecimal taxValue;
     private BigDecimal cost;
     private int sale;
-    private int type;
     private boolean refundItem;
-    private Product item;
+    private Product product;
 
     /**
      * Indicates the sale item is a Product.
@@ -34,24 +33,17 @@ public class SaleItem implements Serializable {
      * Value = 1.
      */
     public static final int PRODUCT = 1;
-    /**
-     * Indicates the sale item is a discount.
-     *
-     * Value = 2.
-     */
-    public static final int DISCOUNT = 2;
 
-    public SaleItem(int sale, Product item, int quantity, int id, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
-        this(sale, item, quantity, price, type, tax, cost);
+    public SaleItem(int sale, Product item, int quantity, int id, BigDecimal price, BigDecimal tax, BigDecimal cost) {
+        this(sale, item, quantity, price, tax, cost);
         this.id = id;
     }
 
-    public SaleItem(int sale, Product item, int quantity, BigDecimal price, int type, BigDecimal tax, BigDecimal cost) {
+    public SaleItem(int sale, Product item, int quantity, BigDecimal price, BigDecimal tax, BigDecimal cost) {
         this.sale = sale;
-        this.item = item;
+        this.product = item;
         this.quantity = quantity;
         this.price = price.setScale(2, BigDecimal.ROUND_HALF_EVEN);
-        this.type = type;
         this.taxValue = tax.setScale(2, BigDecimal.ROUND_HALF_EVEN);
         this.cost = cost.setScale(2, BigDecimal.ROUND_HALF_EVEN);
         if (quantity < 0) {
@@ -86,8 +78,8 @@ public class SaleItem implements Serializable {
 
     public String getName() {
         String con = "";
-        if (item instanceof Product) {
-            for (Condiment c : ((Product) item).getSaleCondiments()) {
+        if (product instanceof Product) {
+            for (Condiment c : ((Product) product).getSaleCondiments()) {
                 con += "\n    - " + c.getProduct_con().getName();
             }
         }
@@ -138,14 +130,6 @@ public class SaleItem implements Serializable {
         this.sale = sale;
     }
 
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
-    }
-
     public boolean isRefundItem() {
         return refundItem;
     }
@@ -170,18 +154,17 @@ public class SaleItem implements Serializable {
         this.cost = cost;
     }
 
-    public Product getItem() {
-        return item;
+    public Product getProduct() {
+        return product;
     }
 
-    public void setItem(Product item) {
-        this.item = item;
+    public void setProduct(Product item) {
+        this.product = item;
     }
 
     public String getSQLInsertStatement() {
-        return this.item.getBarcode()
-                + "," + type
-                + "," + this.quantity
+        return "'" + this.product.getBarcode()
+                + "'," + this.quantity
                 + "," + this.price.doubleValue()
                 + "," + this.taxValue.doubleValue()
                 + "," + this.sale
@@ -207,7 +190,7 @@ public class SaleItem implements Serializable {
             return false;
         }
         final SaleItem other = (SaleItem) obj;
-        return this.item == other.item && this.type == other.type && this.quantity == other.quantity;
+        return this.product.getBarcode().equals(other.product.getBarcode()) && this.quantity == other.quantity;
     }
 
     @Override
@@ -219,12 +202,12 @@ public class SaleItem implements Serializable {
             df = new DecimalFormat("0.00");
         }
         String con = "";
-        if (item instanceof Product) {
-            for (Condiment c : ((Product) item).getSaleCondiments()) {
+        if (product instanceof Product) {
+            for (Condiment c : ((Product) product).getSaleCondiments()) {
                 con += "\n    - " + c.getProduct_con().getName();
             }
         }
-        return "Qty. " + this.getQuantity() + "\t" + this.getItem() + con + "\t\t\t£" + df.format(this.getPrice());
+        return "Qty. " + this.getQuantity() + "\t" + this.getProduct() + con + "\t\t\t£" + df.format(this.getPrice());
 
     }
 }
