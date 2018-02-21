@@ -22,8 +22,8 @@ import java.util.Objects;
 public class Product implements Serializable, Cloneable {
 
     private String barcode;
-    private int order_code;
-    private String name;
+    private int orderCode;
+    private String longName;
     private String shortName;
 
     private Category category;
@@ -38,14 +38,18 @@ public class Product implements Serializable, Cloneable {
     private double scale;
     private String scaleName;
     private BigDecimal priceLimit;
+    private double costPercentage;
+
     private BigDecimal price;
     private BigDecimal costPrice;
     private int packSize;
     private boolean priceIncVat;
+
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
     private boolean trackStock;
+
     private String comments;
     private String ingredients;
 
@@ -62,14 +66,14 @@ public class Product implements Serializable, Cloneable {
      * @param tax the tax class for this product.
      * @param scale the value of the scale.
      * @param scaleName the name of the scale.
-     * @param cost the cost percentage.
+     * @param costPercentage the cost percentage.
      * @param price the price limit.
      * @param ingredients the products ingredients.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, BigDecimal cost, BigDecimal price, String ingredients) {
-        this.name = name;
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, double costPercentage, BigDecimal price, String ingredients) {
+        this.longName = name;
         this.shortName = shortName;
-        this.order_code = order_code;
+        this.orderCode = order_code;
         this.category = category;
         this.comments = comments;
         this.tax = tax;
@@ -79,7 +83,7 @@ public class Product implements Serializable, Cloneable {
         this.scale = scale;
         this.scaleName = scaleName;
         this.packSize = 1;
-        this.costPrice = cost;
+        this.costPercentage = costPercentage;
         this.priceLimit = price;
         this.ingredients = ingredients;
     }
@@ -107,9 +111,9 @@ public class Product implements Serializable, Cloneable {
      * @param ingredients the products ingredients.
      */
     public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock, String ingredients) {
-        this.name = name;
+        this.longName = name;
         this.shortName = shortName;
-        this.order_code = order_code;
+        this.orderCode = order_code;
         this.category = category;
         this.comments = comments;
         this.tax = tax;
@@ -173,19 +177,19 @@ public class Product implements Serializable, Cloneable {
     }
 
     public String getLongName() {
-        return name;
+        return longName;
     }
 
     public void setLongName(String name) {
-        this.name = name;
+        this.longName = name;
     }
 
-    public int getOrder_code() {
-        return order_code;
+    public int getOrderCode() {
+        return orderCode;
     }
 
-    public void setOrder_code(int order_code) {
-        this.order_code = order_code;
+    public void setOrderCode(int orderCode) {
+        this.orderCode = orderCode;
     }
 
     public BigDecimal getPrice() {
@@ -212,11 +216,11 @@ public class Product implements Serializable, Cloneable {
         this.comments = comments;
     }
 
-    public String getName() {
+    public String getShortName() {
         return shortName;
     }
 
-    public void setName(String shortName) {
+    public void setShortName(String shortName) {
         this.shortName = shortName;
     }
 
@@ -236,12 +240,12 @@ public class Product implements Serializable, Cloneable {
         this.costPrice = costPrice;
     }
 
-    public BigDecimal getCostPercentage() {
-        return costPrice;
+    public double getCostPercentage() {
+        return costPercentage;
     }
 
-    public void setCostPercentage(BigDecimal costPrice) {
-        this.costPrice = costPrice;
+    public void setCostPercentage(double costPercentage) {
+        this.costPercentage = costPercentage;
     }
 
     /**
@@ -253,7 +257,7 @@ public class Product implements Serializable, Cloneable {
         if (price == null) {
             return BigDecimal.ZERO;
         }
-        return this.price.divide(new BigDecimal(100), 2, 6).multiply(this.getCostPercentage());
+        return this.price.divide(new BigDecimal(100), 2, 6).multiply(new BigDecimal(this.getCostPercentage()));
     }
 
     public int getMinStockLevel() {
@@ -430,8 +434,8 @@ public class Product implements Serializable, Cloneable {
     }
 
     public String getSQLInsertString() {
-        return this.order_code
-                + ",'" + this.name
+        return this.orderCode
+                + ",'" + this.longName
                 + "'," + this.open
                 + "," + this.price
                 + "," + this.stock
@@ -449,18 +453,19 @@ public class Product implements Serializable, Cloneable {
                 + "'," + this.priceIncVat
                 + "," + this.priceLimit
                 + "," + this.trackStock
-                + ",'" + this.getIngredients() + "'";
+                + "," + this.costPercentage
+                + ",'" + this.ingredients + "'";
     }
 
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
-                + " SET pORDER_CODE=" + this.getOrder_code()
+                + " SET pORDER_CODE=" + this.getOrderCode()
                 + ", pNAME='" + this.getLongName()
                 + "', OPEN_PRICE=" + this.isOpen()
                 + ", pPRICE=" + this.getPrice()
                 + ", pSTOCK=" + this.getStock()
                 + ", pCOMMENTS='" + this.getComments()
-                + "', pSHORT_NAME='" + this.getName()
+                + "', pSHORT_NAME='" + this.getShortName()
                 + "', pcategory=" + this.getCategory().getId()
                 + ", ptax=" + this.getTax().getId()
                 + ", pCOST_PRICE=" + this.getCostPrice()
@@ -475,7 +480,8 @@ public class Product implements Serializable, Cloneable {
                 + ", pLIMIT=" + this.getPriceLimit()
                 + ", pTRACK_STOCK=" + this.isTrackStock()
                 + ", pingredients='" + this.getIngredients()
-                + "' WHERE BARCODE='" + this.getBarcode() + "'";
+                + "', pcost_percentage=" + this.getCostPercentage()
+                + " WHERE BARCODE='" + this.getBarcode() + "'";
     }
 
     /**

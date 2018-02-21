@@ -135,7 +135,7 @@ public class Sale implements Serializable, Cloneable {
                 } else {
                     //Product is not open price and does already exist
                     item.increaseQuantity(quantity);
-                    item.setName(p.getName()); //Set the name for the list box.
+                    item.setName(p.getShortName()); //Set the name for the list box.
                     if (!p.getSaleCondiments().isEmpty()) {
                         for (Condiment c : p.getSaleCondiments()) {
                             item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
@@ -167,7 +167,7 @@ public class Sale implements Serializable, Cloneable {
         item.setTotalPrice(item.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
         this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
         item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
-        item.setName(p.getName()); //Set the name of the item for the list box.
+        item.setName(p.getShortName()); //Set the name of the item for the list box.
         saleItems.add(item); //Add the item to the list of sale items.
         this.lastAdded = item; //Set this item to the last item added.
         return false;
