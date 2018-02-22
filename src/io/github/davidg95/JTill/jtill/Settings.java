@@ -5,7 +5,6 @@
  */
 package io.github.davidg95.JTill.jtill;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,7 +14,6 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.UnknownHostException;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 /**
  * Class which holds all server configurations.
@@ -162,36 +160,37 @@ public class Settings implements Serializable {
         try {
             out = new FileOutputStream(propertiesFile);
 
-            setSetting("db_address", "");
-            setSetting("db_username", "");
-            setSetting("db_password", "");
-            setSetting("max_conn", Integer.toString(DEFAULT_MAX_CONNECTIONS));
-            setSetting("max_queue", Integer.toString(DEFAULT_MAX_QUEUE));
-            setSetting("port", Integer.toString(DEFAULT_PORT));
-            setSetting("AUTO_LOGOUT", "FALSE");
-            setSetting("LOGOUT_TIMEOUT", "-1");
-            setSetting("MINIMUM_SERVER_LOGIN", "2");
-            setSetting("SETTINGS_EDIT", "3");
-            setSetting("CURRENCY_SYMBOL", "£");
-            setSetting("SITE_NAME", "SITE");
-            setSetting("ASK_EMAIL_RECEIPT", "FALSE");
-            setSetting("MAX_CACHE_SALES", "20");
-            setSetting("UPC_PREFIX", "");
-            setSetting("BARCODE_LENGTH", "15");
-            setSetting("NEXT_PLU", "0");
-            setSetting("TERMINAL_BACKGROUND", "#000000");
-            setSetting("SHOW_ADDRESS_RECEIPT", "TRUE");
-            setSetting("SHOW_STAFF_RECEIPT", "TRUE");
-            setSetting("SHOW_TERMINAL_RECEIPT", "TRUE");
-            setSetting("LOYALTY_VALUE", "0");
-            setSetting("LOYALTY_SPEND_VALUE", "0");
-            setSetting("UPDATE_STARTUP", "false");
-            setSetting("LOGINTYPE", "CODE");
-            setSetting("PROMPT_EMAIL_RECEIPT", "false");
-            setSetting("UNLOCK_CODE", "OFF");
-            setSetting("TERMINAL_BG", "000000");
-            setSetting("BORDER_SCREEN_BUTTON", "false");
-            setSetting("BORDER_COLOR", "#ff0000");
+            properties.put("db_address", "");
+            properties.put("db_username", "");
+            properties.put("db_password", "");
+            properties.put("max_conn", Integer.toString(DEFAULT_MAX_CONNECTIONS));
+            properties.put("max_queue", Integer.toString(DEFAULT_MAX_QUEUE));
+            properties.put("port", Integer.toString(DEFAULT_PORT));
+            properties.put("AUTO_LOGOUT", "FALSE");
+            properties.put("LOGOUT_TIMEOUT", "-1");
+            properties.put("MINIMUM_SERVER_LOGIN", "2");
+            properties.put("SETTINGS_EDIT", "3");
+            properties.put("CURRENCY_SYMBOL", "£");
+            properties.put("SITE_NAME", "SITE");
+            properties.put("ASK_EMAIL_RECEIPT", "FALSE");
+            properties.put("MAX_CACHE_SALES", "20");
+            properties.put("UPC_PREFIX", "");
+            properties.put("BARCODE_LENGTH", "15");
+            properties.put("NEXT_PLU", "0");
+            properties.put("NEXT_PRIVATE", "1");
+            properties.put("TERMINAL_BACKGROUND", "#000000");
+            properties.put("SHOW_ADDRESS_RECEIPT", "TRUE");
+            properties.put("SHOW_STAFF_RECEIPT", "TRUE");
+            properties.put("SHOW_TERMINAL_RECEIPT", "TRUE");
+            properties.put("LOYALTY_VALUE", "0");
+            properties.put("LOYALTY_SPEND_VALUE", "0");
+            properties.put("UPDATE_STARTUP", "false");
+            properties.put("LOGINTYPE", "CODE");
+            properties.put("PROMPT_EMAIL_RECEIPT", "false");
+            properties.put("UNLOCK_CODE", "OFF");
+            properties.put("TERMINAL_BG", "000000");
+            properties.put("BORDER_SCREEN_BUTTON", "false");
+            properties.put("BORDER_COLOR", "#ff0000");
             properties.store(out, null);
 
             out.close();
