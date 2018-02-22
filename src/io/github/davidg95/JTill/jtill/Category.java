@@ -123,9 +123,9 @@ public class Category implements Serializable {
 
     public String getSQLUpdateString() {
         return "UPDATE CATEGORYS"
-                + " SET NAME='" + this.getName()
-                + "', DEPARTMENT=" + this.getDepartment().getId()
-                + " WHERE CATEGORYS.ID=" + this.getId();
+                + " SET cname='" + this.getName()
+                + "', cdepartment=" + this.getDepartment().getId()
+                + " WHERE cid=" + this.getId();
     }
 
     @Override

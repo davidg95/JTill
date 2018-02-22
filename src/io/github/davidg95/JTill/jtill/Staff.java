@@ -261,13 +261,13 @@ public class Staff implements Serializable {
     public String getSQLUpdateString() {
         String ePass = Encryptor.encrypt(this.password);
         return "UPDATE STAFF"
-                + " SET NAME='" + this.getName()
-                + "', POSITION=" + this.getPosition()
-                + ", USERNAME='" + this.getUsername().toLowerCase()
-                + "', PASSWORD='" + ePass
-                + "', ENABLED=" + enabled
-                + ", WAGE=" + wage
-                + " WHERE STAFF.ID=" + this.getId();
+                + " SET stNAME='" + this.getName()
+                + "', stPOSITION=" + this.getPosition()
+                + ", stUSERNAME='" + this.getUsername().toLowerCase()
+                + "', stPASSWORD='" + ePass
+                + "', stENABLED=" + enabled
+                + ", stWAGE=" + wage
+                + " WHERE stID=" + this.getId();
     }
 
     @Override

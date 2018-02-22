@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class of type product which implements Serializable. This class models a
@@ -18,14 +19,12 @@ import java.util.List;
  *
  * @author 1301480
  */
-public class Product implements Serializable, Cloneable, Item {
-
-    private int productCode;
-    private int order_code;
-    private String name;
-    private String shortName;
+public class Product implements Serializable, Cloneable {
 
     private String barcode;
+    private int orderCode;
+    private String longName;
+    private String shortName;
 
     private Category category;
     private Tax tax;
@@ -39,15 +38,20 @@ public class Product implements Serializable, Cloneable, Item {
     private double scale;
     private String scaleName;
     private BigDecimal priceLimit;
+    private double costPercentage;
+
     private BigDecimal price;
     private BigDecimal costPrice;
-    private boolean priceIncVat;
     private int packSize;
+    private boolean priceIncVat;
+
     private int stock;
     private int minStockLevel;
     private int maxStockLevel;
     private boolean trackStock;
+
     private String comments;
+    private String ingredients;
 
     /**
      * Constructor which takes in only a name and comments. This is used for
@@ -62,13 +66,14 @@ public class Product implements Serializable, Cloneable, Item {
      * @param tax the tax class for this product.
      * @param scale the value of the scale.
      * @param scaleName the name of the scale.
-     * @param cost the cost percentage.
+     * @param costPercentage the cost percentage.
      * @param price the price limit.
+     * @param ingredients the products ingredients.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, BigDecimal cost, BigDecimal price) {
-        this.name = name;
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, double costPercentage, BigDecimal price, String ingredients) {
+        this.longName = name;
         this.shortName = shortName;
-        this.order_code = order_code;
+        this.orderCode = order_code;
         this.category = category;
         this.comments = comments;
         this.tax = tax;
@@ -78,30 +83,9 @@ public class Product implements Serializable, Cloneable, Item {
         this.scale = scale;
         this.scaleName = scaleName;
         this.packSize = 1;
-        this.costPrice = cost;
+        this.costPercentage = costPercentage;
         this.priceLimit = price;
-    }
-
-    /**
-     * Constructor which takes in only a name, comments and product code. This
-     * is used for open products.
-     *
-     * @param name the name of the product.
-     * @param shortName the shortened name of the product.
-     * @param barcode the barcode.
-     * @param order_code the re order code for the product.
-     * @param category the category this will belong to.
-     * @param comments the comments.
-     * @param tax the tax class for this product.
-     * @param scale the value of the scale.
-     * @param scaleName the name of the scale.
-     * @param cost the cost percentage.
-     * @param price the price limit.
-     * @param productCode the product code.
-     */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, BigDecimal cost, BigDecimal price, int productCode) {
-        this(name, shortName, barcode, order_code, category, comments, tax, scale, scaleName, cost, price);
-        this.productCode = productCode;
+        this.ingredients = ingredients;
     }
 
     /**
@@ -123,12 +107,13 @@ public class Product implements Serializable, Cloneable, Item {
      * @param maxStock the maximum stock level.
      * @param maxCon the maximum condiments.
      * @param minCon the minimum condiments.
-     * @param trackStock if the stock should be tracked or not.
+     * @param trackStock if the stock should be tracked or not
+     * @param ingredients the products ingredients.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock) {
-        this.name = name;
+    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock, String ingredients) {
+        this.longName = name;
         this.shortName = shortName;
-        this.order_code = order_code;
+        this.orderCode = order_code;
         this.category = category;
         this.comments = comments;
         this.tax = tax;
@@ -146,33 +131,7 @@ public class Product implements Serializable, Cloneable, Item {
         this.maxCon = maxCon;
         this.minCon = minCon;
         this.trackStock = trackStock;
-    }
-
-    /**
-     * Constructor which taken in values for all fields as parameters.
-     *
-     * @param name the name for the product.
-     * @param shortName the shortened name of the product.
-     * @param barcode the barcode.
-     * @param order_code the re order code for the product.
-     * @param category the category this will belong to.
-     * @param price the price for the product.
-     * @param tax the tax class for this product.
-     * @param stock the initial stock level for the product.
-     * @param costPrice the cost price of the product.
-     * @param priceIncVat whether the price is inclusive of VAT or not.
-     * @param packSize the pack size.
-     * @param minStock the minimum stock level.
-     * @param comments any comments about the product.
-     * @param maxStock the maximum stock level.
-     * @param productCode the product code.
-     * @param maxCon the maximum condiments.
-     * @param minCon the minimum condiments.
-     * @param trackStock if the stock should be tracked or not.
-     */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int productCode, int maxCon, int minCon, boolean trackStock) {
-        this(name, shortName, barcode, order_code, category, comments, tax, price, costPrice, priceIncVat, packSize, stock, minStock, maxStock, maxCon, minCon, trackStock);
-        this.productCode = productCode;
+        this.ingredients = ingredients;
     }
 
     /**
@@ -203,7 +162,7 @@ public class Product implements Serializable, Cloneable, Item {
         if (this.stock > 0) {
             stock--;
         } else {
-            throw new OutOfStockException(this.productCode + "");
+            throw new OutOfStockException(this.barcode);
         }
     }
 
@@ -217,38 +176,26 @@ public class Product implements Serializable, Cloneable, Item {
         return this.scale * value;
     }
 
-    @Override
-    public int getId() {
-        return productCode;
-    }
-
-    @Override
-    public void setId(int productCode) {
-        this.productCode = productCode;
-    }
-
     public String getLongName() {
-        return name;
+        return longName;
     }
 
     public void setLongName(String name) {
-        this.name = name;
+        this.longName = name;
     }
 
-    public int getOrder_code() {
-        return order_code;
+    public int getOrderCode() {
+        return orderCode;
     }
 
-    public void setOrder_code(int order_code) {
-        this.order_code = order_code;
+    public void setOrderCode(int orderCode) {
+        this.orderCode = orderCode;
     }
 
-    @Override
     public BigDecimal getPrice() {
         return price;
     }
 
-    @Override
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
@@ -269,13 +216,11 @@ public class Product implements Serializable, Cloneable, Item {
         this.comments = comments;
     }
 
-    @Override
-    public String getName() {
+    public String getShortName() {
         return shortName;
     }
 
-    @Override
-    public void setName(String shortName) {
+    public void setShortName(String shortName) {
         this.shortName = shortName;
     }
 
@@ -295,12 +240,12 @@ public class Product implements Serializable, Cloneable, Item {
         this.costPrice = costPrice;
     }
 
-    public BigDecimal getCostPercentage() {
-        return costPrice;
+    public double getCostPercentage() {
+        return costPercentage;
     }
 
-    public void setCostPercentage(BigDecimal costPrice) {
-        this.costPrice = costPrice;
+    public void setCostPercentage(double costPercentage) {
+        this.costPercentage = costPercentage;
     }
 
     /**
@@ -312,7 +257,7 @@ public class Product implements Serializable, Cloneable, Item {
         if (price == null) {
             return BigDecimal.ZERO;
         }
-        return this.price.divide(new BigDecimal(100), 2, 6).multiply(this.getCostPercentage());
+        return this.price.divide(new BigDecimal(100), 2, 6).multiply(new BigDecimal(this.getCostPercentage()));
     }
 
     public int getMinStockLevel() {
@@ -331,12 +276,10 @@ public class Product implements Serializable, Cloneable, Item {
         this.maxStockLevel = maxStockLevel;
     }
 
-    @Override
     public boolean isOpen() {
         return open;
     }
 
-    @Override
     public void setOpen(boolean open) {
         this.open = open;
         this.trackStock = false;
@@ -482,9 +425,17 @@ public class Product implements Serializable, Cloneable, Item {
         return this.category.getDepartment();
     }
 
+    public String getIngredients() {
+        return ingredients;
+    }
+
+    public void setIngredients(String ingredients) {
+        this.ingredients = ingredients;
+    }
+
     public String getSQLInsertString() {
-        return this.order_code
-                + ",'" + this.name
+        return this.orderCode
+                + ",'" + this.longName
                 + "'," + this.open
                 + "," + this.price
                 + "," + this.stock
@@ -501,32 +452,36 @@ public class Product implements Serializable, Cloneable, Item {
                 + ",'" + this.scaleName
                 + "'," + this.priceIncVat
                 + "," + this.priceLimit
-                + "," + this.trackStock;
+                + "," + this.trackStock
+                + "," + this.costPercentage
+                + ",'" + this.ingredients + "'";
     }
 
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
-                + " SET PRODUCTS.ORDER_CODE=" + this.getOrder_code()
-                + ", PRODUCTS.NAME='" + this.getLongName()
-                + "', PRODUCTS.OPEN_PRICE=" + this.isOpen()
-                + ", PRODUCTS.PRICE=" + this.getPrice()
-                + ", PRODUCTS.STOCK=" + this.getStock()
-                + ", PRODUCTS.COMMENTS='" + this.getComments()
-                + "', PRODUCTS.SHORT_NAME='" + this.getName()
-                + "', PRODUCTS.CATEGORY_ID=" + this.getCategory().getId()
-                + ", PRODUCTS.TAX_ID=" + this.getTax().getId()
-                + ", PRODUCTS.COST_PRICE=" + this.getCostPrice()
-                + ", PRODUCTS.PACK_SIZE=" + this.getPackSize()
-                + ", PRODUCTS.MIN_PRODUCT_LEVEL=" + this.getMinStockLevel()
-                + ", PRODUCTS.MAX_PRODUCT_LEVEL=" + this.getMaxStockLevel()
-                + ", PRODUCTS.SCALE=" + this.getScale()
-                + ",PRODUCTS.SCALE_NAME='" + this.getScaleName()
-                + "', PRODUCTS.INCVAT=" + this.isPriceIncVat()
-                + ", PRODUCTS.MAXCON=" + this.getMaxCon()
-                + ", PRODUCTS.MINCON=" + this.getMinCon()
-                + ", PRODUCTS.LIMIT=" + this.getPriceLimit()
-                + ", PRODUCTS.TRACK_STOCK=" + this.isTrackStock()
-                + " WHERE PRODUCTS.ID=" + this.getId();
+                + " SET pORDER_CODE=" + this.getOrderCode()
+                + ", pNAME='" + this.getLongName()
+                + "', OPEN_PRICE=" + this.isOpen()
+                + ", pPRICE=" + this.getPrice()
+                + ", pSTOCK=" + this.getStock()
+                + ", pCOMMENTS='" + this.getComments()
+                + "', pSHORT_NAME='" + this.getShortName()
+                + "', pcategory=" + this.getCategory().getId()
+                + ", ptax=" + this.getTax().getId()
+                + ", pCOST_PRICE=" + this.getCostPrice()
+                + ", pPACK_SIZE=" + this.getPackSize()
+                + ", pmin_level=" + this.getMinStockLevel()
+                + ", pmax_level=" + this.getMaxStockLevel()
+                + ", pSCALE=" + this.getScale()
+                + ", pSCALE_NAME='" + this.getScaleName()
+                + "', pINCVAT=" + this.isPriceIncVat()
+                + ", pMAXCON=" + this.getMaxCon()
+                + ", pMINCON=" + this.getMinCon()
+                + ", pLIMIT=" + this.getPriceLimit()
+                + ", pTRACK_STOCK=" + this.isTrackStock()
+                + ", pingredients='" + this.getIngredients()
+                + "', pcost_percentage=" + this.getCostPercentage()
+                + " WHERE BARCODE='" + this.getBarcode() + "'";
     }
 
     /**
@@ -557,20 +512,20 @@ public class Product implements Serializable, Cloneable, Item {
     @Override
     public boolean equals(Object o) {
         if (o instanceof Product) {
-            return this.productCode == ((Product) o).getId();
+            return (this.barcode == null ? ((Product) o).getBarcode() == null : this.barcode.equals(((Product) o).getBarcode()));
         }
         return false;
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 97 * hash + this.productCode;
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.barcode);
         return hash;
     }
 
     @Override
-    public Item clone() {
+    public Product clone() {
         try {
             final Product result = (Product) super.clone();
             return result;

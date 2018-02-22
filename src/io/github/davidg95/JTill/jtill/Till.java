@@ -205,11 +205,11 @@ public class Till implements Serializable, Cloneable {
 
     public String getSQLUpdateString() {
         return "UPDATE TILLS"
-                + " SET NAME='" + this.name
-                + "', UUID='" + this.uuid.toString()
-                + "', UNCASHED=" + this.uncashedTakings
-                + ", DEFAULT_SCREEN=" + this.defaultScreen
-                + " WHERE TILLS.ID=" + this.id;
+                + " SET tiNAME='" + this.name
+                + "', tiUUID='" + this.uuid.toString()
+                + "', tiUNCASHED=" + this.uncashedTakings
+                + ", tiDEFAULT_SCREEN=" + this.defaultScreen
+                + " WHERE tiID=" + this.id;
     }
 
     @Override

@@ -19,7 +19,7 @@ public class TillButton implements Serializable {
 
     private int id;
     private String name;
-    private int item;
+    private String item;
     private int type;
     private int screen;
     private String color;
@@ -74,7 +74,7 @@ public class TillButton implements Serializable {
      */
     public static final int LINK = 9;
 
-    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int width, int height, int x, int y, int accessLevel, String link) {
+    public TillButton(String name, String item, int type, int screen, String color, String fontColor, int width, int height, int x, int y, int accessLevel, String link) {
         this.name = name;
         this.item = item;
         this.screen = screen;
@@ -89,7 +89,7 @@ public class TillButton implements Serializable {
         this.link = link;
     }
 
-    public TillButton(String name, int item, int type, int screen, String color, String fontColor, int id, int width, int height, int x, int y, int accessLevel, String link) {
+    public TillButton(String name, String item, int type, int screen, String color, String fontColor, int id, int width, int height, int x, int y, int accessLevel, String link) {
         this(name, item, type, screen, color, fontColor, width, height, x, y, accessLevel, link);
         this.id = id;
     }
@@ -110,11 +110,11 @@ public class TillButton implements Serializable {
         this.name = name;
     }
 
-    public int getItem() {
+    public String getItem() {
         return item;
     }
 
-    public void setItem(int item) {
+    public void setItem(String item) {
         this.item = item;
     }
 
@@ -214,8 +214,8 @@ public class TillButton implements Serializable {
 
     public String getSQLInsertString() {
         return "'" + this.name
-                + "'," + item
-                + "," + type
+                + "','" + item
+                + "'," + type
                 + ",'" + this.color
                 + "','" + this.fontColor
                 + "'," + this.screen
@@ -253,19 +253,19 @@ public class TillButton implements Serializable {
 
     public String getSQLUpdateString() {
         return "UPDATE BUTTONS"
-                + " SET NAME='" + this.getName()
-                + "', PRODUCT=" + this.getItem()
-                + ", TYPE=" + this.getType()
-                + ", COLOR='" + this.getColorValue()
-                + "',FONT_COLOR='" + this.getFontColor()
-                + "', SCREEN_ID=" + this.getScreen()
-                + ", WIDTH=" + this.getWidth()
-                + ", HEIGHT=" + this.getHeight()
-                + ", XPOS=" + this.getX()
-                + ", YPOS=" + this.getY()
-                + ", ACCESS_LEVEL=" + this.getAccessLevel()
-                + ", LINK='" + this.getLink()
-                + "' WHERE BUTTONS.ID=" + this.getId();
+                + " SET bNAME='" + this.getName()
+                + "', bPRODUCT='" + this.getItem()
+                + "', bTYPE=" + this.getType()
+                + ", bCOLOR='" + this.getColorValue()
+                + "',bFONT_COLOR='" + this.getFontColor()
+                + "', bSCREEN_ID=" + this.getScreen()
+                + ", bWIDTH=" + this.getWidth()
+                + ", bHEIGHT=" + this.getHeight()
+                + ", bXPOS=" + this.getX()
+                + ", bYPOS=" + this.getY()
+                + ", bACCESS_LEVEL=" + this.getAccessLevel()
+                + ", bLINK='" + this.getLink()
+                + "' WHERE bID=" + this.getId();
     }
 
     @Override

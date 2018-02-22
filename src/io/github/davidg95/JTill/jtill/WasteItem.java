@@ -37,7 +37,7 @@ public class WasteItem implements Serializable {
     }
 
     public String getName() {
-        return this.product.getName();
+        return this.product.getShortName();
     }
 
     public int getId() {

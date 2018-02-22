@@ -67,7 +67,7 @@ public class OrderItem implements Serializable {
     }
 
     public int getOrderCode() {
-        return product.getOrder_code();
+        return product.getOrderCode();
     }
 
     public String getName() {

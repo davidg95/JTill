@@ -106,9 +106,9 @@ public class Tax implements Serializable {
 
     public String getSQLUpdateString() {
         return "UPDATE TAX"
-                + " SET NAME='" + this.getName()
-                + "', VALUE=" + this.getValue()
-                + " WHERE TAX.ID=" + this.getId();
+                + " SET tname='" + this.getName()
+                + "', tvalue=" + this.getValue()
+                + " WHERE tid=" + this.getId();
     }
 
     @Override

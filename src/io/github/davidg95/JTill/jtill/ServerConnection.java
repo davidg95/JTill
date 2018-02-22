@@ -267,15 +267,15 @@ public class ServerConnection extends DataConnect implements JConnListener {
     /**
      * Method to remove a product from the server.
      *
-     * @param code the code of the product to remove.
+     * @param barcode the code of the product to remove.
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public void removeProduct(int code) throws IOException, ProductNotFoundException, SQLException {
+    public void removeProduct(String barcode) throws IOException, ProductNotFoundException, SQLException {
         try {
-            conn.sendData(JConnData.create("REMOVEPRODUCT").addParam("CODE", code));
+            conn.sendData(JConnData.create("REMOVEPRODUCT").addParam("CODE", barcode));
         } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
@@ -289,14 +289,14 @@ public class ServerConnection extends DataConnect implements JConnListener {
 
     @Override
     public void removeProduct(Product p) throws IOException, ProductNotFoundException, SQLException {
-        removeProduct(p.getId());
+        removeProduct(p.getBarcode());
     }
 
     /**
      * Method to purchase a product on the server and reduce is stock level by
      * one.
      *
-     * @param id the product to purchase.
+     * @param barcode the product to purchase.
      * @param amount the amount of the product to purchase.
      * @return the new stock level;
      * @throws IOException if there was an error connecting.
@@ -305,9 +305,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public int purchaseProduct(int id, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
+    public int purchaseProduct(String barcode, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         try {
-            return (int) conn.sendData(JConnData.create("PURCHASE").addParam("PRODUCT", id).addParam("AMOUNT", amount));
+            return (int) conn.sendData(JConnData.create("PURCHASE").addParam("PRODUCT", barcode).addParam("AMOUNT", amount));
         } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
@@ -324,16 +324,16 @@ public class ServerConnection extends DataConnect implements JConnListener {
     /**
      * Method to get a product from the server based on its product code.
      *
-     * @param code the code to search for.
+     * @param barcode the code to search for.
      * @return Product object that matches the code.
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public Product getProduct(int code) throws IOException, ProductNotFoundException, SQLException {
+    public Product getProduct(String barcode) throws IOException, ProductNotFoundException, SQLException {
         try {
-            return (Product) conn.sendData(JConnData.create("GETPRODUCT").addParam("CODE", code));
+            return (Product) conn.sendData(JConnData.create("GETPRODUCT").addParam("CODE", barcode));
         } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
@@ -1702,9 +1702,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public int getTotalSoldOfItem(int id) throws IOException, SQLException {
+    public int getTotalSoldOfItem(String barcode) throws IOException, SQLException {
         try {
-            return (int) conn.sendData(JConnData.create("GETTOTALSOLDITEM").addParam("ID", id));
+            return (int) conn.sendData(JConnData.create("GETTOTALSOLDITEM").addParam("ID", barcode));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1715,9 +1715,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public BigDecimal getTotalValueSold(int id) throws IOException, SQLException {
+    public BigDecimal getTotalValueSold(String barcode) throws IOException, SQLException {
         try {
-            return (BigDecimal) conn.sendData(JConnData.create("GETVALUESOLDITEM").addParam("ID", id));
+            return (BigDecimal) conn.sendData(JConnData.create("GETVALUESOLDITEM").addParam("ID", barcode));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1728,9 +1728,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public int getTotalWastedOfItem(int id) throws IOException, SQLException {
+    public int getTotalWastedOfItem(String barcode) throws IOException, SQLException {
         try {
-            return (int) conn.sendData(JConnData.create("GETTOTALWASTEDITEM").addParam("ID", id));
+            return (int) conn.sendData(JConnData.create("GETTOTALWASTEDITEM").addParam("ID", barcode));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1741,9 +1741,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public BigDecimal getValueWastedOfItem(int id) throws IOException, SQLException {
+    public BigDecimal getValueWastedOfItem(String barcode) throws IOException, SQLException {
         try {
-            return (BigDecimal) conn.sendData(JConnData.create("GETVALUEWASTEDITEM").addParam("ID", id));
+            return (BigDecimal) conn.sendData(JConnData.create("GETVALUEWASTEDITEM").addParam("ID", barcode));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1767,9 +1767,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public BigDecimal getValueSpentOnItem(int id) throws IOException, SQLException {
+    public BigDecimal getValueSpentOnItem(String barcode) throws IOException, SQLException {
         try {
-            return (BigDecimal) conn.sendData(JConnData.create("GETSPENTONITEM").addParam("ID", id));
+            return (BigDecimal) conn.sendData(JConnData.create("GETSPENTONITEM").addParam("ID", barcode));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -2382,9 +2382,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public int getTotalReceivedOfItem(int id) throws IOException, SQLException {
+    public int getTotalReceivedOfItem(String barcode) throws IOException, SQLException {
         try {
-            return (int) conn.sendData(JConnData.create("TOTALRECEIVED").addParam("ID", id));
+            return (int) conn.sendData(JConnData.create("TOTALRECEIVED").addParam("ID", barcode));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
@@ -2486,9 +2486,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public List<Condiment> getProductsCondiments(int id) throws IOException, SQLException {
+    public List<Condiment> getProductsCondiments(String barcode) throws IOException, SQLException {
         try {
-            return (List<Condiment>) conn.sendData(JConnData.create("GETPRODUCTSCONDIMENTS").addParam("ID", id));
+            return (List<Condiment>) conn.sendData(JConnData.create("GETPRODUCTSCONDIMENTS").addParam("ID", barcode));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());

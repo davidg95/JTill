@@ -15,16 +15,16 @@ public class Trigger implements Serializable {
 
     private int id;
     private int bucket;
-    private int product;
+    private String product;
     private int quantityRequired;
     private int currentQuantity;
 
-    public Trigger(int id, int bucket, int product, int quantityRequired) {
+    public Trigger(int id, int bucket, String product, int quantityRequired) {
         this(bucket, product, quantityRequired);
         this.id = id;
     }
 
-    public Trigger(int bucket, int product, int quantityRequired) {
+    public Trigger(int bucket, String product, int quantityRequired) {
         this.bucket = bucket;
         this.product = product;
         this.quantityRequired = quantityRequired;
@@ -46,11 +46,11 @@ public class Trigger implements Serializable {
         this.bucket = bucket;
     }
 
-    public int getProduct() {
+    public String getProduct() {
         return product;
     }
 
-    public void setProduct(int product) {
+    public void setProduct(String product) {
         this.product = product;
     }
 

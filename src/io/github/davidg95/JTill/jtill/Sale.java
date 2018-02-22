@@ -109,93 +109,67 @@ public class Sale implements Serializable, Cloneable {
      * products. If it is not open price but exists it will increase the
      * quantity. If it does not exist then it adds a new item.
      *
-     * @param i the item to add.
+     * @param p the item to add.
      * @param quantity the quantity to add.
      * @return true if the item was already in the sale and is being re-added,
      * false if it is a new item in the sale.
      */
-    public boolean addItem(Item i, int quantity) {
+    public boolean addItem(Product p, int quantity) {
         //Check if it is a refund item.
         boolean isRefundItem = (quantity < 0);
         //Check if it is a product or discount.
-        int type;
-        if (i instanceof Product) {
-            type = SaleItem.PRODUCT;
-        } else {
-            type = SaleItem.DISCOUNT;
-        }
         //First check if the item has already been added
         for (SaleItem item : saleItems) {
-            if (item.getItem().getId() == i.getId() && item.getType() == type && item.isRefundItem() == isRefundItem) {
+            if (item.getProduct().getBarcode().equals(p.getBarcode()) && item.isRefundItem() == isRefundItem) {
                 //The item has been added
-                if (i.isOpen()) { //Check if it is open price.
-                    if (i.getPrice().compareTo(item.getPrice()) == 0) { //Check if it is the same price.
+                if (p.isOpen()) { //Check if it is open price.
+                    if (p.getPrice().compareTo(item.getPrice()) == 0) { //Check if it is the same price.
                         item.increaseQuantity(quantity); //Increace the quantity.
                         this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity()))); //Update the sale total.
-                        if (type == SaleItem.PRODUCT) {
-                            final Product product = (Product) i;
-                            final BigDecimal cost = product.getOpenCost();
-                            BigDecimal taxValue = product.calculateVAT();
-                            this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, taxValue, cost); //Set this item to the last added.
-                        } else {
-                            this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
-                        }
+                        final BigDecimal cost = p.getOpenCost();
+                        BigDecimal taxValue = p.calculateVAT();
+                        this.lastAdded = new SaleItem(this.id, p, quantity, p.getPrice(), taxValue, cost); //Set this item to the last added.
                         updateTotal(); //Update the total.
                         return true;
                     }
                 } else {
                     //Product is not open price and does already exist
                     item.increaseQuantity(quantity);
-                    item.setName(i.getName()); //Set the name for the list box.
-                    if (type == SaleItem.PRODUCT) {
-                        final Product product = (Product) i;
-                        if (!product.getSaleCondiments().isEmpty()) {
-                            for (Condiment c : product.getSaleCondiments()) {
-                                item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
-                            }
+                    item.setName(p.getShortName()); //Set the name for the list box.
+                    if (!p.getSaleCondiments().isEmpty()) {
+                        for (Condiment c : p.getSaleCondiments()) {
+                            item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
                         }
-                        item.setTotalPrice(product.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
-                        this.total = total.add(product.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
-                        final BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
-                        final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
-                        this.lastAdded = new SaleItem(this.id, i, quantity, product.getSellingPrice(), type, vat, cost); //Set this item to the last added.
-                    } else {
-                        item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
-                        this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
-                        this.lastAdded = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
                     }
+                    item.setTotalPrice(p.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
+                    this.total = total.add(p.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
+                    final BigDecimal cost = p.getIndividualCost().multiply(new BigDecimal(quantity));
+                    final BigDecimal vat = p.calculateVAT().multiply(new BigDecimal(quantity));
+                    this.lastAdded = new SaleItem(this.id, p, quantity, p.getSellingPrice(), vat, cost); //Set this item to the last added.
                     return true;
                 }
             }
         }
         //If the item is not already in the sale
         SaleItem item;
-        if (type == SaleItem.PRODUCT) {
-            final Product product = (Product) i;
-            BigDecimal cost = product.getIndividualCost().multiply(new BigDecimal(quantity));
-            final BigDecimal vat = product.calculateVAT().multiply(new BigDecimal(quantity));
-            BigDecimal sellingPrice = product.getSellingPrice();
-            if (isRefundItem) {
-                sellingPrice = sellingPrice.negate();
-            }
-            item = new SaleItem(this.id, i, quantity, sellingPrice, type, vat, cost); //Set this item to the last added.
-            if (!product.getSaleCondiments().isEmpty()) {
-                for (Condiment c : product.getSaleCondiments()) {
-                    item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
-                }
-            }
-            item.setTotalPrice(item.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
-            this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
-        } else {
-            item = new SaleItem(this.id, i, quantity, i.getPrice(), type, BigDecimal.ZERO, BigDecimal.ZERO); //Set this item to the last added.
-            item.setTotalPrice(i.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
-            this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
+        BigDecimal cost = p.getIndividualCost().multiply(new BigDecimal(quantity));
+        final BigDecimal vat = p.calculateVAT().multiply(new BigDecimal(quantity));
+        BigDecimal sellingPrice = p.getSellingPrice();
+        if (isRefundItem) {
+            sellingPrice = sellingPrice.negate();
         }
+        item = new SaleItem(this.id, p, quantity, sellingPrice, vat, cost); //Set this item to the last added.
+        if (!p.getSaleCondiments().isEmpty()) {
+            for (Condiment c : p.getSaleCondiments()) {
+                item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
+            }
+        }
+        item.setTotalPrice(item.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
+        this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
         item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
-        item.setName(i.getName()); //Set the name of the item for the list box.
+        item.setName(p.getShortName()); //Set the name of the item for the list box.
         saleItems.add(item); //Add the item to the list of sale items.
         this.lastAdded = item; //Set this item to the last item added.
-//        updateTotal(); //Update the total.
         return false;
     }
 
