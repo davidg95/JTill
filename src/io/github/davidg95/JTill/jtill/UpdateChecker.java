@@ -7,8 +7,6 @@ package io.github.davidg95.JTill.jtill;
 
 import java.io.*;
 import java.net.*;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
