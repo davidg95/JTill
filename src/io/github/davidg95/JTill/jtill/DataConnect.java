@@ -411,16 +411,6 @@ public abstract class DataConnect {
     public abstract SaleItem addSaleItem(Sale s, SaleItem i) throws IOException, SQLException;
 
     /**
-     * Remove a sale item.
-     *
-     * @param id the id of the item to remove.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     * @throws JTillException if the item was not found.
-     */
-    public abstract void removeSaleItem(int id) throws IOException, SQLException, JTillException;
-
-    /**
      * Get a sale item.
      *
      * @param id the sale item to get.
@@ -483,17 +473,6 @@ public abstract class DataConnect {
      * @throws SQLException if there was a database error.
      */
     public abstract List<SaleItem> submitSaleItemQuery(String query) throws IOException, SQLException;
-
-    /**
-     * Update a sale item.
-     *
-     * @param i the item to update.
-     * @return the item after being updated.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     * @throws JTillException if the item was not found.
-     */
-    public abstract SaleItem updateSaleItem(SaleItem i) throws IOException, SQLException, JTillException;
 
     //Staff
     /**

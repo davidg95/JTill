@@ -1635,21 +1635,6 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void removeSaleItem(int id) throws IOException, SQLException, JTillException {
-        try {
-            conn.sendData(JConnData.create("REMOVESALEITEMS").addParam("ID", id));
-        } catch (Throwable ex) {
-            if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
-    @Override
     public SaleItem getSaleItem(int id) throws IOException, SQLException, JTillException {
         try {
             return (SaleItem) conn.sendData(JConnData.create("GETSALEITEM").addParam("ID", id));
@@ -1683,21 +1668,6 @@ public class ServerConnection extends DataConnect implements JConnListener {
             return (List) conn.sendData(JConnData.create("SUBMITSALEITEMQUERY").addParam("QUERY", q));
         } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
-        }
-    }
-
-    @Override
-    public SaleItem updateSaleItem(SaleItem i) throws IOException, SQLException, JTillException {
-        try {
-            return (SaleItem) conn.sendData(JConnData.create("UPDATESALEITEM").addParam("ITEM", i));
-        } catch (Throwable ex) {
-            if (ex instanceof JTillException) {
-                throw (JTillException) ex;
-            } else if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
         }
     }
 

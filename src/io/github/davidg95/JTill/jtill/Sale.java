@@ -62,30 +62,6 @@ public class Sale implements Serializable, Cloneable {
      * @param id the sales ID.
      * @param terminal the terminal the sale was done on.
      * @param cashed if the sale has been cashed or not.
-     * @param saleItems the items in the sale.
-     * @param customer the customer the sale was for. Can be null.
-     * @param total the total price of the sale.
-     * @param date the data of the sale.
-     * @param staff the staff member the sale was done by.
-     */
-    public Sale(int id, BigDecimal total, Customer customer, Date date, Till terminal, boolean cashed, Staff staff, List<SaleItem> saleItems) {
-        this.id = id;
-        this.total = total;
-        this.customer = customer;
-        this.date = date;
-        this.till = terminal;
-        this.staff = staff;
-        this.saleItems = saleItems;
-        listeners = new ArrayList<>();
-    }
-
-    /**
-     * Constructor for the sale class. When creating a new sale the Sale(Staff
-     * s) constructor should be used, this one is for loading from the database.
-     *
-     * @param id the sales ID.
-     * @param terminal the terminal the sale was done on.
-     * @param cashed if the sale has been cashed or not.
      * @param customer the customer the sale was for. Can be null.
      * @param total the total price of the sale.
      * @param date the data of the sale.
@@ -110,11 +86,12 @@ public class Sale implements Serializable, Cloneable {
      * quantity. If it does not exist then it adds a new item.
      *
      * @param p the item to add.
+     * @param price the price of the item.
      * @param quantity the quantity to add.
      * @return true if the item was already in the sale and is being re-added,
      * false if it is a new item in the sale.
      */
-    public boolean addItem(Product p, int quantity) {
+    public boolean addItem(Product p, BigDecimal price, int quantity) {
         //Check if it is a refund item.
         boolean isRefundItem = (quantity < 0);
         //Check if it is a product or discount.
@@ -123,51 +100,44 @@ public class Sale implements Serializable, Cloneable {
             if (item.getProduct().getBarcode().equals(p.getBarcode()) && item.isRefundItem() == isRefundItem) {
                 //The item has been added
                 if (p.isOpen()) { //Check if it is open price.
-                    if (p.getPrice().compareTo(item.getPrice()) == 0) { //Check if it is the same price.
-                        item.increaseQuantity(quantity); //Increace the quantity.
-                        this.total = total.add(item.getPrice().multiply(new BigDecimal(item.getQuantity()))); //Update the sale total.
+                    if (price.compareTo(item.getIndividualPrice()) == 0) { //Check if it is the same price.
+                        item.increaceQuantity(quantity); //Increace the quantity.
                         final BigDecimal cost = p.getOpenCost();
-                        BigDecimal taxValue = p.calculateVAT();
-                        this.lastAdded = new SaleItem(this.id, p, quantity, p.getPrice(), taxValue, cost); //Set this item to the last added.
+                        BigDecimal taxValue = p.calculateVAT(price);
+                        this.lastAdded = new SaleItem(this.id, p, quantity, price, taxValue, cost); //Set this item to the last added.
                         updateTotal(); //Update the total.
                         return true;
                     }
                 } else {
                     //Product is not open price and does already exist
-                    item.increaseQuantity(quantity);
-                    item.setName(p.getShortName()); //Set the name for the list box.
+                    item.increaceQuantity(quantity);
                     if (!p.getSaleCondiments().isEmpty()) {
                         for (Condiment c : p.getSaleCondiments()) {
-                            item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
+                            item.setIndividualPrice(item.getIndividualPrice().add(c.getProduct_con().getPrice()));
                         }
                     }
-                    item.setTotalPrice(p.getSellingPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total for the list box.
-                    this.total = total.add(p.getSellingPrice().multiply(new BigDecimal(quantity))); //Update the total for this sale.
+                    this.total = total.add(p.getSellingPrice(price).multiply(new BigDecimal(quantity))); //Update the total for this sale.
                     final BigDecimal cost = p.getIndividualCost().multiply(new BigDecimal(quantity));
-                    final BigDecimal vat = p.calculateVAT().multiply(new BigDecimal(quantity));
-                    this.lastAdded = new SaleItem(this.id, p, quantity, p.getSellingPrice(), vat, cost); //Set this item to the last added.
+                    final BigDecimal vat = p.calculateVAT(price).multiply(new BigDecimal(quantity));
+                    this.lastAdded = new SaleItem(this.id, p, quantity, p.getSellingPrice(price), vat, cost); //Set this item to the last added.
                     return true;
                 }
             }
         }
         //If the item is not already in the sale
         SaleItem item;
-        BigDecimal cost = p.getIndividualCost().multiply(new BigDecimal(quantity));
-        final BigDecimal vat = p.calculateVAT().multiply(new BigDecimal(quantity));
-        BigDecimal sellingPrice = p.getSellingPrice();
+        final BigDecimal vat = p.calculateVAT(price);
+        price = p.getSellingPrice(price);
         if (isRefundItem) {
-            sellingPrice = sellingPrice.negate();
+            price = price.negate();
         }
-        item = new SaleItem(this.id, p, quantity, sellingPrice, vat, cost); //Set this item to the last added.
+        item = new SaleItem(this.id, p, quantity, price, vat, p.getIndividualCost()); //Set this item to the last added.
         if (!p.getSaleCondiments().isEmpty()) {
             for (Condiment c : p.getSaleCondiments()) {
-                item.setPrice(item.getPrice().add(c.getProduct_con().getPrice()));
+                item.setIndividualPrice(item.getIndividualPrice().add(c.getProduct_con().getPrice()));
             }
         }
-        item.setTotalPrice(item.getPrice().multiply(new BigDecimal(item.getQuantity())).setScale(2, 6).toString()); //Set the total of the item for the list box.
-        this.total = total.add(item.getPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
-        item.setRefundItem(isRefundItem); //Indicate if it is a refund item or not
-        item.setName(p.getShortName()); //Set the name of the item for the list box.
+        this.total = total.add(item.getIndividualPrice().multiply(new BigDecimal(quantity))); //Update the sale total.
         saleItems.add(item); //Add the item to the list of sale items.
         this.lastAdded = item; //Set this item to the last item added.
         return false;
@@ -201,7 +171,7 @@ public class Sale implements Serializable, Cloneable {
         for (int i = 0; i < saleItems.size(); i++) {
             if (saleItems.get(i).equals(si)) {
                 if (saleItems.get(i).getQuantity() > si.getQuantity()) {
-                    saleItems.get(i).decreaseQuantity(si.getQuantity());
+                    saleItems.get(i).decreaceQuantity(si.getQuantity());
                 } else {
                     saleItems.remove(i);
                 }
@@ -235,10 +205,10 @@ public class Sale implements Serializable, Cloneable {
     public void halfPriceItem(SaleItem item) {
         for (SaleItem i : saleItems) {
             if (i.equals(item)) {
-                if (i.getPrice().compareTo(new BigDecimal("0.01")) != 0) { //Check it is not at 1p.
-                    if (i.getPrice().compareTo(item.getPrice()) == 0) {
-                        BigDecimal val = i.getPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);
-                        i.setPrice(val);
+                if (i.getIndividualPrice().compareTo(new BigDecimal("0.01")) != 0) { //Check it is not at 1p.
+                    if (i.getIndividualPrice().compareTo(item.getIndividualPrice()) == 0) {
+                        BigDecimal val = i.getIndividualPrice().divide(new BigDecimal("2"), BigDecimal.ROUND_DOWN);
+                        i.setIndividualPrice(val);
                         updateTotal();
                         return;
                     }
@@ -259,7 +229,7 @@ public class Sale implements Serializable, Cloneable {
     public void updateTotal() {
         total = new BigDecimal("0");
         saleItems.forEach((item) -> {
-            total = total.add(item.getPrice());
+            total = total.add(item.getTotalPrice());
         });
     }
 
