@@ -66,7 +66,7 @@ public class OrderItem implements Serializable {
         return price;
     }
 
-    public int getOrderCode() {
+    public String getOrderCode() {
         return product.getOrderCode();
     }
 

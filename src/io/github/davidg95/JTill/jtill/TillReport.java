@@ -55,7 +55,7 @@ public class TillReport implements Serializable {
         for (Sale s : sales) {
             expected = expected.add(s.getTotal());
             for (SaleItem si : s.getSaleItems()) {
-                tax = tax.add(si.getTaxValue());
+                tax = tax.add(si.getTotalTax());
             }
         }
         expected = expected.setScale(2, 6);

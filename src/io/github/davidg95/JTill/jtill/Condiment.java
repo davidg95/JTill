@@ -87,6 +87,6 @@ public class Condiment implements Serializable {
 
     @Override
     public String toString() {
-        return "£" + new DecimalFormat("0.00").format(product_con.getSellingPrice()) + "\t\t" + product_con.getLongName();
+        return "£" + new DecimalFormat("0.00").format(product_con.getPrice()) + "\t\t" + product_con.getLongName();
     }
 }

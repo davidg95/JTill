@@ -22,7 +22,7 @@ import java.util.Objects;
 public class Product implements Serializable, Cloneable {
 
     private String barcode;
-    private int orderCode;
+    private String orderCode;
     private String longName;
     private String shortName;
 
@@ -70,7 +70,7 @@ public class Product implements Serializable, Cloneable {
      * @param price the price limit.
      * @param ingredients the products ingredients.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, double scale, String scaleName, double costPercentage, BigDecimal price, String ingredients) {
+    public Product(String name, String shortName, String barcode, String order_code, Category category, String comments, Tax tax, double scale, String scaleName, double costPercentage, BigDecimal price, String ingredients) {
         this.longName = name;
         this.shortName = shortName;
         this.orderCode = order_code;
@@ -110,7 +110,7 @@ public class Product implements Serializable, Cloneable {
      * @param trackStock if the stock should be tracked or not
      * @param ingredients the products ingredients.
      */
-    public Product(String name, String shortName, String barcode, int order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock, String ingredients) {
+    public Product(String name, String shortName, String barcode, String order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock, String ingredients) {
         this.longName = name;
         this.shortName = shortName;
         this.orderCode = order_code;
@@ -184,11 +184,11 @@ public class Product implements Serializable, Cloneable {
         this.longName = name;
     }
 
-    public int getOrderCode() {
+    public String getOrderCode() {
         return orderCode;
     }
 
-    public void setOrderCode(int orderCode) {
+    public void setOrderCode(String orderCode) {
         this.orderCode = orderCode;
     }
 
@@ -344,26 +344,28 @@ public class Product implements Serializable, Cloneable {
     /**
      * The selling price with VAT added on.
      *
+     * @param price the price the item sells at.
      * @return selling price as a BigDecimal.
      */
-    public BigDecimal getSellingPrice() {
+    public BigDecimal getSellingPrice(BigDecimal price) {
         if (priceIncVat || open) {
-            return this.getPrice();
+            return price;
         }
-        BigDecimal vat = this.getPrice().multiply(new BigDecimal(this.tax.getValue()).divide(new BigDecimal(100)));
-        return this.getPrice().add(vat);
+        BigDecimal vat = price.multiply(new BigDecimal(this.tax.getValue()).divide(new BigDecimal(100)));
+        return price.add(vat);
     }
 
     /**
      * Calculates the vat for one unit of this product,
      *
+     * @param price the price the item sells at.
      * @return the VAT as a BigDecimal.
      */
-    public BigDecimal calculateVAT() {
+    public BigDecimal calculateVAT(BigDecimal price) {
         if (priceIncVat || open) {
-            return this.getPrice().divide(new BigDecimal(100), 2, 6).multiply(new BigDecimal(tax.getValue()));
+            return price.divide(new BigDecimal(100), 2, 6).multiply(new BigDecimal(tax.getValue()));
         }
-        return getSellingPrice().subtract(getPrice());
+        return getSellingPrice(price).subtract(price);
     }
 
     public List<Condiment> getCondiments() {
@@ -434,8 +436,8 @@ public class Product implements Serializable, Cloneable {
     }
 
     public String getSQLInsertString() {
-        return this.orderCode
-                + ",'" + this.longName
+        return "'" + this.orderCode
+                + "','" + this.longName
                 + "'," + this.open
                 + "," + this.price
                 + "," + this.stock
@@ -459,8 +461,8 @@ public class Product implements Serializable, Cloneable {
 
     public String getSQlUpdateString() {
         return "UPDATE PRODUCTS"
-                + " SET pORDER_CODE=" + this.getOrderCode()
-                + ", pNAME='" + this.getLongName()
+                + " SET pORDER_CODE='" + this.getOrderCode()
+                + "', pNAME='" + this.getLongName()
                 + "', OPEN_PRICE=" + this.isOpen()
                 + ", pPRICE=" + this.getPrice()
                 + ", pSTOCK=" + this.getStock()
