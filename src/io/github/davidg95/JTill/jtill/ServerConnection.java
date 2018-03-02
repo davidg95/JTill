@@ -675,6 +675,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
      */
     @Override
     public Staff addStaff(Staff s) throws IOException, SQLException {
+        s.setPassword(Encryptor.encrypt(s.getPassword()));
         try {
             return (Staff) conn.sendData(JConnData.create("ADDSTAFF").addParam("STAFF", s));
         } catch (Throwable ex) {
