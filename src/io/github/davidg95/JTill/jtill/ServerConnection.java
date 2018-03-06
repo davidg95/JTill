@@ -1330,7 +1330,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
     @Override
     public String getSetting(String key, String value) throws IOException {
         try {
-            return (String) conn.sendData(JConnData.create("GETSETTING").addParam("KEY", key).addParam("VALUE", value));
+            return (String) conn.sendData(JConnData.create("GETSETTINGDEFAULT").addParam("KEY", key).addParam("DEF", value));
         } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
