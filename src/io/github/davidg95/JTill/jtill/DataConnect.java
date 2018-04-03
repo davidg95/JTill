@@ -1708,12 +1708,10 @@ public abstract class DataConnect {
      * Submit a stock take report.
      *
      * @param products the products to update.
-     * @param zeroRest true if products not in the list should be set to zero,
-     * false if they should be left.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public abstract void submitStockTake(List<Product> products, boolean zeroRest) throws IOException, SQLException;
+    public abstract void submitStockTake(List<Product> products) throws IOException, SQLException;
 
     /**
      * Get all categories in a department.

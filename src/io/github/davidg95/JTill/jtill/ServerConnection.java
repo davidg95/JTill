@@ -2405,9 +2405,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void submitStockTake(List<Product> products, boolean zeroRest) throws IOException, SQLException {
+    public void submitStockTake(List<Product> products) throws IOException, SQLException {
         try {
-            conn.sendData(JConnData.create("SUBMITSTOCKTAKE").addParam("PRODUCTS", products).addParam("ZEROREST", zeroRest));
+            conn.sendData(JConnData.create("SUBMITSTOCKTAKE").addParam("PRODUCTS", products));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw new IOException(ex.getMessage());
