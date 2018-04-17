@@ -28,6 +28,7 @@ public class Product implements Serializable, Cloneable {
 
     private Category category;
     private Tax tax;
+    private Supplier supplier;
 
     private List<Condiment> condiments;
     private int maxCon;
@@ -70,7 +71,7 @@ public class Product implements Serializable, Cloneable {
      * @param price the price limit.
      * @param ingredients the products ingredients.
      */
-    public Product(String name, String shortName, String barcode, String order_code, Category category, String comments, Tax tax, double scale, String scaleName, double costPercentage, BigDecimal price, String ingredients) {
+    public Product(String name, String shortName, String barcode, String order_code, Category category, String comments, Tax tax, double scale, String scaleName, double costPercentage, BigDecimal price, String ingredients, Supplier supplier) {
         this.longName = name;
         this.shortName = shortName;
         this.orderCode = order_code;
@@ -86,6 +87,7 @@ public class Product implements Serializable, Cloneable {
         this.costPercentage = costPercentage;
         this.priceLimit = price;
         this.ingredients = ingredients;
+        this.supplier = supplier;
     }
 
     /**
@@ -110,7 +112,7 @@ public class Product implements Serializable, Cloneable {
      * @param trackStock if the stock should be tracked or not
      * @param ingredients the products ingredients.
      */
-    public Product(String name, String shortName, String barcode, String order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock, String ingredients) {
+    public Product(String name, String shortName, String barcode, String order_code, Category category, String comments, Tax tax, BigDecimal price, BigDecimal costPrice, boolean priceIncVat, int packSize, int stock, int minStock, int maxStock, int maxCon, int minCon, boolean trackStock, String ingredients, Supplier supplier) {
         this.longName = name;
         this.shortName = shortName;
         this.orderCode = order_code;
@@ -132,6 +134,7 @@ public class Product implements Serializable, Cloneable {
         this.minCon = minCon;
         this.trackStock = trackStock;
         this.ingredients = ingredients;
+        this.supplier = supplier;
     }
 
     /**
@@ -435,6 +438,14 @@ public class Product implements Serializable, Cloneable {
         this.ingredients = ingredients;
     }
 
+    public Supplier getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(Supplier supplier) {
+        this.supplier = supplier;
+    }
+
     public String getSQLInsertString() {
         return "'" + this.orderCode
                 + "','" + this.longName
@@ -456,7 +467,8 @@ public class Product implements Serializable, Cloneable {
                 + "," + this.priceLimit
                 + "," + this.trackStock
                 + "," + this.costPercentage
-                + ",'" + this.ingredients + "'";
+                + ",'" + this.ingredients
+                + "'," + (this.supplier != null ? this.supplier.getId() : "-1");
     }
 
     public String getSQlUpdateString() {
@@ -483,6 +495,7 @@ public class Product implements Serializable, Cloneable {
                 + ", pTRACK_STOCK=" + this.isTrackStock()
                 + ", pingredients='" + this.getIngredients()
                 + "', pcost_percentage=" + this.getCostPercentage()
+                + ", pSupplier=" + (this.supplier != null ? this.supplier.getId() : "-1")
                 + " WHERE BARCODE='" + this.getBarcode() + "'";
     }
 

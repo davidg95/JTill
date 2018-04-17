@@ -190,6 +190,16 @@ public abstract class DataConnect {
     public abstract List<Product> getAllProducts() throws IOException, SQLException;
 
     /**
+     * Method to get all a supplier products.
+     *
+     * @param s the supplier.
+     * @return a list of products from the supplier.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public abstract List<Product> getProductsInSupplier(Supplier s) throws IOException, SQLException;
+
+    /**
      * Method to update a product.
      *
      * @param p the product to update.

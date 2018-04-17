@@ -2817,4 +2817,19 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public List<Product> getProductsInSupplier(Supplier s) throws IOException, SQLException {
+        try {
+            return (List<Product>) conn.sendData(JConnData.create("GETSUPPLIERSPRODUCTS").addParam("SUPPLIER", s));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }
