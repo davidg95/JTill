@@ -2832,4 +2832,34 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
+
+    @Override
+    public void batchProductUpdate(List<Product> products) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("BATCHPRODUCTUPDATE").addParam("products", products));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void batchStockReceive(HashMap<String, Integer> updates) throws IOException, SQLException {
+        try {
+            conn.sendData(JConnData.create("BATCHSTOCKRECEIVE").addParam("updates", updates));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
 }

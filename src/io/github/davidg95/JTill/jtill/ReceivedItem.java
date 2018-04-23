@@ -16,21 +16,24 @@ public class ReceivedItem implements Serializable {
 
     private int id;
     private int quantity;
-    private BigDecimal price;
+    private int packs;
+    private BigDecimal total;
 
     private Product product;
 
-    public ReceivedItem(int id, Product product, int quantity, BigDecimal price) {
+    public ReceivedItem(int id, Product product, int quantity, int packs, BigDecimal total) {
         this.id = id;
         this.product = product;
         this.quantity = quantity;
-        this.price = price;
+        this.total = total;
+        this.packs = packs;
     }
 
-    public ReceivedItem(Product product, int quantity) {
+    public ReceivedItem(Product product, int quantity, int packs) {
         this.product = product;
         this.quantity = quantity;
-        this.price = product.getCostPrice().divide(new BigDecimal(product.getPackSize()), 2, 6).multiply(new BigDecimal(quantity));
+        this.packs = packs;
+        updateTotal();
     }
 
     public int getId() {
@@ -55,15 +58,29 @@ public class ReceivedItem implements Serializable {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
-        this.price = this.product.getCostPrice().divide(new BigDecimal(product.getPackSize())).multiply(new BigDecimal(quantity)).setScale(2, 6);
+        updateTotal();
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public int getPacks() {
+        return packs;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setPacks(int packs) {
+        this.packs = packs;
+        updateTotal();
+    }
+
+    public void updateTotal() {
+        this.total = (this.product.getCostPrice().divide(new BigDecimal(product.getPackSize()))).multiply(new BigDecimal(quantity)).setScale(2, 6);
+        this.total = this.total.add(this.product.getCostPrice().multiply(new BigDecimal(packs)).setScale(2, 6));
+    }
+
+    public BigDecimal getTotal() {
+        return total;
+    }
+
+    public void setTotal(BigDecimal price) {
+        this.total = price;
     }
 
     @Override

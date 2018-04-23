@@ -199,6 +199,10 @@ public abstract class DataConnect {
      */
     public abstract List<Product> getProductsInSupplier(Supplier s) throws IOException, SQLException;
 
+    public abstract void batchProductUpdate(List<Product> products) throws IOException, SQLException;
+
+    public abstract void batchStockReceive(HashMap<String, Integer> updates) throws IOException, SQLException;
+
     /**
      * Method to update a product.
      *
