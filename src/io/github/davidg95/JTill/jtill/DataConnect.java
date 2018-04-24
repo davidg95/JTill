@@ -199,8 +199,22 @@ public abstract class DataConnect {
      */
     public abstract List<Product> getProductsInSupplier(Supplier s) throws IOException, SQLException;
 
+    /**
+     * Updates the products details.
+     *
+     * @param products the list of products to update.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public abstract void batchProductUpdate(List<Product> products) throws IOException, SQLException;
 
+    /**
+     * Update the stock of the products.
+     *
+     * @param updates the updates.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
     public abstract void batchStockReceive(HashMap<String, Integer> updates) throws IOException, SQLException;
 
     /**
