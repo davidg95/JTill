@@ -70,6 +70,10 @@ public class ReceivedItem implements Serializable {
         updateTotal();
     }
 
+    public int getTotalAmount() {
+        return (this.packs * this.product.getPackSize()) + this.quantity;
+    }
+
     public void updateTotal() {
         this.total = (this.product.getCostPrice().divide(new BigDecimal(product.getPackSize()))).multiply(new BigDecimal(quantity)).setScale(2, 6);
         this.total = this.total.add(this.product.getCostPrice().multiply(new BigDecimal(packs)).setScale(2, 6));
