@@ -114,7 +114,7 @@ public class Tax implements Serializable {
 
     @Override
     public String toString() {
-        return this.name + " %" + this.value;
+        return this.name + " " + this.value + "%";
     }
 
 }
