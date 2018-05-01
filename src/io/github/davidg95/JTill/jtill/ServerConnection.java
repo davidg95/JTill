@@ -251,14 +251,13 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * Method to add a new product to the server.
      *
      * @param p the product to add.
-     * @return the Product that was added.
      * @throws IOException if there was an error connecting.
      * @throws SQLException if there was a database error.
      */
     @Override
-    public Product addProduct(Product p) throws IOException, SQLException {
+    public void addProduct(Product p) throws IOException, SQLException {
         try {
-            return (Product) conn.sendData(JConnData.create("NEWPRODUCT").addParam("PRODUCT", p));
+            conn.sendData(JConnData.create("NEWPRODUCT").addParam("PRODUCT", p));
         } catch (Throwable ex) {
             throw new IOException(ex.getMessage());
         }
@@ -298,16 +297,15 @@ public class ServerConnection extends DataConnect implements JConnListener {
      *
      * @param barcode the product to purchase.
      * @param amount the amount of the product to purchase.
-     * @return the new stock level;
      * @throws IOException if there was an error connecting.
      * @throws ProductNotFoundException if the product was not found.
      * @throws OutOfStockException if the product is out of stock.
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public int purchaseProduct(String barcode, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
+    public void purchaseProduct(String barcode, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException {
         try {
-            return (int) conn.sendData(JConnData.create("PURCHASE").addParam("PRODUCT", barcode).addParam("AMOUNT", amount));
+            conn.sendData(JConnData.create("PURCHASE").addParam("PRODUCT", barcode).addParam("AMOUNT", amount));
         } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
@@ -370,9 +368,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Product updateProduct(Product p) throws IOException, SQLException, ProductNotFoundException {
+    public void updateProduct(Product p) throws IOException, SQLException, ProductNotFoundException {
         try {
-            return (Product) conn.sendData(JConnData.create("UPDATEPRODUCT").addParam("PRODUCT", p));
+            conn.sendData(JConnData.create("UPDATEPRODUCT").addParam("PRODUCT", p));
         } catch (Throwable ex) {
             if (ex instanceof ProductNotFoundException) {
                 throw (ProductNotFoundException) ex;
@@ -450,32 +448,19 @@ public class ServerConnection extends DataConnect implements JConnListener {
         }
     }
 
-    /**
-     * Method to remove a customer from the server.
-     *
-     * @param id the id of the customer to remove.
-     * @throws IOException if there was an error connecting.
-     * @throws CustomerNotFoundException if the customer could not be found.
-     * @throws java.sql.SQLException if there was a database error.
-     */
     @Override
-    public void removeCustomer(String id) throws IOException, CustomerNotFoundException, SQLException {
+    public void removeCustomer(Customer c) throws IOException, SQLException, JTillException {
         try {
-            conn.sendData(JConnData.create("REMOVECUSTOMER").addParam("ID", id));
+            conn.sendData(JConnData.create("REMOVECUSTOMER").addParam("c", c));
         } catch (Throwable ex) {
-            if (ex instanceof CustomerNotFoundException) {
-                throw (CustomerNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
                 throw new IOException(ex.getMessage());
             }
         }
-    }
-
-    @Override
-    public void removeCustomer(Customer c) throws IOException, SQLException, CustomerNotFoundException {
-        removeCustomer(c.getId());
     }
 
     /**
@@ -484,16 +469,16 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * @param id the id of the customer to get.
      * @return Customer object that matches the id.
      * @throws IOException if there was an error connecting.
-     * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws JTillException if the customer could not be found.
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
+    public Customer getCustomer(String id) throws IOException, JTillException, SQLException {
         try {
             return (Customer) conn.sendData(JConnData.create("GETCUSTOMER").addParam("ID", id));
         } catch (Throwable ex) {
-            if (ex instanceof CustomerNotFoundException) {
-                throw (CustomerNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -503,12 +488,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException {
+    public List<Customer> getCustomerByName(String name) throws IOException, JTillException, SQLException {
         try {
             return (List) conn.sendData(JConnData.create("GETCUSTOMERBYNAME").addParam("NAME", name));
         } catch (Throwable ex) {
-            if (ex instanceof CustomerNotFoundException) {
-                throw (CustomerNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -541,19 +526,18 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * Method to update a customer.
      *
      * @param c the customer not update.
-     * @return the customer object that was updated.
      * @throws IOException if there was a server error.
      * @throws SQLException if there was a database error.
-     * @throws CustomerNotFoundException if the customer does not already exist
+     * @throws JTillException if the customer does not already exist
      * in the database.
      */
     @Override
-    public Customer updateCustomer(Customer c) throws IOException, SQLException, CustomerNotFoundException {
+    public void updateCustomer(Customer c) throws IOException, SQLException, JTillException {
         try {
-            return (Customer) conn.sendData(JConnData.create("UPDATECUSTOMER").addParam("CUSTOMER", c));
+            conn.sendData(JConnData.create("UPDATECUSTOMER").addParam("CUSTOMER", c));
         } catch (Throwable ex) {
-            if (ex instanceof CustomerNotFoundException) {
-                throw (CustomerNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -561,28 +545,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
-
-    /**
-     * Search the customers which match the search terms.
-     *
-     * @param terms the terms to search for.
-     * @return a list of customers which match the terms.
-     * @throws IOException if there was a server error.
-     * @throws SQLException if there was a database error.
-     */
-    @Override
-    public List<Customer> customerLookup(String terms) throws IOException, SQLException {
-        try {
-            return (List) conn.sendData(JConnData.create("CUSTOMERLOOKUP").addParam("TERMS", terms));
-        } catch (Throwable ex) {
-            if (ex instanceof SQLException) {
-                throw (SQLException) ex;
-            } else {
-                throw new IOException(ex.getMessage());
-            }
-        }
-    }
-
+    
     /**
      * Method to send a sale to the server.
      *
@@ -691,16 +654,16 @@ public class ServerConnection extends DataConnect implements JConnListener {
      *
      * @param id the id of the staff to remove.
      * @throws IOException if there was a server communication error.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws JTillException if the member of staff could not be found.
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException {
+    public void removeStaff(Staff s) throws IOException, JTillException, SQLException {
         try {
-            conn.sendData(JConnData.create("REMOVESTAFF").addParam("ID", id));
+            conn.sendData(JConnData.create("REMOVESTAFF").addParam("S", s));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -709,28 +672,22 @@ public class ServerConnection extends DataConnect implements JConnListener {
         }
     }
 
-    @Override
-    public void removeStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
-        s.setPassword(Encryptor.encrypt(s.getPassword()));
-        removeStaff(s.getId());
-    }
-
     /**
      * Method to get a member of staff.
      *
      * @param id the id of the member of staff to find.
      * @return member of staff.
      * @throws IOException if there was a server communication error.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws JTillException if the member of staff could not be found.
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException {
+    public Staff getStaff(int id) throws IOException, JTillException, SQLException {
         try {
             return (Staff) conn.sendData(JConnData.create("GETSTAFF").addParam("ID", id));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -760,12 +717,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Staff updateStaff(Staff s) throws IOException, SQLException, StaffNotFoundException {
+    public void updateStaff(Staff s) throws IOException, SQLException, JTillException {
         try {
-            return (Staff) conn.sendData(JConnData.create("UPDATESTAFF").addParam("STAFF", s));
+            conn.sendData(JConnData.create("UPDATESTAFF").addParam("STAFF", s));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -841,15 +798,15 @@ public class ServerConnection extends DataConnect implements JConnListener {
      *
      * @param s the staff to log out.
      * @throws IOException if there was a server communication error.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws JTillException if the member of staff could not be found.
      */
     @Override
-    public void logout(Staff s) throws IOException, StaffNotFoundException {
+    public void logout(Staff s) throws IOException, JTillException {
         try {
             conn.sendData(JConnData.create("LOGOUT").addParam("STAFF", s));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else {
                 throw new IOException(ex.getMessage());
             }
@@ -861,10 +818,10 @@ public class ServerConnection extends DataConnect implements JConnListener {
      *
      * @param s the staff to log out.
      * @throws IOException if there was a server communication error.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws JTillException if the member of staff could not be found.
      */
     @Override
-    public void tillLogout(Staff s) throws IOException, StaffNotFoundException {
+    public void tillLogout(Staff s) throws IOException, JTillException {
         conn.sendData(JConnData.create("TILLLOGOUT").addParam("STAFF", s), (JConnData reply) -> {
         });
     }
@@ -1294,14 +1251,14 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException {
+    public boolean isTillLoggedIn(Staff s) throws IOException, JTillException, SQLException {
         try {
             return (boolean) conn.sendData(JConnData.create("ISTILLLOGGEDON").addParam("STAFF", s));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
-            } else if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            } else if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else {
                 throw new IOException(ex.getMessage());
             }
@@ -1750,12 +1707,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void clockOn(int id) throws IOException, SQLException, StaffNotFoundException {
+    public void clockOn(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("CLOCKON").addParam("ID", id));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1765,12 +1722,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void clockOff(int id) throws IOException, SQLException, StaffNotFoundException {
+    public void clockOff(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("CLOCKOFF").addParam("ID", id));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1780,12 +1737,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public List<ClockItem> getAllClocks(int id) throws IOException, SQLException, StaffNotFoundException {
+    public List<ClockItem> getAllClocks(int id) throws IOException, SQLException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETALLCLOCKS").addParam("ID", id));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -1795,12 +1752,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException {
+    public void clearClocks(int id) throws IOException, SQLException, JTillException {
         try {
             conn.sendData(JConnData.create("CLEARCLOCKS").addParam("ID", id));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2004,12 +1961,12 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public List<Sale> getStaffSales(Staff s) throws IOException, SQLException, StaffNotFoundException {
+    public List<Sale> getStaffSales(Staff s) throws IOException, SQLException, JTillException {
         try {
             return (List) conn.sendData(JConnData.create("GETSTAFFSALES").addParam("STAFF", s));
         } catch (Throwable ex) {
-            if (ex instanceof StaffNotFoundException) {
-                throw (StaffNotFoundException) ex;
+            if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else if (ex instanceof SQLException) {
                 throw (SQLException) ex;
             } else {
@@ -2874,7 +2831,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
 
     @Override
     public boolean isCategoryIDUsed(int id) throws IOException, SQLException {
-        try{
+        try {
             return (boolean) conn.sendData(JConnData.create("categoryid").addParam("id", id));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
@@ -2889,7 +2846,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
 
     @Override
     public boolean isDepartmentIDUsed(int id) throws IOException, SQLException {
-        try{
+        try {
             return (boolean) conn.sendData(JConnData.create("departmentid").addParam("id", id));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
@@ -2904,7 +2861,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
 
     @Override
     public boolean isTaxNameUsed(String name) throws IOException, SQLException {
-        try{
+        try {
             return (boolean) conn.sendData(JConnData.create("taxname").addParam("name", name));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {

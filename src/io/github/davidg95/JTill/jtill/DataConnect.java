@@ -130,11 +130,10 @@ public abstract class DataConnect {
      * Add a new product to the system.
      *
      * @param p the product to add.
-     * @return the product that was added.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract Product addProduct(Product p) throws IOException, SQLException;
+    public abstract void addProduct(Product p) throws IOException, SQLException;
 
     /**
      * Remove a product from the system
@@ -161,13 +160,12 @@ public abstract class DataConnect {
      *
      * @param barcode the product to purchase.
      * @param amount the amount of the product to purchase.
-     * @return the new stock level.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was an error purchasing the product.
      * @throws OutOfStockException if the product is out of stock.
      * @throws ProductNotFoundException if the product was not found.
      */
-    public abstract int purchaseProduct(String barcode, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
+    public abstract void purchaseProduct(String barcode, int amount) throws IOException, ProductNotFoundException, OutOfStockException, SQLException;
 
     /**
      * Method to get a product by its code.
@@ -221,12 +219,11 @@ public abstract class DataConnect {
      * Method to update a product.
      *
      * @param p the product to update.
-     * @return the product after getting updated.
      * @throws IOException if there was a network error.
      * @throws ProductNotFoundException if the product could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract Product updateProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
+    public abstract void updateProduct(Product p) throws IOException, ProductNotFoundException, SQLException;
 
     /**
      * Method to check if a barcode is already in use.
@@ -282,22 +279,12 @@ public abstract class DataConnect {
     /**
      * Method to remove a customer from the system.
      *
-     * @param id the id of the customer to remove.
-     * @throws IOException if there was a network error.
-     * @throws CustomerNotFoundException if the id could not be found.
-     * @throws SQLException if there was a database error.
-     */
-    public abstract void removeCustomer(String id) throws IOException, CustomerNotFoundException, SQLException;
-
-    /**
-     * Method to remove a customer from the system.
-     *
      * @param c the customer to remove.
      * @throws IOException if there was a network error.
-     * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws JTillException if the customer could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract void removeCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract void removeCustomer(Customer c) throws IOException, JTillException, SQLException;
 
     /**
      * Method to get a customer from the system.
@@ -305,10 +292,10 @@ public abstract class DataConnect {
      * @param id the id of the customer to get.
      * @return the customer that matches the id.
      * @throws IOException if there was a network error.
-     * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws JTillException if the customer could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract Customer getCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract Customer getCustomer(String id) throws IOException, JTillException, SQLException;
 
     /**
      * Method to search for customers with the given name.
@@ -316,10 +303,10 @@ public abstract class DataConnect {
      * @param name the name to search for.
      * @return a List of call customers matching the name.
      * @throws IOException if there was a network error.
-     * @throws CustomerNotFoundException if no customer could be found.
+     * @throws JTillException if no customer could be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract List<Customer> getCustomerByName(String name) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract List<Customer> getCustomerByName(String name) throws IOException, JTillException, SQLException;
 
     /**
      * Method to get a list of all the customers in the system.
@@ -334,24 +321,12 @@ public abstract class DataConnect {
      * Method to update a customer in the system.
      *
      * @param c the customer to update.
-     * @return the customer that was updated.
      * @throws IOException if there was a network error.
-     * @throws CustomerNotFoundException if the customer could not be found.
+     * @throws JTillException if the customer could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract Customer updateCustomer(Customer c) throws IOException, CustomerNotFoundException, SQLException;
-
-    /**
-     * Method to search for customers that have details matching the given
-     * terms.
-     *
-     * @param terms the terms to search.
-     * @return a List of customers matching the terms.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     */
-    public abstract List<Customer> customerLookup(String terms) throws IOException, SQLException;
-
+    public abstract void updateCustomer(Customer c) throws IOException, JTillException, SQLException;
+    
     //Sale
     /**
      * Method to add a sale to the system.
@@ -525,22 +500,12 @@ public abstract class DataConnect {
     /**
      * Method to remove a member of staff from the system.
      *
-     * @param id the id of the staff to remove.
-     * @throws IOException if there was a network error.
-     * @throws StaffNotFoundException if the id could not be found.
-     * @throws SQLException if there was a database error.
-     */
-    public abstract void removeStaff(int id) throws IOException, StaffNotFoundException, SQLException;
-
-    /**
-     * Method to remove a member of staff from the system.
-     *
      * @param s the member of staff to remove.
      * @throws IOException if there was a network error.
-     * @throws StaffNotFoundException if the id could not be found.
+     * @throws JTillException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract void removeStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    public abstract void removeStaff(Staff s) throws IOException, JTillException, SQLException;
 
     /**
      * Method to get a member of staff from the system.
@@ -548,10 +513,10 @@ public abstract class DataConnect {
      * @param id the member of staff to get.
      * @return the member of staff matching the id.
      * @throws IOException if there was a network error.
-     * @throws StaffNotFoundException if the id could not be found.
+     * @throws JTillException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract Staff getStaff(int id) throws IOException, StaffNotFoundException, SQLException;
+    public abstract Staff getStaff(int id) throws IOException, JTillException, SQLException;
 
     /**
      * Method to get all staff in the system.
@@ -575,12 +540,11 @@ public abstract class DataConnect {
      * Method to update a member of staff.
      *
      * @param s the member of staff to update.
-     * @return the member of staff that was updated.
      * @throws IOException if there was a network error.
-     * @throws StaffNotFoundException if the id could not be found.
+     * @throws JTillException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract Staff updateStaff(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    public abstract void updateStaff(Staff s) throws IOException, JTillException, SQLException;
 
     /**
      * Method to check if a username is already in use. Case is ignored.
@@ -625,10 +589,10 @@ public abstract class DataConnect {
      * @param s the staff member to check.
      * @return boolean indicating whether they are logged in or not.
      * @throws IOException if there was a network error.
-     * @throws StaffNotFoundException if the staff member could not be found.
+     * @throws JTillException if the staff member could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract boolean isTillLoggedIn(Staff s) throws IOException, StaffNotFoundException, SQLException;
+    public abstract boolean isTillLoggedIn(Staff s) throws IOException, JTillException, SQLException;
 
     /**
      * Method to log a member of staff out of the system. this should not be
@@ -636,18 +600,18 @@ public abstract class DataConnect {
      *
      * @param s the member of staff logging out.
      * @throws IOException if there was a network error.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws JTillException if the member of staff could not be found.
      */
-    public abstract void logout(Staff s) throws IOException, StaffNotFoundException;
+    public abstract void logout(Staff s) throws IOException, JTillException;
 
     /**
      * Method to log a member of staff out of the tills.
      *
      * @param s the member of staff to log out.
      * @throws IOException if there was a network error.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws JTillException if the member of staff could not be found.
      */
-    public abstract void tillLogout(Staff s) throws IOException, StaffNotFoundException;
+    public abstract void tillLogout(Staff s) throws IOException, JTillException;
 
     /**
      * Method to get the sales for a member of staff.
@@ -656,9 +620,9 @@ public abstract class DataConnect {
      * @return the list of sales.
      * @throws IOException if there was a network error.
      * @throws java.sql.SQLException if there is a database error.
-     * @throws StaffNotFoundException if the member of staff could not be found.
+     * @throws JTillException if the member of staff could not be found.
      */
-    public abstract List<Sale> getStaffSales(Staff s) throws IOException, SQLException, StaffNotFoundException;
+    public abstract List<Sale> getStaffSales(Staff s) throws IOException, SQLException, JTillException;
 
     //Category
     /**
@@ -1392,9 +1356,9 @@ public abstract class DataConnect {
      * @param id the id to clock on.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws StaffNotFoundException if the member of staff was not found.
+     * @throws JTillException if the member of staff was not found.
      */
-    public abstract void clockOn(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract void clockOn(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Clocks off a member of staff.
@@ -1402,9 +1366,9 @@ public abstract class DataConnect {
      * @param id the id to clock off.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws StaffNotFoundException if the member of staff was not found.
+     * @throws JTillException if the member of staff was not found.
      */
-    public abstract void clockOff(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract void clockOff(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get all clock items for a staff member.
@@ -1413,9 +1377,9 @@ public abstract class DataConnect {
      * @return a list of all clock items.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws StaffNotFoundException if the member of staff was not found.
+     * @throws JTillException if the member of staff was not found.
      */
-    public abstract List<ClockItem> getAllClocks(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract List<ClockItem> getAllClocks(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to clear the clock entries for a member of staff.
@@ -1423,9 +1387,9 @@ public abstract class DataConnect {
      * @param id the staff member to clear.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
-     * @throws StaffNotFoundException if the member of staff was not found.
+     * @throws JTillException if the member of staff was not found.
      */
-    public abstract void clearClocks(int id) throws IOException, SQLException, StaffNotFoundException;
+    public abstract void clearClocks(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to add a new trigger.
