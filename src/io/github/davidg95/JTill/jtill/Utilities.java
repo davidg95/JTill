@@ -5,6 +5,8 @@
  */
 package io.github.davidg95.JTill.jtill;
 
+import java.awt.Component;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
@@ -130,5 +132,19 @@ public class Utilities {
         );
         root.getActionMap().put(dispatchWindowClosingActionMapKey, dispatchClosing
         );
+    }
+
+    /**
+     * Method to get the parent window of a component.
+     *
+     * @param parent the component.
+     * @return the parent window.
+     */
+    public static Window getParentWindow(Component parent) {
+        if (parent instanceof Window) {
+            return (Window) parent;
+        } else {
+            return getParentWindow(parent.getParent());
+        }
     }
 }
