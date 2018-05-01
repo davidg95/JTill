@@ -455,8 +455,8 @@ public class Product implements Serializable, Cloneable {
                 + ",'" + this.comments
                 + "','" + this.shortName
                 + "'," + this.category.getId()
-                + "," + this.tax.getId()
-                + "," + this.costPrice
+                + ",'" + this.tax.getName()
+                + "'," + this.costPrice
                 + "," + this.packSize
                 + "," + this.minStockLevel
                 + "," + this.maxStockLevel
@@ -481,8 +481,8 @@ public class Product implements Serializable, Cloneable {
                 + ", pCOMMENTS='" + this.getComments()
                 + "', pSHORT_NAME='" + this.getShortName()
                 + "', pcategory=" + this.getCategory().getId()
-                + ", ptax=" + this.getTax().getId()
-                + ", pCOST_PRICE=" + this.getCostPrice()
+                + ", ptax='" + this.getTax().getName()
+                + "', pCOST_PRICE=" + this.getCostPrice()
                 + ", pPACK_SIZE=" + this.getPackSize()
                 + ", pmin_level=" + this.getMinStockLevel()
                 + ", pmax_level=" + this.getMaxStockLevel()

@@ -24,16 +24,12 @@ public class Supplier implements Serializable {
     private String email;
 
     public Supplier(int id, String name, String address, String contactNumber, String accountNumber, String email) {
-        this(name, address, contactNumber, accountNumber, email);
-        this.id = id;
-    }
-
-    public Supplier(String name, String address, String contactNumber, String accountNumber, String email) {
         this.name = name;
         this.address = address;
         this.contactNumber = contactNumber;
         this.accountNumber = accountNumber;
         this.email = email;
+        this.id = id;
     }
 
     public int getId() {

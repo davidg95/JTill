@@ -434,14 +434,13 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * Method to add a new customer to the server.
      *
      * @param customer the new customer to add.
-     * @return the Customer that was added.
      * @throws IOException if there was an error connecting.
      * @throws SQLException if there was a database error.
      */
     @Override
-    public Customer addCustomer(Customer customer) throws IOException, SQLException {
+    public void addCustomer(Customer customer) throws IOException, SQLException {
         try {
-            return (Customer) conn.sendData(JConnData.create("ADDCUSTOMER").addParam("CUSTOMER", customer));
+            conn.sendData(JConnData.create("ADDCUSTOMER").addParam("CUSTOMER", customer));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -460,7 +459,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException {
+    public void removeCustomer(String id) throws IOException, CustomerNotFoundException, SQLException {
         try {
             conn.sendData(JConnData.create("REMOVECUSTOMER").addParam("ID", id));
         } catch (Throwable ex) {
@@ -871,9 +870,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Category addCategory(Category c) throws IOException, SQLException {
+    public void addCategory(Category c) throws IOException, SQLException {
         try {
-            return (Category) conn.sendData(JConnData.create("ADDCATEGORY").addParam("CATEGORY", c));
+            conn.sendData(JConnData.create("ADDCATEGORY").addParam("CATEGORY", c));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1038,9 +1037,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Tax addTax(Tax t) throws IOException, SQLException {
+    public void addTax(Tax t) throws IOException, SQLException {
         try {
-            return (Tax) conn.sendData(JConnData.create("ADDTAX").addParam("TAX", t));
+            conn.sendData(JConnData.create("ADDTAX").addParam("TAX", t));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1052,13 +1051,8 @@ public class ServerConnection extends DataConnect implements JConnListener {
 
     @Override
     public void removeTax(Tax t) throws IOException, JTillException, SQLException {
-        removeTax(t.getId());
-    }
-
-    @Override
-    public void removeTax(int id) throws IOException, JTillException, SQLException {
         try {
-            conn.sendData(JConnData.create("REMOVETAX").addParam("ID", id));
+            conn.sendData(JConnData.create("REMOVETAX").addParam("tax", t));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1410,9 +1404,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException {
+    public void addWasteReason(WasteReason wr) throws IOException, SQLException {
         try {
-            return (WasteReason) conn.sendData(JConnData.create("ADDWASTEREASON").addParam("WASTE", wr));
+            conn.sendData(JConnData.create("ADDWASTEREASON").addParam("WASTE", wr));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1468,7 +1462,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
     @Override
     public WasteReason updateWasteReason(WasteReason wr) throws IOException, SQLException, JTillException {
         try {
-            return (WasteReason) conn.sendData(JConnData.create("UPDATEWASTEREASON"));
+            return (WasteReason) conn.sendData(JConnData.create("UPDATEWASTEREASON").addParam("WASTE", wr));
         } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
@@ -1481,9 +1475,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Supplier addSupplier(Supplier s) throws IOException, SQLException {
+    public void addSupplier(Supplier s) throws IOException, SQLException {
         try {
-            return (Supplier) conn.sendData(JConnData.create("ADDSUPPLIER").addParam("SUPPLIER", s));
+            conn.sendData(JConnData.create("ADDSUPPLIER").addParam("SUPPLIER", s));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -1494,9 +1488,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public void removeSupplier(int id) throws IOException, SQLException, JTillException {
+    public void removeSupplier(Supplier s) throws IOException, SQLException, JTillException {
         try {
-            conn.sendData(JConnData.create("REMOVESUPPLIER"));
+            conn.sendData(JConnData.create("REMOVESUPPLIER").addParam("supplier", s));
         } catch (Throwable ex) {
             if (ex instanceof JTillException) {
                 throw (JTillException) ex;
@@ -1552,9 +1546,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public Department addDepartment(Department d) throws IOException, SQLException {
+    public void addDepartment(Department d) throws IOException, SQLException {
         try {
-            return (Department) conn.sendData(JConnData.create("ADDDEPARTMENT").addParam("DEPARTMENT", d));
+            conn.sendData(JConnData.create("ADDDEPARTMENT").addParam("DEPARTMENT", d));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -2714,9 +2708,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
     }
 
     @Override
-    public RefundReason addRefundReason(RefundReason r) throws IOException, SQLException {
+    public void addRefundReason(RefundReason r) throws IOException, SQLException {
         try {
-            return (RefundReason) conn.sendData(JConnData.create("ADDREFUNDREASON").addParam("REASON", r));
+            conn.sendData(JConnData.create("ADDREFUNDREASON").addParam("REASON", r));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw (IOException) ex;
@@ -2852,6 +2846,66 @@ public class ServerConnection extends DataConnect implements JConnListener {
     public void batchStockReceive(HashMap<String, Integer> updates) throws IOException, SQLException {
         try {
             conn.sendData(JConnData.create("BATCHSTOCKRECEIVE").addParam("updates", updates));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public boolean isCustomerIDUsed(String id) throws IOException, SQLException {
+        try {
+            return (boolean) conn.sendData(JConnData.create("customerid").addParam("id", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public boolean isCategoryIDUsed(int id) throws IOException, SQLException {
+        try{
+            return (boolean) conn.sendData(JConnData.create("categoryid").addParam("id", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public boolean isDepartmentIDUsed(int id) throws IOException, SQLException {
+        try{
+            return (boolean) conn.sendData(JConnData.create("departmentid").addParam("id", id));
+        } catch (Throwable ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public boolean isTaxNameUsed(String name) throws IOException, SQLException {
+        try{
+            return (boolean) conn.sendData(JConnData.create("taxname").addParam("name", name));
         } catch (Throwable ex) {
             if (ex instanceof IOException) {
                 throw (IOException) ex;

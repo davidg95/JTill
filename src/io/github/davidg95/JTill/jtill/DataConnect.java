@@ -255,20 +255,29 @@ public abstract class DataConnect {
      * @param terms the search terms.
      * @return a List of products matching the terms.
      * @throws IOException if there was a network error.
-     * @throws SQLException if there was an error getting the product.
+     * @throws SQLException if there was a database error.
      */
     public abstract List<Product> productLookup(String terms) throws IOException, SQLException;
 
     //Customer
     /**
-     * Method to add a customer to the system.
+     * Check if an ID is already in use.
      *
-     * @param customer the customer to add.
-     * @return the customer that was added.
+     * @param id the ID to check.
+     * @return true if it is sued false if it is not.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract Customer addCustomer(Customer customer) throws IOException, SQLException;
+    public abstract boolean isCustomerIDUsed(String id) throws IOException, SQLException;
+
+    /**
+     * Method to add a customer to the system.
+     *
+     * @param customer the customer to add.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public abstract void addCustomer(Customer customer) throws IOException, SQLException;
 
     /**
      * Method to remove a customer from the system.
@@ -278,7 +287,7 @@ public abstract class DataConnect {
      * @throws CustomerNotFoundException if the id could not be found.
      * @throws SQLException if there was a database error.
      */
-    public abstract void removeCustomer(int id) throws IOException, CustomerNotFoundException, SQLException;
+    public abstract void removeCustomer(String id) throws IOException, CustomerNotFoundException, SQLException;
 
     /**
      * Method to remove a customer from the system.
@@ -653,14 +662,23 @@ public abstract class DataConnect {
 
     //Category
     /**
-     * Method to add a category to the system.
+     * Check if a category ID is used.
      *
-     * @param c the category to add.
-     * @return the category that was added.
+     * @param id the id to check.
+     * @return true if it is used, false if it is not.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract Category addCategory(Category c) throws IOException, SQLException;
+    public abstract boolean isCategoryIDUsed(int id) throws IOException, SQLException;
+
+    /**
+     * Method to add a category to the system.
+     *
+     * @param c the category to add.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public abstract void addCategory(Category c) throws IOException, SQLException;
 
     /**
      * Method to update a category in the system.
@@ -736,14 +754,23 @@ public abstract class DataConnect {
 
     //Department
     /**
+     * Check if a department id is used.
+     *
+     * @param id the id to check.
+     * @return true if it is used, false if it is not.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public abstract boolean isDepartmentIDUsed(int id) throws IOException, SQLException;
+
+    /**
      * Add a new department to the system.
      *
      * @param d the department to add.
-     * @return the department that was added with the id that was assigned.
      * @throws IOException if there was a network error
      * @throws SQLException if there was a database error.
      */
-    public abstract Department addDepartment(Department d) throws IOException, SQLException;
+    public abstract void addDepartment(Department d) throws IOException, SQLException;
 
     /**
      * Remove a department from the system.
@@ -859,6 +886,14 @@ public abstract class DataConnect {
 
     //Tax
     /**
+     * Check if a tax name is used.
+     * @param name the name to check.
+     * @return true if it is sued, false if it is not.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     */
+    public abstract boolean isTaxNameUsed(String name) throws IOException, SQLException;
+    /**
      * Add a new tax to the system.
      *
      * @param t the new tax to add.
@@ -866,7 +901,7 @@ public abstract class DataConnect {
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract Tax addTax(Tax t) throws IOException, SQLException;
+    public abstract void addTax(Tax t) throws IOException, SQLException;
 
     /**
      * Method to remove a tax from the system.
@@ -877,16 +912,6 @@ public abstract class DataConnect {
      * @throws JTillException if the tax was not found.
      */
     public abstract void removeTax(Tax t) throws IOException, SQLException, JTillException;
-
-    /**
-     * Method to remove a tax from the system given its ID.
-     *
-     * @param id the ID of the tax to remove.
-     * @throws IOException if there was a network error.
-     * @throws SQLException if there was a database error.
-     * @throws JTillException if the tax was not found.
-     */
-    public abstract void removeTax(int id) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a tax from the system.
@@ -1235,12 +1260,10 @@ public abstract class DataConnect {
      * Method to add a waste reason.
      *
      * @param wr the WasteReason to add.
-     * @return the WasteReason that was added with its ID assigned by the
-     * database.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public abstract WasteReason addWasteReason(WasteReason wr) throws IOException, SQLException;
+    public abstract void addWasteReason(WasteReason wr) throws IOException, SQLException;
 
     /**
      * Method to remove a waste reason.
@@ -1287,21 +1310,20 @@ public abstract class DataConnect {
      * Method to add a Supplier.
      *
      * @param s the Supplier to add.
-     * @return the Supplier after being added.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      */
-    public abstract Supplier addSupplier(Supplier s) throws IOException, SQLException;
+    public abstract void addSupplier(Supplier s) throws IOException, SQLException;
 
     /**
      * Method to remove a Supplier.
      *
-     * @param id the supplier to remove.
+     * @param s the supplier to remove.
      * @throws IOException if there was a networking error.
      * @throws SQLException if there was a database error.
      * @throws JTillException if the Supplier was not found.
      */
-    public abstract void removeSupplier(int id) throws IOException, SQLException, JTillException;
+    public abstract void removeSupplier(Supplier s) throws IOException, SQLException, JTillException;
 
     /**
      * Method to get a Supplier.
@@ -1908,11 +1930,10 @@ public abstract class DataConnect {
      * Add a new refund reason.
      *
      * @param r the refund reason to add.
-     * @return the added refund reason.
      * @throws IOException if there is a network error.
      * @throws SQLException if there is a database error.
      */
-    public abstract RefundReason addRefundReason(RefundReason r) throws IOException, SQLException;
+    public abstract void addRefundReason(RefundReason r) throws IOException, SQLException;
 
     /**
      * Remove a refund reason. This method marks the reason as deleted, it will

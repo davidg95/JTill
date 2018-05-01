@@ -17,12 +17,11 @@ import java.sql.SQLException;
  */
 public class Customer implements Serializable {
 
-    private int id;
+    private String id;
     private String name;
     private String phone;
     private String mobile;
     private String email;
-    private int loyaltyPoints;
     private String notes;
 
     private String addressLine1;
@@ -49,11 +48,10 @@ public class Customer implements Serializable {
      * @param country the country.
      * @param postcode the postcode.
      * @param notes any notes.
-     * @param loyaltyPoints how much loyalty points they have.
      * @param moneyDue how much money they are due.
      * @param maxDebt what the maximum debt is for the customer.
      */
-    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, BigDecimal maxDebt) {
+    public Customer(String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, BigDecimal moneyDue, BigDecimal maxDebt) {
         this.name = name;
         this.phone = phone;
         this.mobile = mobile;
@@ -65,7 +63,6 @@ public class Customer implements Serializable {
         this.country = country;
         this.postcode = postcode;
         this.notes = notes;
-        this.loyaltyPoints = loyaltyPoints;
         this.moneyDue = moneyDue;
         this.maxDebt = maxDebt;
     }
@@ -85,12 +82,11 @@ public class Customer implements Serializable {
      * @param country the country.
      * @param postcode the postcode.
      * @param notes any notes.
-     * @param loyaltyPoints how much loyalty points they have.
      * @param moneyDue how much money they are due.
      * @param maxDebt what the maximum debt is for the customer.
      */
-    public Customer(int id, String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, int loyaltyPoints, BigDecimal moneyDue, BigDecimal maxDebt) {
-        this(name, phone, mobile, email, addressLine1, addressLine2, town, county, country, postcode, notes, loyaltyPoints, moneyDue, maxDebt);
+    public Customer(String id, String name, String phone, String mobile, String email, String addressLine1, String addressLine2, String town, String county, String country, String postcode, String notes, BigDecimal moneyDue, BigDecimal maxDebt) {
+        this(name, phone, mobile, email, addressLine1, addressLine2, town, county, country, postcode, notes, moneyDue, maxDebt);
         this.id = id;
     }
 
@@ -139,11 +135,11 @@ public class Customer implements Serializable {
         this.name = name;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -169,27 +165,6 @@ public class Customer implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public int getLoyaltyPoints() {
-        return loyaltyPoints;
-    }
-
-    public void setLoyaltyPoints(int loyaltyPoints) {
-        this.loyaltyPoints = loyaltyPoints;
-    }
-
-    public int addLoyaltyPoints(int toAdd) {
-        loyaltyPoints += toAdd;
-        return loyaltyPoints;
-    }
-
-    public int removeLoyaltyPoints(int toRemove) {
-        if (toRemove > loyaltyPoints) {
-            return -1;
-        }
-        loyaltyPoints -= toRemove;
-        return loyaltyPoints;
     }
 
     public String getNotes() {
@@ -280,6 +255,7 @@ public class Customer implements Serializable {
 
     public String getSQLInsertString() {
         return "'" + this.name
+                + "','" + this.id
                 + "','" + this.phone
                 + "','" + this.mobile
                 + "','" + this.email
@@ -290,9 +266,8 @@ public class Customer implements Serializable {
                 + "','" + this.country
                 + "','" + this.postcode
                 + "','" + this.notes
-                + "'," + this.loyaltyPoints
-                + "," + this.moneyDue.doubleValue()
-                + "," + this.maxDebt.doubleValue();
+                + "','" + this.moneyDue.doubleValue()
+                + "','" + this.maxDebt.doubleValue() + "'";
     }
 
     public String getSQLUpdateString() {
@@ -308,10 +283,9 @@ public class Customer implements Serializable {
                 + "', COUNTRY='" + this.getCountry()
                 + "', POSTCODE='" + this.getPostcode()
                 + "', NOTES='" + this.getNotes()
-                + "', LOYALTY_POINTS=" + this.getLoyaltyPoints()
-                + ", MONEY_DUE=" + this.getMoneyDue().doubleValue()
+                + "', MONEY_DUE=" + this.getMoneyDue().doubleValue()
                 + ", MAX_DEBT=" + this.getMaxDebt().doubleValue()
-                + " WHERE CUSTOMERS.ID=" + this.getId();
+                + " WHERE CUSTOMERS.ID='" + this.getId() + "'";
     }
 
     @Override

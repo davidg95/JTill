@@ -10,6 +10,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -17,29 +18,15 @@ import java.util.List;
  */
 public class Tax implements Serializable {
 
-    private int id;
     private String name;
     private double value;
 
     private BigDecimal sales = BigDecimal.ZERO;
     private BigDecimal payable = BigDecimal.ZERO;
 
-    public Tax(int id, String name, double value) {
-        this(name, value);
-        this.id = id;
-    }
-
     public Tax(String name, double value) {
         this.name = name;
         this.value = value;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -106,16 +93,8 @@ public class Tax implements Serializable {
 
     public String getSQLUpdateString() {
         return "UPDATE TAX"
-                + " SET tname='" + this.getName()
-                + "', tvalue=" + this.getValue()
-                + " WHERE tid=" + this.getId();
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + this.id;
-        return hash;
+                + " SET tvalue=" + this.getValue()
+                + " WHERE tname='" + this.getName() + "'";
     }
 
     @Override
@@ -130,12 +109,12 @@ public class Tax implements Serializable {
             return false;
         }
         final Tax other = (Tax) obj;
-        return this.id == other.id;
+        return Objects.equals(this.name, other.name);
     }
 
     @Override
     public String toString() {
-        return this.id + " - " + this.name + " " + this.value + "%";
+        return this.name + " %" + this.value;
     }
 
 }

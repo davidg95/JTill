@@ -19,13 +19,9 @@ public class RefundReason implements Serializable {
     private String reason;
     private int priviledgeLevel;
 
-    public RefundReason(String reason, int privilageLevel) {
+    public RefundReason(int id, String reason, int privilageLevel) {
         this.reason = reason;
         this.priviledgeLevel = privilageLevel;
-    }
-
-    public RefundReason(int id, String reason, int privilageLevel) {
-        this(reason, privilageLevel);
         this.id = id;
     }
 

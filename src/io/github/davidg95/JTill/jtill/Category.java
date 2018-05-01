@@ -32,19 +32,9 @@ public class Category implements Serializable {
      * @param dep the department the category belongs to.
      */
     public Category(int ID, String name, Department dep) {
-        this(name, dep);
-        this.ID = ID;
-    }
-
-    /**
-     * Constructor which takes in all values except id.
-     *
-     * @param name the name.
-     * @param dep the department the category belongs to.
-     */
-    public Category(String name, Department dep) {
         this.name = name;
         this.department = dep;
+        this.ID = ID;
     }
 
     public int getId() {
@@ -117,7 +107,7 @@ public class Category implements Serializable {
     }
 
     public String getSQLInsertString() {
-        return "'" + this.name
+        return this.ID + ",'" + this.name
                 + "'," + this.department.getId();
     }
 
