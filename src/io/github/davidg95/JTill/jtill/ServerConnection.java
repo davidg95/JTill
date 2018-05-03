@@ -528,8 +528,8 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * @param c the customer not update.
      * @throws IOException if there was a server error.
      * @throws SQLException if there was a database error.
-     * @throws JTillException if the customer does not already exist
-     * in the database.
+     * @throws JTillException if the customer does not already exist in the
+     * database.
      */
     @Override
     public void updateCustomer(Customer c) throws IOException, SQLException, JTillException {
@@ -545,7 +545,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
             }
         }
     }
-    
+
     /**
      * Method to send a sale to the server.
      *
@@ -636,10 +636,9 @@ public class ServerConnection extends DataConnect implements JConnListener {
      * @throws java.sql.SQLException if there was a database error.
      */
     @Override
-    public Staff addStaff(Staff s) throws IOException, SQLException {
-        s.setPassword(Encryptor.encrypt(s.getPassword()));
+    public Staff addStaff(Staff s, String password) throws IOException, SQLException {
         try {
-            return (Staff) conn.sendData(JConnData.create("ADDSTAFF").addParam("STAFF", s));
+            return (Staff) conn.sendData(JConnData.create("ADDSTAFF").addParam("STAFF", s).addParam("PASSWORD", password));
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
@@ -652,7 +651,7 @@ public class ServerConnection extends DataConnect implements JConnListener {
     /**
      * Method to remove a member of staff from the system.
      *
-     * @param id the id of the staff to remove.
+     * @param s the staff member to remove.
      * @throws IOException if there was a server communication error.
      * @throws JTillException if the member of staff could not be found.
      * @throws java.sql.SQLException if there was a database error.
@@ -738,6 +737,21 @@ public class ServerConnection extends DataConnect implements JConnListener {
         } catch (Throwable ex) {
             if (ex instanceof SQLException) {
                 throw (SQLException) ex;
+            } else {
+                throw new IOException(ex.getMessage());
+            }
+        }
+    }
+
+    @Override
+    public void changePassword(String username, String newPassword) throws IOException, JTillException, SQLException {
+        try {
+            conn.sendData(JConnData.create("changepassword").addParam("username", username).addParam("newp", newPassword));
+        } catch (Throwable ex) {
+            if (ex instanceof SQLException) {
+                throw (SQLException) ex;
+            } else if (ex instanceof JTillException) {
+                throw (JTillException) ex;
             } else {
                 throw new IOException(ex.getMessage());
             }

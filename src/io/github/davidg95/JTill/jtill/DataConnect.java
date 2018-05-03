@@ -326,7 +326,7 @@ public abstract class DataConnect {
      * @throws SQLException if there was a database error.
      */
     public abstract void updateCustomer(Customer c) throws IOException, JTillException, SQLException;
-    
+
     //Sale
     /**
      * Method to add a sale to the system.
@@ -491,11 +491,12 @@ public abstract class DataConnect {
      * Method to add a member of staff.
      *
      * @param s the member of staff to add.
+     * @param password the password.
      * @return the member of staff that was added.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
-    public abstract Staff addStaff(Staff s) throws IOException, SQLException;
+    public abstract Staff addStaff(Staff s, String password) throws IOException, SQLException;
 
     /**
      * Method to remove a member of staff from the system.
@@ -555,6 +556,17 @@ public abstract class DataConnect {
      * @throws SQLException if there was a database error.
      */
     public abstract boolean checkUsername(String username) throws IOException, SQLException;
+
+    /**
+     * Change a users password.
+     *
+     * @param username the username.
+     * @param newPassword the new password.
+     * @throws IOException if there was a network error.
+     * @throws SQLException if there was a database error.
+     * @throws JTillException if there was an error.
+     */
+    public abstract void changePassword(String username, String newPassword) throws IOException, SQLException, JTillException;
 
     /**
      * Method to lo a member of staff into the system using the username and
@@ -851,12 +863,14 @@ public abstract class DataConnect {
     //Tax
     /**
      * Check if a tax name is used.
+     *
      * @param name the name to check.
      * @return true if it is sued, false if it is not.
      * @throws IOException if there was a network error.
      * @throws SQLException if there was a database error.
      */
     public abstract boolean isTaxNameUsed(String name) throws IOException, SQLException;
+
     /**
      * Add a new tax to the system.
      *

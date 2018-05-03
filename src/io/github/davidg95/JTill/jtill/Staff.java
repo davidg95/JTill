@@ -21,7 +21,6 @@ public class Staff implements Serializable {
     private int id;
     private int position;
     private String username;
-    private String password;
     private double wage;
     private double pay;
     private double hours;
@@ -31,11 +30,6 @@ public class Staff implements Serializable {
      * indicates whether they are currently logged into a till.
      */
     private boolean tillLogin;
-    /**
-     * Indicated whether they are currently logged in to the system but not a
-     * till.
-     */
-    private boolean login;
 
     /**
      * Indicates that the staff member is an assistant, this has the least
@@ -65,15 +59,13 @@ public class Staff implements Serializable {
      * @param name the name of the staff member.
      * @param position the position they have.
      * @param username their username.
-     * @param password their password.
      * @param wage the staff members wage.
      * @param enabled if the account is enabled or not.
      */
-    public Staff(String name, int position, String username, String password, double wage, boolean enabled) {
+    public Staff(String name, int position, String username, double wage, boolean enabled) {
         this.name = name;
         this.position = position;
         this.username = username;
-        this.password = password;
         this.wage = wage;
         this.enabled = enabled;
     }
@@ -86,12 +78,11 @@ public class Staff implements Serializable {
      * @param name the name of the staff member.
      * @param position the position they have.
      * @param username their username.
-     * @param password their password.
      * @param wage the staff members wage.
      * @param enabled if the account is enabled or not.
      */
-    public Staff(int id, String name, int position, String username, String password, double wage, boolean enabled) {
-        this(name, position, username, password, wage, enabled);
+    public Staff(int id, String name, int position, String username, double wage, boolean enabled) {
+        this(name, position, username, wage, enabled);
         this.id = id;
     }
 
@@ -106,33 +97,6 @@ public class Staff implements Serializable {
             return;
         }
         throw new LoginException("You are already logged in elsewhere");
-    }
-
-    /**
-     * Method to log in to the system.
-     *
-     * @param password the staff members password, they will not log in if his
-     * does not match.
-     * @throws LoginException if the log in was not successful, this could be
-     * because the password was not recognised or because they are already
-     * logged in else where.
-     */
-    public void login(String password) throws LoginException {
-        if (!login) {
-            if (this.password.equals(password)) {
-                login = true;
-                return;
-            }
-            throw new LoginException("Your credentials were not recognised");
-        }
-        throw new LoginException("You are already logged in elsewhere");
-    }
-
-    /**
-     * Method to log out of the system.
-     */
-    public void logout() {
-        login = false;
     }
 
     /**
@@ -173,19 +137,7 @@ public class Staff implements Serializable {
     public void setUsername(String username) {
         this.username = username;
     }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public boolean isLoggedIn() {
-        return this.login;
-    }
-
+    
     public boolean isTillLoggedIn() {
         return this.tillLogin;
     }
@@ -232,7 +184,6 @@ public class Staff implements Serializable {
         try {
             DataConnect.get().updateStaff(this);
         } catch (JTillException ex) {
-            DataConnect.get().addStaff(this);
         }
     }
 
@@ -248,23 +199,11 @@ public class Staff implements Serializable {
         return DataConnect.get().getStaffSales(this);
     }
 
-    public String getSQLInsertString() {
-        String ePass = Encryptor.encrypt(this.password);
-        return "'" + this.name
-                + "'," + this.position
-                + ",'" + this.username.toLowerCase()
-                + "','" + ePass
-                + "'," + enabled
-                + "," + wage;
-    }
-
     public String getSQLUpdateString() {
-        String ePass = Encryptor.encrypt(this.password);
         return "UPDATE STAFF"
                 + " SET stNAME='" + this.getName()
                 + "', stPOSITION=" + this.getPosition()
                 + ", stUSERNAME='" + this.getUsername().toLowerCase()
-                + "', stPASSWORD='" + ePass
                 + "', stENABLED=" + enabled
                 + ", stWAGE=" + wage
                 + " WHERE stID=" + this.getId();
